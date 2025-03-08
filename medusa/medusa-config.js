@@ -46,12 +46,12 @@ module.exports = defineConfig({
             resolve: '@medusajs/medusa/file-s3',
             id: 's3',
             options: {
-              file_url: "https://prueba-servy.lon1.cdn.digitaloceanspaces.com",
-              access_key_id: "DO00UB3TZ98CGGQF3JNE",
-              secret_access_key: "PpdlkQ699TJnNkPiCEpyEObkh2iTR9CjROB1QhIL40Q",
-              region: "lon1",
-              bucket: "prueba-servy",
-              endpoint: "https://lon1.digitaloceanspaces.com"
+              file_url: "https://esecosmetics.s3.us-east-1.amazonaws.com",
+              access_key_id: "AKIATCKATWV5OE344J4M",
+              secret_access_key: "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",
+              region: "us-east-1",
+              bucket: "esecosmetics",
+              endpoint: "https://s3.us-east-1.amazonaws.com"
             }
           }
         ],
