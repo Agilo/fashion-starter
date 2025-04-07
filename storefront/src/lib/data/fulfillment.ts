@@ -1,12 +1,19 @@
 import { sdk } from "@lib/config"
-import { cache } from "react"
+import { HttpTypes } from "@medusajs/types"
 
 // Shipping actions
-export const listCartShippingMethods = cache(async function (cartId: string) {
-  return sdk.store.fulfillment
-    .listCartOptions({ cart_id: cartId }, { next: { tags: ["shipping"] } })
+export const listCartShippingMethods = async function (cartId: string) {
+  return sdk.client
+    .fetch<HttpTypes.StoreShippingOptionListResponse>(
+      `/store/shipping-options`,
+      {
+        query: { cart_id: cartId },
+        next: { tags: ["shipping"] },
+        cache: "force-cache",
+      }
+    )
     .then(({ shipping_options }) => shipping_options)
     .catch(() => {
       return null
     })
-})
+}

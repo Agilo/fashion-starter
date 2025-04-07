@@ -3,6 +3,7 @@
 import { z } from "zod"
 import { redirect } from "next/navigation"
 import { revalidateTag } from "next/cache"
+import { HttpTypes } from "@medusajs/types"
 
 import { sdk } from "@lib/config"
 import {
@@ -19,8 +20,12 @@ import {
 } from "hooks/customer"
 
 export const getCustomer = async function () {
-  return sdk.store.customer
-    .retrieve({}, { next: { tags: ["customer"] }, ...(await getAuthHeaders()) })
+  return await sdk.client
+    .fetch<{ customer: HttpTypes.StoreCustomer }>(`/store/customers/me`, {
+      next: { tags: ["customer"] },
+      headers: { ...(await getAuthHeaders()) },
+      cache: "no-store",
+    })
     .then(({ customer }) => customer)
     .catch(() => null)
 }

@@ -24,13 +24,12 @@ export async function retrieveCart() {
   if (!cartId) {
     return null
   }
-
-  const cart = await sdk.store.cart
-    .retrieve(
-      cartId,
-      {},
-      { next: { tags: ["cart"] }, ...(await getAuthHeaders()) }
-    )
+  const cart = await sdk.client
+    .fetch<HttpTypes.StoreCartResponse>(`/store/carts/${cartId}`, {
+      next: { tags: ["cart"] },
+      headers: { ...(await getAuthHeaders()) },
+      cache: "no-store",
+    })
     .then(({ cart }) => cart)
     .catch(() => {
       return null
@@ -345,14 +344,14 @@ export async function setAddresses(
           ? formData.shipping_address
           : formData.billing_address,
     })
+    revalidateTag("shipping")
+    return { success: true, error: null }
   } catch (e) {
     return {
       success: false,
       error: e instanceof Error ? e.message : "Could not set addresses",
     }
   }
-
-  return { success: true, error: null }
 }
 
 export async function placeOrder() {
@@ -365,6 +364,7 @@ export async function placeOrder() {
     .complete(cartId, {}, await getAuthHeaders())
     .then((cartRes) => {
       revalidateTag("cart")
+      revalidateTag("orders")
       return cartRes
     })
     .catch(medusaError)

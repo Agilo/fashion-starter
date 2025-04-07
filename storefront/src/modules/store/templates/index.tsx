@@ -27,15 +27,13 @@ const StoreTemplate = async ({
   countryCode: string
 }) => {
   const pageNumber = page ? parseInt(page, 10) : 1
-  const collections = await getCollectionsList(0, 100, [
-    "id",
-    "title",
-    "handle",
-  ])
-  const categories = await getCategoriesList(0, 100, ["id", "name", "handle"])
-  const types = await getProductTypesList(0, 100, ["id", "value"])
 
-  const region = await getRegion(countryCode)
+  const [collections, categories, types, region] = await Promise.all([
+    getCollectionsList(0, 100, ["id", "title", "handle"]),
+    getCategoriesList(0, 100, ["id", "name", "handle"]),
+    getProductTypesList(0, 100, ["id", "value"]),
+    getRegion(countryCode),
+  ])
 
   return (
     <div className="md:pt-47 py-26 md:pb-36">

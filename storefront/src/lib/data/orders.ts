@@ -5,18 +5,20 @@ import { sdk } from "@lib/config"
 import medusaError from "@lib/util/medusa-error"
 import { enrichLineItems } from "@lib/util/enrich-line-items"
 import { getAuthHeaders } from "@lib/data/cookies"
+import { HttpTypes } from "@medusajs/types"
 
 export const retrieveOrder = cache(async function (id: unknown) {
   if (typeof id !== "string") {
     throw new Error("Invalid order id")
   }
 
-  const order = await sdk.store.order
-    .retrieve(
-      id,
-      { fields: "*payment_collections.payments" },
-      { next: { tags: ["orders"] }, ...(await getAuthHeaders()) }
-    )
+  const order = await sdk.client
+    .fetch<HttpTypes.StoreOrderResponse>(`/store/orders/${id}`, {
+      query: { fields: "*payment_collections.payments" },
+      next: { tags: ["orders"] },
+      headers: { ...(await getAuthHeaders()) },
+      cache: "force-cache",
+    })
     .then(({ order }) => order)
     .catch((err) => medusaError(err))
 
@@ -42,10 +44,12 @@ export const listOrders = async function (
     throw new Error("Invalid input data")
   }
 
-  return sdk.store.order
-    .list(
-      { limit, offset, order: "-created_at" },
-      { next: { tags: ["orders"] }, ...(await getAuthHeaders()) }
-    )
+  return sdk.client
+    .fetch<HttpTypes.StoreOrderListResponse>(`/store/orders`, {
+      query: { limit, offset, order: "-created_at" },
+      next: { tags: ["orders"] },
+      headers: { ...(await getAuthHeaders()) },
+      cache: "force-cache",
+    })
     .catch((err) => medusaError(err))
 }

@@ -29,13 +29,15 @@ export default async function CollectionTemplate({
 }) {
   const pageNumber = page ? parseInt(page) : 1
 
-  const categories = await getCategoriesList(0, 100, ["id", "name", "handle"])
-  const types = await getProductTypesList(0, 100, ["id", "value"])
-
   const collectionDetails = collectionMetadataCustomFieldsSchema.safeParse(
     collection.metadata ?? {}
   )
-  const region = await getRegion(countryCode)
+
+  const [categories, types, region] = await Promise.all([
+    getCategoriesList(0, 100, ["id", "name", "handle"]),
+    getProductTypesList(0, 100, ["id", "value"]),
+    getRegion(countryCode),
+  ])
 
   return (
     <>

@@ -1,8 +1,7 @@
 import { sdk } from "@lib/config"
-import { cache } from "react"
 import { HttpTypes, PaginatedResponse } from "@medusajs/types"
 
-export const getProductTypesList = cache(async function (
+export const getProductTypesList = async function (
   offset: number = 0,
   limit: number = 100,
   fields?: (keyof HttpTypes.StoreProductType)[]
@@ -15,15 +14,16 @@ export const getProductTypesList = cache(async function (
       }>
     >("/store/custom/product-types", {
       query: { limit, offset, fields: fields ? fields.join(",") : undefined },
-      headers: { next: { tags: ["product-types"] } },
+      next: { tags: ["product-types"] },
+      cache: "force-cache",
     })
     .then(({ product_types, count }) => ({
       productTypes: product_types,
       count,
     }))
-})
+}
 
-export const getProductTypeByHandle = cache(async function (
+export const getProductTypeByHandle = async function (
   handle: string
 ): Promise<HttpTypes.StoreProductType> {
   return sdk.client
@@ -34,7 +34,8 @@ export const getProductTypeByHandle = cache(async function (
       }>
     >("/store/custom/product-types", {
       query: { handle, limit: 1 },
-      headers: { next: { tags: ["product-types"] } },
+      next: { tags: ["product-types"] },
+      cache: "force-cache",
     })
     .then(({ product_types }) => product_types[0])
-})
+}
