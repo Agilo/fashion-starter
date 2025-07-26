@@ -1,0 +1,54 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: medusa
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    volumes:
+      - redis-data:/data
+
+  medusa:
+    build:
+      context: ./medusa
+    command: >
+      sh -c "yarn install &&
+             yarn build &&
+             yarn medusa migrations run &&
+             yarn medusa seed &&
+             yarn start"
+    environment:
+      DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/medusa
+      REDIS_URL: redis://redis:6379
+      NODE_ENV: production
+    ports:
+      - "9000:9000"
+    depends_on:
+      - postgres
+      - redis
+
+  storefront:
+    build:
+      context: ./storefront
+    command: >
+      sh -c "yarn install &&
+             yarn build &&
+             yarn start"
+    environment:
+      NEXT_PUBLIC_MEDUSA_API_URL: http://medusa:9000
+      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}
+      NEXT_PUBLIC_SEARCH_API_KEY: ${NEXT_PUBLIC_SEARCH_API_KEY}
+    ports:
+      - "8000:8000"
+    depends_on:
+      - medusa
+
+volumes:
+  postgres-data:
+  redis-data:
