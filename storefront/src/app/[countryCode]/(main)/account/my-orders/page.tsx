@@ -144,22 +144,44 @@ export default async function AccountMyOrdersPage({ searchParams }: PageProps) {
                 </div>
                 <div className="flex max-sm:flex-col justify-between gap-6">
                   <OrderStatus order={order} className="max-sm:hidden" />
-                  <ButtonLink
-                    href={`/account/my-orders/${order.id}`}
-                    variant="outline"
-                    size="md"
-                    className="sm:self-end md:self-start lg:self-end sm:hidden"
-                  >
-                    Check details
-                  </ButtonLink>
-                  <ButtonLink
-                    href={`/account/my-orders/${order.id}`}
-                    variant="outline"
-                    size="sm"
-                    className="sm:self-end md:self-start lg:self-end max-sm:hidden"
-                  >
-                    Check details
-                  </ButtonLink>
+                  <div className="flex flex-wrap gap-3 sm:self-end md:self-start lg:self-end">
+                    {order.fulfillment_status === "delivered" && (
+                      <>
+                        <ButtonLink
+                          href={`/account/my-orders/${order.id}/return`}
+                          variant="outline"
+                          size="md"
+                          className="sm:hidden"
+                        >
+                          Return
+                        </ButtonLink>
+                        <ButtonLink
+                          href={`/account/my-orders/${order.id}/return`}
+                          variant="outline"
+                          size="sm"
+                          className="max-sm:hidden"
+                        >
+                          Return
+                        </ButtonLink>
+                      </>
+                    )}
+                    <ButtonLink
+                      href={`/account/my-orders/${order.id}`}
+                      variant="outline"
+                      size="md"
+                      className="sm:hidden"
+                    >
+                      Check details
+                    </ButtonLink>
+                    <ButtonLink
+                      href={`/account/my-orders/${order.id}`}
+                      variant="outline"
+                      size="sm"
+                      className="max-sm:hidden"
+                    >
+                      Check details
+                    </ButtonLink>
+                  </div>
                 </div>
               </div>
             ))}

@@ -1,20 +1,19 @@
 import * as React from "react"
 import { Metadata } from "next"
-import Image from "next/image"
 import { HttpTypes } from "@medusajs/types"
 
-import { convertToLocale } from "@lib/util/money"
 import { retrieveOrder } from "@lib/data/orders"
 import { OrderTotals } from "@modules/order/components/OrderTotals"
+import { OrderItem } from "@modules/order/components/item/OrderItem"
 import { UiTag } from "@/components/ui/Tag"
 import { UiTagList, UiTagListDivider } from "@/components/ui/TagList"
 import { Icon } from "@/components/Icon"
-import { LocalizedLink } from "@/components/LocalizedLink"
+import { ButtonLink } from "@/components/Button"
 import { getCustomer } from "@lib/data/customer"
 import { redirect } from "next/navigation"
 
 export const metadata: Metadata = {
-  title: "Account - Order",
+  title: "Account - Order Details",
   description: "Check your order history",
 }
 
@@ -101,7 +100,7 @@ export default async function AccountOrderPage({
 
   return (
     <>
-      <h1 className="text-md md:text-lg mb-8 md:mb-16">
+      <h1 className="text-md md:text-lg mb-8 md:mb-13">
         Order: {order.display_id}
       </h1>
       <div className="flex flex-col gap-6">
@@ -197,61 +196,19 @@ export default async function AccountOrderPage({
         </div>
         <div className="rounded-xs border border-grayscale-200 p-4 flex flex-col gap-6">
           {order.items?.map((item) => (
-            <div
+            <OrderItem
               key={item.id}
+              id={item.id}
+              thumbnail={item.thumbnail}
+              product_handle={item.product_handle}
+              product_title={item.product_title}
+              title={item.title}
+              quantity={item.quantity}
+              currencyCode={order.currency_code}
+              amount={item.total}
+              variant={item.variant}
               className="flex gap-x-4 sm:gap-x-8 gap-y-6 pb-6 border-b border-grayscale-100 last:border-0 last:pb-0"
-            >
-              {item.thumbnail && (
-                <LocalizedLink
-                  href={`/products/${item.product_handle}`}
-                  className="max-w-25 sm:max-w-37 aspect-[3/4] w-full relative overflow-hidden"
-                >
-                  <Image
-                    src={item.thumbnail}
-                    alt={item.title}
-                    fill
-                    className="object-cover"
-                  />
-                </LocalizedLink>
-              )}
-              <div className="flex flex-col flex-1">
-                <p className="mb-2 sm:text-md">
-                  <LocalizedLink href={`/products/${item.product_handle}`}>
-                    {item.product_title}
-                  </LocalizedLink>
-                </p>
-                <div className="text-xs flex flex-col flex-1">
-                  <div>
-                    {item.variant?.options?.map((option) => (
-                      <p className="mb-1" key={option.id}>
-                        <span className="text-grayscale-500 mr-2">
-                          {option.option?.title}:
-                        </span>
-                        {option.value}
-                      </p>
-                    ))}
-                  </div>
-                  <div className="mt-auto flex max-xs:flex-col gap-x-10 gap-y-6.5 xs:items-center justify-between relative">
-                    <div className="xs:self-end sm:mb-1">
-                      <p>
-                        <span className="text-grayscale-500 mr-2">
-                          Quantity:
-                        </span>
-                        {item.quantity}
-                      </p>
-                    </div>
-                    <div className="sm:text-md">
-                      <p>
-                        {convertToLocale({
-                          currency_code: order.currency_code,
-                          amount: item.total,
-                        })}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            />
           ))}
         </div>
         <div className="rounded-xs border border-grayscale-200 p-4 flex max-sm:flex-col gap-y-4 gap-x-10 md:flex-wrap justify-between">
@@ -262,6 +219,29 @@ export default async function AccountOrderPage({
             </div>
           </div>
           <OrderTotals order={order} />
+        </div>
+        <div className="rounded-xs border border-grayscale-200 p-4">
+          <div className="flex flex-wrap gap-8 items-center justify-between">
+            <div>
+              <div className="flex gap-4 items-center mb-4">
+                <Icon name="undo" />
+                <p className="text-grayscale-500">Returns</p>
+              </div>
+              <p className="text-xs">
+                Returns are available for the first 14 days after receiving your
+                items.
+              </p>
+            </div>
+            {order.fulfillment_status === "delivered" && (
+              <ButtonLink
+                href={`/account/my-orders/${order.id}/return`}
+                variant="outline"
+                size="sm"
+              >
+                Start Return
+              </ButtonLink>
+            )}
+          </div>
         </div>
       </div>
     </>
