@@ -8,36 +8,34 @@ import { Form, InputField } from "@/components/Forms"
 import { LocalizedLink } from "@/components/LocalizedLink"
 import { Layout } from "@/components/Layout"
 
-const guestAccessSchema = z.object({
+const trackingSchema = z.object({
   orderId: z.string().min(1, "Order ID is required"),
   email: z.string().email("Please enter a valid email address"),
 })
 
-type GuestAccessFormValues = z.infer<typeof guestAccessSchema>
+type TrackingFormValues = z.infer<typeof trackingSchema>
 
-type GuestReturnsTemplateProps = {
-  onOrderFound?: (orderId: string, email: string) => void
+type GuestReturnTrackingTemplateProps = {
+  onReturnFound?: (orderId: string, email: string) => void
 }
 
-export const GuestReturnsTemplate: React.FC<GuestReturnsTemplateProps> = ({
-  onOrderFound,
-}) => {
+export const GuestReturnTrackingTemplate: React.FC<
+  GuestReturnTrackingTemplateProps
+> = ({ onReturnFound }) => {
   const [error, setError] = React.useState<string | null>(null)
   const [isLoading, setIsLoading] = React.useState(false)
 
-  const handleSubmit = async (values: GuestAccessFormValues) => {
+  const handleSubmit = async (values: TrackingFormValues) => {
     setError(null)
     setIsLoading(true)
 
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000))
 
-    // For demo purposes, always succeed
-    // In real implementation, this would verify the order exists
     setIsLoading(false)
 
-    if (onOrderFound) {
-      onOrderFound(values.orderId, values.email)
+    if (onReturnFound) {
+      onReturnFound(values.orderId, values.email)
     }
   }
 
@@ -45,9 +43,9 @@ export const GuestReturnsTemplate: React.FC<GuestReturnsTemplateProps> = ({
     <Layout className="py-16 min-h-screen items-center">
       <div className="col-span-full md:col-span-6 xl:col-start-2 xl:col-end-7">
         <div className="text-center mb-8">
-          <h1 className="text-lg font-semibold mb-2">Create Return</h1>
+          <h1 className="text-lg font-semibold mb-2">Track Your Return</h1>
         </div>
-        <Form schema={guestAccessSchema} onSubmit={handleSubmit}>
+        <Form schema={trackingSchema} onSubmit={handleSubmit}>
           <InputField
             name="orderId"
             placeholder="Order ID"
@@ -82,21 +80,19 @@ export const GuestReturnsTemplate: React.FC<GuestReturnsTemplateProps> = ({
             <LocalizedLink href="/auth/login" className="underline font-medium">
               Log in
             </LocalizedLink>{" "}
-            to create returns faster.
+            to track your returns.
           </p>
         </div>
       </div>
-
-      {/* Track Existing Return */}
       <div className="max-md:mt-8 col-span-full md:col-start-8 md:col-end-13 xl:col-end-12 text-center">
         <p className="text-sm text-grayscale-500 mb-4">
-          Already submitted a return?
+          Want to start a new return?
         </p>
         <LocalizedLink
-          href="/returns/track"
+          href="/returns"
           className="inline-flex items-center gap-2 text-sm font-medium border-b border-current"
         >
-          Track Your Return
+          Start a Return
           <Icon name="arrow-right" className="w-4 h-4" />
         </LocalizedLink>
       </div>
