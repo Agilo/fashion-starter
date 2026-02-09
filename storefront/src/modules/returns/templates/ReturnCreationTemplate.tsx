@@ -27,6 +27,7 @@ import {
   ReturnShippingMethod,
 } from "@modules/returns/components/ReturnShippingOptions"
 import { ReturnSummary } from "@modules/returns/components/ReturnSummary"
+import { twJoin } from "tailwind-merge"
 
 type ReturnItemState = {
   id: string
@@ -105,7 +106,13 @@ export const ReturnCreationTemplate: React.FC<ReturnCreationTemplateProps> = ({
 
   if (isSubmitted) {
     return (
-      <div className="max-w-2xl mx-auto text-center py-16">
+      <div
+        className={twJoin(
+          "max-w-xl mx-auto text-center py-16",
+          isGuest &&
+            "min-h-screen flex flex-col justify-center items-center col-span-full"
+        )}
+      >
         <h1 className="text-lg font-semibold mb-4">Return Request Submitted</h1>
         <p className="text-grayscale-500 mb-8">
           Your return request for order #{order.display_id} has been submitted
@@ -134,7 +141,12 @@ export const ReturnCreationTemplate: React.FC<ReturnCreationTemplateProps> = ({
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div
+      className={twJoin(
+        "max-w-3xl mx-auto",
+        isGuest && "w-full col-span-full min-h-screen flex flex-col py-32"
+      )}
+    >
       <h1 className="text-md md:text-lg mb-8 md:mb-13">Return items</h1>
 
       <div className="flex flex-col gap-6 mb-13">
