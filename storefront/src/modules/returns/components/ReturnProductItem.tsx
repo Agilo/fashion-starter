@@ -11,7 +11,7 @@ import {
 import { NumberField } from "@/components/NumberField"
 import {
   ReturnReasonSelect,
-  ReturnReasonId,
+  ReturnReason,
 } from "@modules/returns/components/ReturnReasonSelect"
 import { convertToLocale } from "@lib/util/money"
 
@@ -38,8 +38,9 @@ type ReturnProductItemProps = {
   onSelectionChange: (selected: boolean) => void
   returnQuantity: number
   onQuantityChange: (quantity: number) => void
-  returnReason?: ReturnReasonId
-  onReasonChange: (reason: ReturnReasonId) => void
+  returnReason?: string
+  onReasonChange: (reason: string) => void
+  returnReasons: ReturnReason[]
   otherReasonText?: string
   onOtherReasonTextChange?: (text: string) => void
   className?: string
@@ -53,6 +54,7 @@ export const ReturnProductItem: React.FC<ReturnProductItemProps> = ({
   onQuantityChange,
   returnReason,
   onReasonChange,
+  returnReasons,
   otherReasonText,
   onOtherReasonTextChange,
   className,
@@ -141,6 +143,7 @@ export const ReturnProductItem: React.FC<ReturnProductItemProps> = ({
             <ReturnReasonSelect
               value={returnReason}
               onChange={onReasonChange}
+              returnReasons={returnReasons}
             />
           </div>
 

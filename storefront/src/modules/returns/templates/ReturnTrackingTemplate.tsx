@@ -7,7 +7,6 @@ import {
   ReturnStatusTracker,
   ReturnStatus,
 } from "@modules/returns/components/ReturnStatusTracker"
-import { ReturnReasonId } from "@modules/returns/components/ReturnReasonSelect"
 import { OrderItem } from "@modules/order/components/item/OrderItem"
 
 type ReturnedItem = {
@@ -19,7 +18,7 @@ type ReturnedItem = {
   thumbnail: string | null
   quantity: number
   unitPrice: number
-  reason: ReturnReasonId
+  reason: string
   variant?: {
     options?: Array<{
       id: string

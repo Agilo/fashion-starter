@@ -3,6 +3,7 @@ import { redirect } from "next/navigation"
 
 import { getCustomer } from "@lib/data/customer"
 import { retrieveOrder } from "@lib/data/orders"
+import { listReturnReasons } from "@lib/data/return-reasons"
 import { ReturnCreationTemplate } from "@modules/returns/templates/ReturnCreationTemplate"
 
 export const metadata: Metadata = {
@@ -34,5 +35,7 @@ export default async function ReturnPage({ params }: Props) {
     redirect(`/account/my-orders/${orderId}`)
   }
 
-  return <ReturnCreationTemplate order={order} />
+  const returnReasons = await listReturnReasons()
+
+  return <ReturnCreationTemplate order={order} returnReasons={returnReasons} />
 }

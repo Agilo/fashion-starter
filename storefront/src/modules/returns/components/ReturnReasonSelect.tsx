@@ -3,6 +3,7 @@
 import * as React from "react"
 import * as ReactAria from "react-aria-components"
 import { twMerge } from "tailwind-merge"
+import { HttpTypes } from "@medusajs/types"
 import {
   UiSelectButton,
   UiSelectIcon,
@@ -11,23 +12,12 @@ import {
   UiSelectValue,
 } from "@/components/ui/Select"
 
-export const RETURN_REASONS = [
-  { id: "defective", label: "Defective or damaged product" },
-  { id: "wrong_item", label: "Wrong item received" },
-  { id: "not_as_described", label: "Item does not match description" },
-  { id: "changed_mind", label: "Changed my mind / No longer needed" },
-  { id: "better_price", label: "Better price found elsewhere" },
-  { id: "size_issue", label: "Size/fit issue" },
-  { id: "quality", label: "Quality not as expected" },
-  { id: "late_arrival", label: "Arrived too late" },
-  { id: "other", label: "Other" },
-] as const
-
-export type ReturnReasonId = (typeof RETURN_REASONS)[number]["id"]
+export type ReturnReason = HttpTypes.StoreReturnReason
 
 type ReturnReasonSelectProps = {
-  value?: ReturnReasonId
-  onChange: (value: ReturnReasonId) => void
+  value?: string
+  onChange: (value: string) => void
+  returnReasons: ReturnReason[]
   className?: string
   placeholder?: string
 }
@@ -35,30 +25,44 @@ type ReturnReasonSelectProps = {
 export const ReturnReasonSelect: React.FC<ReturnReasonSelectProps> = ({
   value,
   onChange,
+  returnReasons,
   className,
   placeholder = "Select a reason",
 }) => {
   return (
     <ReactAria.Select
       selectedKey={value}
-      onSelectionChange={(key) => onChange(key as ReturnReasonId)}
+      onSelectionChange={(key) => onChange(key as string)}
       className={twMerge("w-full", className)}
     >
       <UiSelectButton>
         <UiSelectValue className="text-left">
           {value
-            ? RETURN_REASONS.find((r) => r.id === value)?.label
+            ? returnReasons.find((r) => r.id === value)?.label
             : placeholder}
         </UiSelectValue>
         <UiSelectIcon />
       </UiSelectButton>
       <ReactAria.Popover className="w-[--trigger-width]">
         <UiSelectListBox>
-          {RETURN_REASONS.map((reason) => (
-            <UiSelectListBoxItem key={reason.id} id={reason.id}>
-              {reason.label}
+          {returnReasons.length === 0 ? (
+            <UiSelectListBoxItem
+              key="no-reasons"
+              id="no-reasons"
+              textValue="No return reasons available"
+              isDisabled
+            >
+              <span className="text-grayscale-500 text-sm">
+                No return reasons available
+              </span>
             </UiSelectListBoxItem>
-          ))}
+          ) : (
+            returnReasons.map((reason) => (
+              <UiSelectListBoxItem key={reason.id} id={reason.id}>
+                {reason.label}
+              </UiSelectListBoxItem>
+            ))
+          )}
         </UiSelectListBox>
       </ReactAria.Popover>
     </ReactAria.Select>

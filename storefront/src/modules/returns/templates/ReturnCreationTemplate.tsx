@@ -16,7 +16,7 @@ import {
 import { NumberField } from "@/components/NumberField"
 import {
   ReturnReasonSelect,
-  ReturnReasonId,
+  ReturnReason,
 } from "@modules/returns/components/ReturnReasonSelect"
 import {
   RefundMethodSelect,
@@ -34,18 +34,20 @@ type ReturnItemState = {
   isSelected: boolean
   returnQuantity: number
   maxQuantity: number
-  reason?: ReturnReasonId
+  reason?: string
   otherReasonText?: string
   unitPrice: number
 }
 
 type ReturnCreationTemplateProps = {
   order: HttpTypes.StoreOrder
+  returnReasons: ReturnReason[]
   isGuest?: boolean
 }
 
 export const ReturnCreationTemplate: React.FC<ReturnCreationTemplateProps> = ({
   order,
+  returnReasons,
   isGuest = false,
 }) => {
   /* TODO: check this state */
@@ -257,6 +259,7 @@ export const ReturnCreationTemplate: React.FC<ReturnCreationTemplateProps> = ({
                         <ReturnReasonSelect
                           value={itemState.reason}
                           onChange={(reason) => updateItem(item.id, { reason })}
+                          returnReasons={returnReasons}
                         />
                       </div>
                       {/* TODO: add TextArea component */}

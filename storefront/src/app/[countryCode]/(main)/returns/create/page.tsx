@@ -2,6 +2,7 @@ import { Metadata } from "next"
 import { notFound } from "next/navigation"
 
 import { retrieveOrder } from "@lib/data/orders"
+import { listReturnReasons } from "@lib/data/return-reasons"
 import { ReturnCreationTemplate } from "@modules/returns/templates/ReturnCreationTemplate"
 import { Layout } from "@/components/Layout"
 
@@ -46,9 +47,15 @@ export default async function GuestReturnCreatePage({ searchParams }: Props) {
     notFound()
   }
 
+  const returnReasons = await listReturnReasons()
+
   return (
     <Layout>
-      <ReturnCreationTemplate order={order} isGuest />
+      <ReturnCreationTemplate
+        order={order}
+        returnReasons={returnReasons}
+        isGuest
+      />
     </Layout>
   )
 }
