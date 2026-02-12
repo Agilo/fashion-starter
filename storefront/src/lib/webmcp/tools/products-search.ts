@@ -1,3 +1,5 @@
+import { StoreProduct } from "@medusajs/types"
+
 interface ProductSearchParams {
   query?: string
   collection_ids?: string[]
@@ -34,3 +36,12 @@ interface ProductSearchResult {
 export const productsSearch = async (
   params: ProductSearchParams
 ): Promise<ProductSearchResult> => {}
+
+const fetchFashionConfig = async (handle: string) => {
+  const res = await fetch(`/api/store/custom/fashion/${handle}`)
+  if (!res.ok) return null
+
+  return res.json()
+}
+
+const mapProductsWithFashion = (product: StoreProduct, fashionConfig: any) => {}
