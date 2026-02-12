@@ -1,4 +1,5 @@
 // External packages
+import { Fragment } from 'react';
 import {
   Text,
   Column,
@@ -140,7 +141,7 @@ export default function OrderPlacedEmail({
       <Section className="border border-solid border-grayscale-200 rounded-xs px-4 mb-6">
         {arr.map((item, index) => {
           return (
-            <>
+            <Fragment key={item.id}>
               {index > 0 && (
                 <Hr className="border-t border-solid border-grayscale-100 m-0" />
               )}
@@ -148,7 +149,11 @@ export default function OrderPlacedEmail({
                 <Column>
                   <Link href="/">
                     <Img
-                      src={item.thumbnail}
+                      src={
+                        item.thumbnail?.startsWith('http')
+                          ? item.thumbnail
+                          : `${process.env.STOREFRONT_URL || 'http://localhost:8000'}${item.thumbnail}`
+                      }
                       alt={item.product_title}
                       className="aspect-[3/4] object-cover max-w-37 float-left"
                     />
@@ -172,7 +177,7 @@ export default function OrderPlacedEmail({
                           </Row>
                         ) : (
                           []
-                        )
+                        ),
                     )}
                     <Row className="absolute bottom-0">
                       <Column className="flex">
@@ -192,7 +197,7 @@ export default function OrderPlacedEmail({
                   </Text>
                 </Column>
               </Row>
-            </>
+            </Fragment>
           );
         })}
       </Section>
@@ -200,7 +205,7 @@ export default function OrderPlacedEmail({
         <Row>
           <Column className="w-1/2 flex items-center" valign="top">
             <Img
-              src="./credit-card.png"
+              src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAABYlAAAWJQFJUiTwAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAEySURBVHgB7ZbLccIwEIbXz/GMD3EJSgekgigdkAqSzkIHSSrAVAAdWB3A0eMn/4IBY+DGYg76ZtZr2Rrvb2klLZHFMjLO8EEURbqua0UCeJ5n8jxP6ZoABFYI/IvbCcliIOQDQsyZgCAIMjgF2ziO80f3J4FN2rZV8KuyLN+Ob3zf1xDQhmGYJYDkSBBnzbHiON6NtMsX/LHqOqQbQHLw6P7zTVEUJwFjMroAv99AgmjkwQ8JghjvdEsAUOjwTQ9kKGABm5EsXzB9VQAyNEN2zkgQTLHGKB/bdhVYAVbAGAJeaCgA69J0fkr7c1sEPuoRY3cKcnXEvl+QLGlfDRlsSCkJ0DTNFN9OYAYb3uuZAC7J0GHeVSxiIPjKdd3Pi5LsAFdHvQLlrvBUV1WVksXyTGwBvHxnj9a95poAAAAASUVORK5CYII="
               alt="Credit card"
               width="16"
               height="16"
