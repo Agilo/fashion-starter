@@ -47,6 +47,7 @@ const CountrySelect: React.FC<CountrySelectProps> = ({
       <ReactAria.Popover className="w-[--trigger-width]">
         <UiSelectListBox>
           {countryOptions?.map(({ value, label }, index) => (
+            // eslint-disable-next-line react/no-array-index-key
             <UiSelectListBoxItem key={index} id={value}>
               {label}
             </UiSelectListBoxItem>

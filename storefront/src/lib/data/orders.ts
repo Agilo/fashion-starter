@@ -7,7 +7,7 @@ import { enrichLineItems } from "@lib/util/enrich-line-items"
 import { getAuthHeaders } from "@lib/data/cookies"
 import { HttpTypes } from "@medusajs/types"
 
-export const retrieveOrder = cache(async function (id: unknown) {
+export const retrieveOrder = cache(async (id: unknown) => {
   if (typeof id !== "string") {
     throw new Error("Invalid order id")
   }

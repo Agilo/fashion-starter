@@ -73,6 +73,7 @@ export default async function CollectionTemplate({
                     .map((p) => p.trim())
                     .filter(Boolean)
                     .map((p, i) => (
+                      // eslint-disable-next-line react/no-array-index-key
                       <p key={i}>{p}</p>
                     ))}
                 </div>

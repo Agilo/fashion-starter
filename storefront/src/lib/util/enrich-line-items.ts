@@ -12,7 +12,7 @@ export async function enrichLineItems<
   // Prepare query parameters
   const queryParams = {
     ids: lineItems.map((lineItem) => lineItem.product_id!),
-    regionId: regionId,
+    regionId,
   }
 
   // Fetch products by their IDs

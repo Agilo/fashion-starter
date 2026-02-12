@@ -55,7 +55,7 @@ export const Form = <T extends z.ZodTypeAny>({
       (event) => {
         event.preventDefault()
         event.stopPropagation()
-        form.handleSubmit(submitHandler, (err) => console.log(err))(event)
+        form.handleSubmit(submitHandler, (err) => console.error(err))(event)
       },
       [form, submitHandler]
     )

@@ -105,6 +105,7 @@ export const ProductPageGallery: React.FC<
       <div className="flex justify-center max-lg:w-full max-lg:absolute max-lg:bottom-4">
         {scrollSnaps.map((_, index) => (
           <button
+            // eslint-disable-next-line react/no-array-index-key
             key={index}
             onClick={() => onDotButtonClick(index)}
             className="px-1.5"
