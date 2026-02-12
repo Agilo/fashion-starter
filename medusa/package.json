@@ -38,7 +38,7 @@
     "@react-email/components": "^0.0.33",
     "@tanstack/react-query": "5.64.2",
     "awilix": "^8.0.1",
-    "lodash": "^4.17.21",
+    "lodash": "^4.17.23",
     "meilisearch": "0.47.0",
     "pg": "^8.13.3",
     "react-dropzone": "^14.3.8",
