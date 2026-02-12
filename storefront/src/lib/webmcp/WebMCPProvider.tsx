@@ -1,11 +1,11 @@
 "use client"
 
 import React from "react"
-import { isWebMCPSupported } from "./is-supported"
+import { registerWebMCPTools } from "./register-tools"
 
 export const WebMCPProvider = () => {
   React.useEffect(() => {
-    console.log("Is WebMCP supported:", isWebMCPSupported())
+    registerWebMCPTools()
   }, [])
 
   return null
