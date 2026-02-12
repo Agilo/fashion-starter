@@ -1,6 +1,7 @@
+import { sdk } from "@lib/config"
 import { StoreProduct } from "@medusajs/types"
 
-interface ProductSearchParams {
+interface ProductSearchInput {
   query?: string
   collection_ids?: string[]
   category_ids?: string[]
@@ -34,7 +35,7 @@ interface ProductSearchResult {
 }
 
 export const productsSearch = async (
-  params: ProductSearchParams
+  params: ProductSearchInput
 ): Promise<
   ProductSearchResult | { error: { code: string; message: string } }
 > => {
@@ -63,7 +64,15 @@ export const productsSearch = async (
     queryParams.append("limit", limit.toString())
 
     const response = await fetch(
-      `/api/store/products?${queryParams.toString()}`
+      `http://localhost:9000/api/store/products?${queryParams.toString()}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "x-publishable-api-key":
+            "pk_4508948437747f5c4f260567988abf80cfe7f27b390490a43d8c287b797781d1",
+        },
+      }
     )
 
     if (!response.ok) {
@@ -76,7 +85,7 @@ export const productsSearch = async (
     }
 
     const data = await response.json()
-    console.log(data)
+    console.log("Products: ", data)
 
     return data
   } catch (err) {

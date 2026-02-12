@@ -1,0 +1,3 @@
+const productSearchDummyInput = {
+  query: "Nordic",
+}
