@@ -4,6 +4,8 @@ import { Mona_Sans } from "next/font/google"
 import { getBaseURL } from "@lib/util/env"
 
 import "../styles/globals.css"
+import React from "react"
+import { WebMCPProvider } from "@lib/webmcp/WebMCPProvider"
 
 export const metadata: Metadata = {
   metadataBase: new URL(getBaseURL()),
@@ -24,6 +26,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
       <body className={`${monaSans.className}`}>
         <main className="relative">{props.children}</main>
         <SpeedInsights />
+        <WebMCPProvider />
       </body>
     </html>
   )

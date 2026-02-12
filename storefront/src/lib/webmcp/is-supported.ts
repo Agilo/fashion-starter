@@ -5,5 +5,7 @@ export const isWebMCPSupported = (): boolean => {
 
   if (!enabled) return false
 
+  console.log("Navigator: ", navigator)
+
   return "modelContext" in navigator
 }
