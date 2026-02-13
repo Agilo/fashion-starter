@@ -134,15 +134,6 @@ export const getProductsListWithSort = async function ({
 }> {
   const limit = queryParams?.limit || 12
 
-  console.log({
-    pageParam: 0,
-    queryParams: {
-      ...queryParams,
-      limit: 100,
-    },
-    countryCode,
-  })
-
   const {
     response: { products, count },
   } = await getProductsList({
@@ -154,23 +145,10 @@ export const getProductsListWithSort = async function ({
     countryCode,
   })
 
-  console.log(products)
-
   const sortedProducts = sortProducts(products, sortBy)
-
   const pageParam = (page - 1) * limit
-
   const nextPage = count > pageParam + limit ? pageParam + limit : null
-
   const paginatedProducts = sortedProducts.slice(pageParam, pageParam + limit)
-
-  console.log({
-    sortedProducts,
-    page,
-    pageParam,
-    nextPage,
-    paginatedProducts,
-  })
 
   return {
     response: {
