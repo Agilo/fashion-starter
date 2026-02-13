@@ -17,7 +17,10 @@ import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import CountrySelect from "@modules/checkout/components/country-select"
 
-export type FormProps<T extends z.ZodTypeAny> = UseFormProps<z.infer<T>> & {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type FormProps<T extends z.ZodType<any, any, any>> = UseFormProps<
+  z.infer<T>
+> & {
   schema: T
   onSubmit: (
     values: z.infer<T>,
@@ -31,7 +34,8 @@ export type FormProps<T extends z.ZodTypeAny> = UseFormProps<z.infer<T>> & {
   formProps?: Omit<React.ComponentProps<"form">, "onSubmit">
 }
 
-export const Form = <T extends z.ZodTypeAny>({
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const Form = <T extends z.ZodType<any, any, any>>({
   schema,
   onSubmit,
   children,
@@ -39,7 +43,8 @@ export const Form = <T extends z.ZodTypeAny>({
   ...props
 }: FormProps<T>) => {
   const form = useForm({
-    resolver: zodResolver(schema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(schema as any),
     ...props,
   })
 
@@ -55,7 +60,7 @@ export const Form = <T extends z.ZodTypeAny>({
       (event) => {
         event.preventDefault()
         event.stopPropagation()
-        form.handleSubmit(submitHandler, (err) => console.log(err))(event)
+        form.handleSubmit(submitHandler, (err) => console.error(err))(event)
       },
       [form, submitHandler]
     )

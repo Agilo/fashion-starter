@@ -1,8 +1,8 @@
 // External packages
-import { Text, Heading, Button } from "@react-email/components";
+import { Text, Heading, Button } from '@react-email/components';
 
 // Components
-import EmailLayout, { EmailLayoutProps } from "./components/EmailLayout";
+import EmailLayout, { EmailLayoutProps } from './components/EmailLayout';
 
 export default function AuthEmailConfirm({
   ...emailLayoutProps
@@ -20,7 +20,7 @@ export default function AuthEmailConfirm({
         <br />
         Click below to verify your email address:
       </Text>
-      <Button className="inline-flex items-center focus-visible:outline-none rounded-xs justify-center transition-colors bg-black hover:bg-grayscale-500 text-white h-10 px-6">
+      <Button className="inline-flex items-center rounded-xs justify-center transition-colors bg-black text-white h-10 px-6">
         Verify email
       </Button>
     </EmailLayout>

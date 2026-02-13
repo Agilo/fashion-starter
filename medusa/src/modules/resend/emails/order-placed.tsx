@@ -1,4 +1,5 @@
 // External packages
+import { Fragment } from 'react';
 import {
   Text,
   Column,
@@ -12,18 +13,52 @@ import {
 import { HttpTypes } from '@medusajs/framework/types';
 import EmailLayout, { EmailLayoutProps } from './components/EmailLayout';
 
-type Props = {
+export type OrderPlacedEmailProps = {
   order: Pick<
     HttpTypes.AdminOrder,
     | 'currency_code'
     | 'email'
-    | 'shipping_address'
-    | 'billing_address'
     | 'shipping_total'
     | 'subtotal'
     | 'total'
     | 'tax_total'
   > & {
+    shipping_address:
+      | (Pick<
+          HttpTypes.AdminOrderAddress,
+          | 'first_name'
+          | 'last_name'
+          | 'address_1'
+          | 'address_2'
+          | 'city'
+          | 'postal_code'
+          | 'province'
+          | 'phone'
+        > & {
+          country?: Pick<
+            HttpTypes.AdminRegionCountry,
+            'iso_2' | 'name' | 'display_name'
+          >;
+        })
+      | null;
+    billing_address:
+      | (Pick<
+          HttpTypes.AdminOrderAddress,
+          | 'first_name'
+          | 'last_name'
+          | 'address_1'
+          | 'address_2'
+          | 'city'
+          | 'postal_code'
+          | 'province'
+          | 'phone'
+        > & {
+          country?: Pick<
+            HttpTypes.AdminRegionCountry,
+            'iso_2' | 'name' | 'display_name'
+          >;
+        })
+      | null;
     items: Pick<
       HttpTypes.AdminOrder['items'][number],
       | 'id'
@@ -35,23 +70,17 @@ type Props = {
       | 'variant_option_values'
     >[];
   };
-};
+} & EmailLayoutProps;
 
 export default function OrderPlacedEmail({
   order,
   ...emailLayoutProps
-}: Props & EmailLayoutProps) {
+}: OrderPlacedEmailProps) {
   const formatter = new Intl.NumberFormat([], {
     style: 'currency',
     currencyDisplay: 'narrowSymbol',
     currency: order.currency_code,
   });
-
-  const arr = [];
-  arr.push(...order.items);
-  arr.push(...order.items);
-  arr.push(...order.items);
-  arr.push(...order.items);
 
   return (
     <EmailLayout {...emailLayoutProps}>
@@ -138,21 +167,23 @@ export default function OrderPlacedEmail({
         </Row>
       </Section>
       <Section className="border border-solid border-grayscale-200 rounded-xs px-4 mb-6">
-        {arr.map((item, index) => {
+        {order.items.map((item, index) => {
           return (
-            <>
+            <Fragment key={item.id}>
               {index > 0 && (
                 <Hr className="border-t border-solid border-grayscale-100 m-0" />
               )}
               <Row className="py-4">
                 <Column>
-                  <Link href="/">
-                    <Img
-                      src={item.thumbnail}
-                      alt={item.product_title}
-                      className="aspect-[3/4] object-cover max-w-37 float-left"
-                    />
-                  </Link>
+                  {!!item.thumbnail && (
+                    <Link href="/">
+                      <Img
+                        src={item.thumbnail}
+                        alt={item.product_title}
+                        className="aspect-[3/4] object-cover max-w-37 float-left"
+                      />
+                    </Link>
+                  )}
                 </Column>
                 <Column className="w-full pl-8 relative" valign="top">
                   <Text className="text-md !mt-0 !mb-2">
@@ -172,7 +203,7 @@ export default function OrderPlacedEmail({
                           </Row>
                         ) : (
                           []
-                        )
+                        ),
                     )}
                     <Row className="absolute bottom-0">
                       <Column className="flex">
@@ -192,7 +223,7 @@ export default function OrderPlacedEmail({
                   </Text>
                 </Column>
               </Row>
-            </>
+            </Fragment>
           );
         })}
       </Section>
@@ -200,7 +231,7 @@ export default function OrderPlacedEmail({
         <Row>
           <Column className="w-1/2 flex items-center" valign="top">
             <Img
-              src="./credit-card.png"
+              src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAABYlAAAWJQFJUiTwAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAEySURBVHgB7ZbLccIwEIbXz/GMD3EJSgekgigdkAqSzkIHSSrAVAAdWB3A0eMn/4IBY+DGYg76ZtZr2Rrvb2klLZHFMjLO8EEURbqua0UCeJ5n8jxP6ZoABFYI/IvbCcliIOQDQsyZgCAIMjgF2ziO80f3J4FN2rZV8KuyLN+Ob3zf1xDQhmGYJYDkSBBnzbHiON6NtMsX/LHqOqQbQHLw6P7zTVEUJwFjMroAv99AgmjkwQ8JghjvdEsAUOjwTQ9kKGABm5EsXzB9VQAyNEN2zkgQTLHGKB/bdhVYAVbAGAJeaCgA69J0fkr7c1sEPuoRY3cKcnXEvl+QLGlfDRlsSCkJ0DTNFN9OYAYb3uuZAC7J0GHeVSxiIPjKdd3Pi5LsAFdHvQLlrvBUV1WVksXyTGwBvHxnj9a95poAAAAASUVORK5CYII="
               alt="Credit card"
               width="16"
               height="16"
@@ -260,7 +291,6 @@ OrderPlacedEmail.PreviewProps = {
     currency_code: 'EUR',
     email: 'example@medusa.local',
     shipping_address: {
-      id: '1',
       first_name: 'John',
       last_name: 'Doe',
       address_1: '1234 Main St',
@@ -268,21 +298,14 @@ OrderPlacedEmail.PreviewProps = {
       city: 'Los Angeles',
       postal_code: '90001',
       country: {
-        id: '1',
         iso_2: 'US',
-        iso_3: 'USA',
         name: 'United States',
-        num_code: '840',
         display_name: 'United States',
       },
       phone: '+1 123 456 7890',
       province: 'California',
-      created_at: '2021-01-01T12:00:00Z',
-      updated_at: '2021-01-01T12:00:00Z',
-      metadata: {},
     },
     billing_address: {
-      id: '1',
       first_name: 'John',
       last_name: 'Doe',
       address_1: '1234 Main St',
@@ -290,18 +313,12 @@ OrderPlacedEmail.PreviewProps = {
       city: 'Los Angeles',
       postal_code: '90001',
       country: {
-        id: '1',
         iso_2: 'US',
-        iso_3: 'USA',
         name: 'United States',
-        num_code: '840',
         display_name: 'United States',
       },
       phone: '+1 123 456 7890',
       province: 'California',
-      created_at: '2021-01-01T12:00:00Z',
-      updated_at: '2021-01-01T12:00:00Z',
-      metadata: {},
     },
     items: [
       {
@@ -323,4 +340,4 @@ OrderPlacedEmail.PreviewProps = {
     total: 1500,
     tax_total: 100,
   },
-} satisfies Props;
+} satisfies OrderPlacedEmailProps;

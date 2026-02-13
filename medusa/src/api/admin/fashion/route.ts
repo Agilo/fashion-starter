@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from '@medusajs/framework/zod';
 import { MedusaRequest, MedusaResponse } from '@medusajs/framework';
 import FashionModuleService from '../../../modules/fashion/service';
 import { FASHION_MODULE } from '../../../modules/fashion';

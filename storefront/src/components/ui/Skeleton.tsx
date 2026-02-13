@@ -17,5 +17,5 @@ export const Skeleton: React.FC<SkeletonProps> = ({
       colorScheme === "white" && "bg-white before:via-grayscale-50",
       className
     )}
-  ></div>
+  />
 )

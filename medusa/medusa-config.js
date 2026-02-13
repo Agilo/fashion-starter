@@ -95,6 +95,50 @@ module.exports = defineConfig({
       },
     },
     {
+      resolve: '@medusajs/medusa/event-bus-redis',
+      options: {
+        redisUrl: process.env.REDIS_URL,
+      },
+    },
+    {
+      resolve: '@medusajs/medusa/caching',
+      options: {
+        providers: [
+          {
+            resolve: '@medusajs/caching-redis',
+            id: 'caching-redis',
+            is_default: true,
+            options: {
+              redisUrl: process.env.REDIS_URL,
+            },
+          },
+        ],
+      },
+    },
+    {
+      resolve: '@medusajs/medusa/workflow-engine-redis',
+      options: {
+        redis: {
+          redisUrl: process.env.REDIS_URL,
+        },
+      },
+    },
+    {
+      resolve: '@medusajs/medusa/locking',
+      options: {
+        providers: [
+          {
+            resolve: '@medusajs/medusa/locking-redis',
+            id: 'locking-redis',
+            is_default: true,
+            options: {
+              redisUrl: process.env.REDIS_URL,
+            },
+          },
+        ],
+      },
+    },
+    {
       resolve: './src/modules/meilisearch',
       /**
        * @type {import('./src/modules/meilisearch/types').MeiliSearchPluginOptions}

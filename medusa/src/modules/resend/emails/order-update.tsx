@@ -34,7 +34,8 @@ export default function OrderUpdateEmail({
         href={`${
           process.env.STOREFRONT_URL || 'http://localhost:8000'
         }/account/my-orders/${order.id}`}
-        className="inline-flex items-center focus-visible:outline-none rounded-xs justify-center transition-colors bg-black hover:bg-grayscale-500 text-white h-10 px-6 mb-10">
+        className="inline-flex items-center rounded-xs justify-center bg-black text-white h-10 px-6 mb-10"
+      >
         Order details
       </Button>
       <Text className="text-md m-0">

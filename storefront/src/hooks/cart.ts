@@ -43,7 +43,6 @@ export const useCartQuantity = () => {
       const res = await getCartQuantity()
       return res
     },
-
   })
 }
 
@@ -85,7 +84,7 @@ export const useUpdateLineItem = (
       })
       return response
     },
-    onSuccess: async function (...args) {
+    async onSuccess(...args) {
       await queryClient.invalidateQueries({
         exact: false,
         queryKey: ["cart"],
@@ -109,7 +108,7 @@ export const useDeleteLineItem = (
 
       return response
     },
-    onSuccess: async function (...args) {
+    async onSuccess(...args) {
       await queryClient.invalidateQueries({
         exact: false,
         queryKey: ["cart"],
@@ -142,7 +141,7 @@ export const useAddLineItem = (
 
       return response
     },
-    onSuccess: async function (...args) {
+    async onSuccess(...args) {
       await queryClient.invalidateQueries({
         exact: false,
         queryKey: ["cart"],
@@ -174,7 +173,7 @@ export const useSetShippingMethod = (
 
       return response
     },
-    onSuccess: async function (...args) {
+    async onSuccess(...args) {
       await queryClient.invalidateQueries({
         exact: false,
         queryKey: ["cart"],
@@ -240,7 +239,7 @@ export const useSetShippingAddress = (
       const response = await setAddresses(payload)
       return response
     },
-    onSuccess: async function (...args) {
+    async onSuccess(...args) {
       await queryClient.invalidateQueries({
         exact: false,
         queryKey: ["cart"],
@@ -268,7 +267,7 @@ export const useSetEmail = (
       const response = await setEmail(payload)
       return response
     },
-    onSuccess: async function (...args) {
+    async onSuccess(...args) {
       await queryClient.invalidateQueries({
         exact: false,
         queryKey: ["cart"],
@@ -298,7 +297,7 @@ export const useInitiatePaymentSession = (
 
       return response
     },
-    onSuccess: async function (...args) {
+    async onSuccess(...args) {
       await queryClient.invalidateQueries({
         exact: false,
         queryKey: ["cart"],
@@ -326,7 +325,7 @@ export const useSetPaymentMethod = (
 
       return response
     },
-    onSuccess: async function (...args) {
+    async onSuccess(...args) {
       await queryClient.invalidateQueries({
         exact: false,
         queryKey: ["cart"],
@@ -380,7 +379,7 @@ export const usePlaceOrder = (
       return response
     },
     ...options,
-    onSuccess: async function (...args) {
+    async onSuccess(...args) {
       await queryClient.invalidateQueries({
         exact: false,
         queryKey: ["cart"],
@@ -402,7 +401,7 @@ export const useApplyPromotions = (
 
       return response
     },
-    onSuccess: async function (...args) {
+    async onSuccess(...args) {
       await queryClient.invalidateQueries({
         exact: false,
         queryKey: ["cart"],
@@ -428,7 +427,7 @@ export const useUpdateRegion = (
     mutationFn: async ({ countryCode, currentPath }) => {
       await updateRegion(countryCode, currentPath)
     },
-    onSuccess: async function (...args) {
+    async onSuccess(...args) {
       await queryClient.invalidateQueries({
         exact: false,
         queryKey: ["cart"],
