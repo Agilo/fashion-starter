@@ -93,6 +93,8 @@ export const cartManage = async (
 
       await deleteLineItem(lineId)
       break
+    case "view":
+      break
   }
 
   const cart = await retrieveCart()
