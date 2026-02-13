@@ -105,7 +105,7 @@ export const productsSearch = async (
     return {
       products: medusaProducts.response.products.map((product) => {
         const { cheapestPrice } = getProductPrice({
-          product: product,
+          product,
         })
 
         return {
