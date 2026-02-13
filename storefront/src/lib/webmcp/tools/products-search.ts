@@ -1,6 +1,6 @@
 import { StoreProduct } from "@medusajs/types"
 
-interface ProductSearchInput {
+export interface ProductSearchInput {
   query?: string
   collection_ids?: string[]
   category_ids?: string[]
@@ -63,6 +63,12 @@ export const productsSearch = async (
       params.type_ids.forEach((id) => queryParams.append("type_id[]", id))
     }
 
+    if (params.sort === "latest_arrivals") {
+      queryParams.append("order", "-created_at")
+    } else if (params.sort === "highest_price") {
+    } else if (params.sort === "lowest_price") {
+    }
+
     queryParams.append("limit", limit.toString())
 
     const response = await fetch(
@@ -112,7 +118,7 @@ const mapProductsWithFashion = (product: StoreProduct, fashionConfig: any) => {}
 export const productsSearchTool = {
   name: "products_search",
   description: "Search for products with filters and sorting",
-  parameters: {
+  inputSchema: {
     type: "object",
     properties: {
       query: { type: "string", description: "Search query" },

@@ -1,5 +1,5 @@
 import { isWebMCPSupported } from "./is-supported"
-import { productsSearchTool } from "./tools/products-search"
+import { ProductSearchInput, productsSearchTool } from "./tools/products-search"
 
 interface Navigator {
   modelContext?: unknown
@@ -14,13 +14,20 @@ export const registerWebMCPTools = () => {
   const modelContext = (navigator as Navigator).modelContext
 
   try {
-    const tools = [productsSearchTool]
-  } catch (err) {}
-
-  try {
     // TODO: registrirati sve alate ovdje
-    console.log("WebMCP tools registered succesfully")
-  } catch (err) {
-    console.error("WebMCP registration failed: ", err)
+    const tools = [productsSearchTool]
+
+    tools.forEach((tool) => {
+      modelContext.registerTool({
+        name: tool.name,
+        description: tool.description,
+        inputSchema: tool.inputSchema,
+        execute: async (input: ProductSearchInput) => {
+          return await productsSearchTool.handler(input)
+        },
+      })
+    })
+  } catch (error) {
+    console.error("WebMCP registration failed", error)
   }
 }
