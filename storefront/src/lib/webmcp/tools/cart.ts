@@ -1,4 +1,9 @@
-import { addToCart, retrieveCart } from "@lib/data/cart"
+import {
+  addToCart,
+  deleteLineItem,
+  retrieveCart,
+  updateLineItem,
+} from "@lib/data/cart"
 import { getBaseURL } from "@lib/util/env"
 import {
   StoreCart,
@@ -35,7 +40,7 @@ interface CartManageResult {
 export const cartManage = async (
   input: CartManageInput
 ): Promise<CartManageResult | { error: { code: string; message: string } }> => {
-  const { action, variant_id: variantId, quantity = 1, line_id } = input
+  const { action, variant_id: variantId, quantity = 1, line_id: lineId } = input
   const pathNameParts = window.location.href
     .replace(getBaseURL(), "")
     .replace(/^\//, "")
@@ -63,6 +68,31 @@ export const cartManage = async (
       }
 
       await addToCart({ variantId, quantity, countryCode })
+      break
+    case "update":
+      if (!lineId) {
+        return {
+          error: {
+            code: "MISSING_LINE_ID",
+            message: "line_id is required for update action",
+          },
+        }
+      }
+
+      await updateLineItem({ lineId, quantity })
+      break
+    case "remove":
+      if (!lineId) {
+        return {
+          error: {
+            code: "MISSING_LINE_ID",
+            message: "line_id is required for remove action",
+          },
+        }
+      }
+
+      await deleteLineItem(lineId)
+      break
   }
 
   const cart = await retrieveCart()
