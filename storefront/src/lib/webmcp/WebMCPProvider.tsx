@@ -2,19 +2,14 @@
 
 import React from "react"
 import { registerWebMCPTools } from "./register-tools"
-import { productsSearch } from "./tools/products-search"
-import { productSearchDummyInput } from "./dummyInputs"
+import { useRouter } from "next/navigation"
 
 export const WebMCPProvider = () => {
+  const router = useRouter()
+
   React.useEffect(() => {
-    async function search() {
-      console.log(await productsSearch(productSearchDummyInput))
-    }
-
-    search()
-
-    registerWebMCPTools()
-  }, [])
+    registerWebMCPTools(router)
+  }, [router])
 
   return null
 }

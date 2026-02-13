@@ -1,12 +1,13 @@
+import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime"
 import { isWebMCPSupported } from "./is-supported"
-import { navigateToProductTool } from "./tools/checkout"
+import { navigateToCartTool, navigateToProductTool } from "./tools/checkout"
 import { productsSearchTool } from "./tools/products-search"
 
 interface Navigator {
   modelContext?: unknown
 }
 
-export const registerWebMCPTools = () => {
+export const registerWebMCPTools = (router?: AppRouterInstance) => {
   if (!isWebMCPSupported()) {
     console.log("WebMCP is not supported, skipping registration")
     return
@@ -16,7 +17,11 @@ export const registerWebMCPTools = () => {
 
   try {
     // TODO: registrirati sve alate ovdje
-    const tools = [productsSearchTool, navigateToProductTool]
+    const tools = [
+      productsSearchTool,
+      navigateToProductTool,
+      navigateToCartTool,
+    ]
 
     tools.forEach((tool) => {
       modelContext.registerTool({
@@ -24,7 +29,7 @@ export const registerWebMCPTools = () => {
         description: tool.description,
         inputSchema: tool.inputSchema,
         execute: async (input: any) => {
-          return await tool.handler(input)
+          return await tool.handler(input, router)
         },
       })
     })

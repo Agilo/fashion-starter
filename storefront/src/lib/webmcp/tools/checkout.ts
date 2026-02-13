@@ -1,16 +1,38 @@
+import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime"
+
 interface NavigateToProductInput {
   handle: string
 }
 
-export const navigateToProduct = async (input: NavigateToProductInput) => {
+export const navigateToProduct = async (
+  input: NavigateToProductInput,
+  router?: AppRouterInstance
+) => {
   try {
-    window.location.href = `/products/${input.handle}`
+    if (router) router.push(`/products/${input.handle}`)
     return { success: true }
   } catch (error) {
     return {
       error: {
         code: "NAVIGATION_FAILED",
         message: "Failed to navigate to product",
+      },
+    }
+  }
+}
+
+export const navigateToCart = async (
+  input: Record<string, never>,
+  router?: AppRouterInstance
+) => {
+  try {
+    if (router) router.push("/cart")
+    return { success: true }
+  } catch (error) {
+    return {
+      error: {
+        code: "NAVIGATION_FAILED",
+        message: "Failed to navigate to cart",
       },
     }
   }
@@ -27,4 +49,14 @@ export const navigateToProductTool = {
     required: ["handle"],
   },
   handler: navigateToProduct,
+}
+
+export const navigateToCartTool = {
+  name: "navigate_to_cart",
+  description: "Navigate to shopping cart page",
+  inputSchema: {
+    type: "object",
+    properties: {},
+  },
+  handler: navigateToCart,
 }
