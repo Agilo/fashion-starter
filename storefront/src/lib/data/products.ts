@@ -107,7 +107,7 @@ export const getProductsList = async function ({
           products,
           count,
         },
-        nextPage: nextPage,
+        nextPage,
         queryParams,
       }
     })

@@ -15,5 +15,5 @@ export interface MeiliSearchProductHit {
 
 export const searchClient = new MeiliSearch({
   host: endpoint,
-  apiKey: apiKey,
+  apiKey,
 })

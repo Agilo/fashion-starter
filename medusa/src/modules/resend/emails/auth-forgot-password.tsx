@@ -1,14 +1,14 @@
 // External components
-import { Text, Heading, Button } from "@react-email/components";
+import { Text, Heading, Button } from '@react-email/components';
 
 // Types
-import { CustomerDTO } from "@medusajs/framework/types";
+import { CustomerDTO } from '@medusajs/framework/types';
 
 // Components
-import EmailLayout, { EmailLayoutProps } from "./components/EmailLayout";
+import EmailLayout, { EmailLayoutProps } from './components/EmailLayout';
 
 type Props = {
-  customer: Pick<CustomerDTO, "id" | "email" | "first_name" | "last_name">;
+  customer: Pick<CustomerDTO, 'id' | 'email' | 'first_name' | 'last_name'>;
   token: string;
 };
 
@@ -28,11 +28,11 @@ export default function AuthPasswordForgotResetEmail({
       </Text>
       <Button
         href={`${
-          process.env.STOREFRONT_URL || "http://localhost:8000"
+          process.env.STOREFRONT_URL || 'http://localhost:8000'
         }/auth/forgot-password/reset?email=${encodeURIComponent(
-          customer.email
+          customer.email,
         )}&token=${encodeURIComponent(token)}`}
-        className="inline-flex items-center focus-visible:outline-none rounded-xs justify-center transition-colors bg-black hover:bg-grayscale-500 text-white h-10 px-6 mb-10"
+        className="inline-flex items-center rounded-xs justify-center transition-colors bg-black text-white h-10 px-6 mb-10"
       >
         Reset password
       </Button>
@@ -46,10 +46,10 @@ export default function AuthPasswordForgotResetEmail({
 
 AuthPasswordForgotResetEmail.PreviewProps = {
   customer: {
-    id: "1",
-    email: "example@medusa.local",
-    first_name: "John",
-    last_name: "Doe",
+    id: '1',
+    email: 'example@medusa.local',
+    first_name: 'John',
+    last_name: 'Doe',
   },
-  token: "1234567789012345677890",
+  token: '1234567789012345677890',
 } satisfies Props;

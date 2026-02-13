@@ -23,7 +23,7 @@ export const OrderTotals: React.FC<{
         <div className="self-end">
           <p>
             {convertToLocale({
-              currency_code: currency_code,
+              currency_code,
               amount: subtotal ?? 0,
             })}
           </p>
@@ -49,7 +49,7 @@ export const OrderTotals: React.FC<{
         <div className="self-end">
           <p>
             {convertToLocale({
-              currency_code: currency_code,
+              currency_code,
               amount: shipping_total ?? 0,
             })}
           </p>
@@ -75,7 +75,7 @@ export const OrderTotals: React.FC<{
         <div className="self-end">
           <p>
             {convertToLocale({
-              currency_code: currency_code,
+              currency_code,
               amount: total ?? 0,
             })}
           </p>

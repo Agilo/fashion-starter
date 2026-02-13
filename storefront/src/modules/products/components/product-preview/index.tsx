@@ -9,7 +9,7 @@ export default function ProductPreview({
   product: HttpTypes.StoreProduct
 }) {
   const { cheapestPrice } = getProductPrice({
-    product: product,
+    product,
   })
 
   const hasReducedPrice =

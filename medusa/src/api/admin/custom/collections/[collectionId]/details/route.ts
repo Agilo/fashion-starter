@@ -1,6 +1,6 @@
 import { Modules } from '@medusajs/framework/utils';
 import { MedusaRequest, MedusaResponse } from '@medusajs/framework';
-import { z } from 'zod';
+import { z } from '@medusajs/framework/zod';
 
 const collectionFieldsMetadataSchema = z.object({
   image: z
@@ -47,9 +47,8 @@ export async function GET(
 ): Promise<void> {
   const { collectionId } = req.params;
   const productService = req.scope.resolve(Modules.PRODUCT);
-  const collection = await productService.retrieveProductCollection(
-    collectionId,
-  );
+  const collection =
+    await productService.retrieveProductCollection(collectionId);
 
   const parsed = collectionFieldsMetadataSchema.safeParse(
     collection.metadata ?? {},
@@ -107,9 +106,8 @@ export async function POST(
   const customFields = collectionFieldsMetadataSchema.parse(body);
 
   const productService = req.scope.resolve(Modules.PRODUCT);
-  const collection = await productService.retrieveProductCollection(
-    collectionId,
-  );
+  const collection =
+    await productService.retrieveProductCollection(collectionId);
 
   const updatedCollection = await productService.updateProductCollections(
     collectionId,
