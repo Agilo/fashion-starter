@@ -3,6 +3,7 @@ import { MeiliSearchProductHit, searchClient } from "@lib/search-client"
 import { getBaseURL } from "@lib/util/env"
 import { getProductPrice } from "@lib/util/get-product-price"
 import { HttpTypes } from "@medusajs/types"
+import { WebMCPTool, WebMCPToolResult } from "../types"
 
 export interface ProductSearchInput {
   query?: string
@@ -13,7 +14,7 @@ export interface ProductSearchInput {
   limit?: number
 }
 
-interface ProductSearchResult {
+interface ProductSearchData {
   products: Array<{
     id: string
     title: string
@@ -42,9 +43,7 @@ interface ProductSearchResult {
 
 export const productsSearch = async (
   params: ProductSearchInput
-): Promise<
-  ProductSearchResult | { error: { code: string; message: string } }
-> => {
+): Promise<WebMCPToolResult<ProductSearchData>> => {
   const pathNameParts = window.location.href
     .replace(getBaseURL(), "")
     .replace(/^\//, "")
@@ -53,6 +52,7 @@ export const productsSearch = async (
 
   if (!countryCode) {
     return {
+      ok: false,
       error: {
         code: "INVALID_COUNTRY_CODE",
         message: "Your country code is invalid.",
@@ -103,45 +103,52 @@ export const productsSearch = async (
     })
 
     return {
-      products: medusaProducts.response.products.map((product) => {
-        const { cheapestPrice } = getProductPrice({
-          product,
-        })
+      ok: true,
+      data: {
+        products: medusaProducts.response.products.map((product) => {
+          const { cheapestPrice } = getProductPrice({
+            product,
+          })
 
-        return {
-          id: product.id,
-          title: product.title,
-          handle: product.handle,
-          thumbnail: product.thumbnail ?? undefined,
-          price: cheapestPrice
-            ? {
-                amount: cheapestPrice.calculated_price_number,
-                currency_code: cheapestPrice.currency_code!,
-              }
-            : undefined,
-          variants: product.variants?.map((variant) => ({
-            id: variant.id,
-            title: variant.title ?? undefined,
-            inventory_quantity: variant.inventory_quantity,
-          })),
-          options: product.options?.map((option) => ({
-            id: option.id,
-            title: option.title,
-            values: option.values?.map((valopt) => ({
-              id: valopt.id,
-              value: valopt.value,
+          return {
+            id: product.id,
+            title: product.title,
+            handle: product.handle,
+            thumbnail: product.thumbnail ?? undefined,
+            price: cheapestPrice
+              ? {
+                  amount: cheapestPrice.calculated_price_number,
+                  currency_code: cheapestPrice.currency_code!,
+                }
+              : undefined,
+            variants: product.variants?.map((variant) => ({
+              id: variant.id,
+              title: variant.title ?? undefined,
+              inventory_quantity: variant.inventory_quantity,
             })),
-          })),
-          category_ids:
-            product.categories?.map((category) => category.id) ?? [],
-          collection_ids: product.collection ? [product.collection.id] : [],
-          tags: product.tags?.map((tag) => tag.value) ?? [],
-          type_id: product.type_id ?? undefined,
-        }
-      }),
+            options: product.options?.map((option) => ({
+              id: option.id,
+              title: option.title,
+              values: option.values?.map((valopt) => ({
+                id: valopt.id,
+                value: valopt.value,
+              })),
+            })),
+            category_ids:
+              product.categories?.map((category) => category.id) ?? [],
+            collection_ids: product.collection ? [product.collection.id] : [],
+            tags: product.tags?.map((tag) => tag.value) ?? [],
+            type_id: product.type_id ?? undefined,
+          }
+        }),
+      },
+      meta: {
+        tool: "products.search",
+      },
     }
   } catch (err) {
     return {
+      ok: false,
       error: {
         code: "SEARCH_FAILED",
         message: err instanceof Error ? err.message : "Unknown error",
@@ -150,9 +157,15 @@ export const productsSearch = async (
   }
 }
 
-export const productsSearchTool = {
-  name: "products_search",
+export const productsSearchTool: WebMCPTool<
+  ProductSearchInput,
+  ProductSearchData
+> = {
+  name: "products.search",
   description: "Search for products with filters and sorting",
+  annotations: {
+    readOnlyHint: true,
+  },
   inputSchema: {
     type: "object",
     properties: {
@@ -166,6 +179,7 @@ export const productsSearchTool = {
       },
       limit: { type: "number", minimum: 1, maximum: 36 },
     },
+    additionalProperties: false,
   },
   handler: productsSearch,
 }
