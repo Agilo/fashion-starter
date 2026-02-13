@@ -4,17 +4,25 @@ import { navigateToCartTool, navigateToProductTool } from "./tools/checkout"
 import { productsSearchTool } from "./tools/products-search"
 import { cartManageTool } from "./tools/cart"
 
-interface Navigator {
-  modelContext?: unknown
+interface Navigator extends globalThis.Navigator {
+  modelContext: {
+    registerTool: (tool: {
+      name: string
+      description: string
+      inputSchema: object
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      execute: (input: any) => Promise<any>
+    }) => void
+  }
 }
 
 export const registerWebMCPTools = (router?: AppRouterInstance) => {
   if (!isWebMCPSupported()) {
-    console.log("WebMCP is not supported, skipping registration")
+    console.debug("WebMCP is not supported, skipping registration")
     return
   }
 
-  const modelContext = (navigator as Navigator).modelContext
+  const modelContext = (navigator as unknown as Navigator).modelContext
 
   try {
     // TODO: registrirati sve alate ovdje
@@ -30,7 +38,7 @@ export const registerWebMCPTools = (router?: AppRouterInstance) => {
         name: tool.name,
         description: tool.description,
         inputSchema: tool.inputSchema,
-        execute: async (input: any) => {
+        execute: async (input) => {
           return await tool.handler(input, router)
         },
       })
