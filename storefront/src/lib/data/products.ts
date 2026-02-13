@@ -1,3 +1,5 @@
+"use server"
+
 import { sdk } from "@lib/config"
 import { HttpTypes } from "@medusajs/types"
 import { getRegion } from "@lib/data/regions"
@@ -17,7 +19,7 @@ export const getProductsById = async function ({
         id: ids,
         region_id: regionId,
         fields: "*variants.calculated_price,+variants.inventory_quantity",
-      },
+      } satisfies HttpTypes.StoreProductListParams,
       next: { tags: ["products"] },
       cache: "force-cache",
     })
@@ -34,7 +36,7 @@ export const getProductByHandle = async function (
         handle,
         region_id: regionId,
         fields: "*variants.calculated_price,+variants.inventory_quantity",
-      },
+      } satisfies HttpTypes.StoreProductListParams,
       next: { tags: ["products"] },
     })
     .then(({ products }) => products[0])
@@ -92,7 +94,7 @@ export const getProductsList = async function ({
           region_id: region.id,
           fields: "*variants.calculated_price",
           ...queryParams,
-        },
+        } satisfies HttpTypes.StoreProductListParams,
         next: { tags: ["products"] },
         cache: "force-cache",
       }
@@ -116,7 +118,7 @@ export const getProductsList = async function ({
  * It will then return the paginated products based on the page and limit parameters.
  */
 export const getProductsListWithSort = async function ({
-  page = 0,
+  page = 1,
   queryParams,
   sortBy = "created_at",
   countryCode,
@@ -132,6 +134,15 @@ export const getProductsListWithSort = async function ({
 }> {
   const limit = queryParams?.limit || 12
 
+  console.log({
+    pageParam: 0,
+    queryParams: {
+      ...queryParams,
+      limit: 100,
+    },
+    countryCode,
+  })
+
   const {
     response: { products, count },
   } = await getProductsList({
@@ -143,6 +154,8 @@ export const getProductsListWithSort = async function ({
     countryCode,
   })
 
+  console.log(products)
+
   const sortedProducts = sortProducts(products, sortBy)
 
   const pageParam = (page - 1) * limit
@@ -150,6 +163,14 @@ export const getProductsListWithSort = async function ({
   const nextPage = count > pageParam + limit ? pageParam + limit : null
 
   const paginatedProducts = sortedProducts.slice(pageParam, pageParam + limit)
+
+  console.log({
+    sortedProducts,
+    page,
+    pageParam,
+    nextPage,
+    paginatedProducts,
+  })
 
   return {
     response: {

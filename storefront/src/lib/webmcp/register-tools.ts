@@ -1,5 +1,6 @@
 import { isWebMCPSupported } from "./is-supported"
-import { ProductSearchInput, productsSearchTool } from "./tools/products-search"
+import { navigateToProductTool } from "./tools/checkout"
+import { productsSearchTool } from "./tools/products-search"
 
 interface Navigator {
   modelContext?: unknown
@@ -15,15 +16,15 @@ export const registerWebMCPTools = () => {
 
   try {
     // TODO: registrirati sve alate ovdje
-    const tools = [productsSearchTool]
+    const tools = [productsSearchTool, navigateToProductTool]
 
     tools.forEach((tool) => {
       modelContext.registerTool({
         name: tool.name,
         description: tool.description,
         inputSchema: tool.inputSchema,
-        execute: async (input: ProductSearchInput) => {
-          return await productsSearchTool.handler(input)
+        execute: async (input: any) => {
+          return await tool.handler(input)
         },
       })
     })
