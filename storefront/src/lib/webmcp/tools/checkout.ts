@@ -12,7 +12,7 @@ export const navigateToProduct = async (
     if (router) router.push(`/products/${input.handle}`)
     return { success: true }
   } catch (error) {
-    console.log(error)
+    console.error(error)
     return {
       error: {
         code: "NAVIGATION_FAILED",
@@ -30,7 +30,7 @@ export const navigateToCart = async (
     if (router) router.push("/cart")
     return { success: true }
   } catch (error) {
-    console.log(error)
+    console.error(error)
     return {
       error: {
         code: "NAVIGATION_FAILED",
