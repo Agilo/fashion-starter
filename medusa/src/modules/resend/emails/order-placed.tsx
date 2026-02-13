@@ -13,18 +13,52 @@ import {
 import { HttpTypes } from '@medusajs/framework/types';
 import EmailLayout, { EmailLayoutProps } from './components/EmailLayout';
 
-type Props = {
+export type OrderPlacedEmailProps = {
   order: Pick<
     HttpTypes.AdminOrder,
     | 'currency_code'
     | 'email'
-    | 'shipping_address'
-    | 'billing_address'
     | 'shipping_total'
     | 'subtotal'
     | 'total'
     | 'tax_total'
   > & {
+    shipping_address:
+      | (Pick<
+          HttpTypes.AdminOrderAddress,
+          | 'first_name'
+          | 'last_name'
+          | 'address_1'
+          | 'address_2'
+          | 'city'
+          | 'postal_code'
+          | 'province'
+          | 'phone'
+        > & {
+          country?: Pick<
+            HttpTypes.AdminRegionCountry,
+            'iso_2' | 'name' | 'display_name'
+          >;
+        })
+      | null;
+    billing_address:
+      | (Pick<
+          HttpTypes.AdminOrderAddress,
+          | 'first_name'
+          | 'last_name'
+          | 'address_1'
+          | 'address_2'
+          | 'city'
+          | 'postal_code'
+          | 'province'
+          | 'phone'
+        > & {
+          country?: Pick<
+            HttpTypes.AdminRegionCountry,
+            'iso_2' | 'name' | 'display_name'
+          >;
+        })
+      | null;
     items: Pick<
       HttpTypes.AdminOrder['items'][number],
       | 'id'
@@ -36,23 +70,17 @@ type Props = {
       | 'variant_option_values'
     >[];
   };
-};
+} & EmailLayoutProps;
 
 export default function OrderPlacedEmail({
   order,
   ...emailLayoutProps
-}: Props & EmailLayoutProps) {
+}: OrderPlacedEmailProps) {
   const formatter = new Intl.NumberFormat([], {
     style: 'currency',
     currencyDisplay: 'narrowSymbol',
     currency: order.currency_code,
   });
-
-  const arr = [];
-  arr.push(...order.items);
-  arr.push(...order.items);
-  arr.push(...order.items);
-  arr.push(...order.items);
 
   return (
     <EmailLayout {...emailLayoutProps}>
@@ -139,7 +167,7 @@ export default function OrderPlacedEmail({
         </Row>
       </Section>
       <Section className="border border-solid border-grayscale-200 rounded-xs px-4 mb-6">
-        {arr.map((item, index) => {
+        {order.items.map((item, index) => {
           return (
             <Fragment key={item.id}>
               {index > 0 && (
@@ -147,17 +175,15 @@ export default function OrderPlacedEmail({
               )}
               <Row className="py-4">
                 <Column>
-                  <Link href="/">
-                    <Img
-                      src={
-                        item.thumbnail?.startsWith('http')
-                          ? item.thumbnail
-                          : `${process.env.STOREFRONT_URL || 'http://localhost:8000'}${item.thumbnail}`
-                      }
-                      alt={item.product_title}
-                      className="aspect-[3/4] object-cover max-w-37 float-left"
-                    />
-                  </Link>
+                  {!!item.thumbnail && (
+                    <Link href="/">
+                      <Img
+                        src={item.thumbnail}
+                        alt={item.product_title}
+                        className="aspect-[3/4] object-cover max-w-37 float-left"
+                      />
+                    </Link>
+                  )}
                 </Column>
                 <Column className="w-full pl-8 relative" valign="top">
                   <Text className="text-md !mt-0 !mb-2">
@@ -265,7 +291,6 @@ OrderPlacedEmail.PreviewProps = {
     currency_code: 'EUR',
     email: 'example@medusa.local',
     shipping_address: {
-      id: '1',
       first_name: 'John',
       last_name: 'Doe',
       address_1: '1234 Main St',
@@ -273,21 +298,14 @@ OrderPlacedEmail.PreviewProps = {
       city: 'Los Angeles',
       postal_code: '90001',
       country: {
-        id: '1',
         iso_2: 'US',
-        iso_3: 'USA',
         name: 'United States',
-        num_code: '840',
         display_name: 'United States',
       },
       phone: '+1 123 456 7890',
       province: 'California',
-      created_at: '2021-01-01T12:00:00Z',
-      updated_at: '2021-01-01T12:00:00Z',
-      metadata: {},
     },
     billing_address: {
-      id: '1',
       first_name: 'John',
       last_name: 'Doe',
       address_1: '1234 Main St',
@@ -295,18 +313,12 @@ OrderPlacedEmail.PreviewProps = {
       city: 'Los Angeles',
       postal_code: '90001',
       country: {
-        id: '1',
         iso_2: 'US',
-        iso_3: 'USA',
         name: 'United States',
-        num_code: '840',
         display_name: 'United States',
       },
       phone: '+1 123 456 7890',
       province: 'California',
-      created_at: '2021-01-01T12:00:00Z',
-      updated_at: '2021-01-01T12:00:00Z',
-      metadata: {},
     },
     items: [
       {
@@ -328,4 +340,4 @@ OrderPlacedEmail.PreviewProps = {
     total: 1500,
     tax_total: 100,
   },
-} satisfies Props;
+} satisfies OrderPlacedEmailProps;
