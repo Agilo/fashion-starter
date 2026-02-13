@@ -1,11 +1,19 @@
-interface CartManageParams {
+import { addToCart, retrieveCart } from "@lib/data/cart"
+import { getBaseURL } from "@lib/util/env"
+import {
+  StoreCart,
+  StoreCartLineItem,
+  StoreCartPromotion,
+} from "@medusajs/types"
+
+interface CartManageInput {
   action: "add" | "remove" | "update" | "view"
   variant_id?: string
   quantity?: number
   line_id?: string
 }
 
-interface CartSnapshot {
+interface CartManageResult {
   cart: {
     id: string
     currency_code: string
@@ -25,5 +33,99 @@ interface CartSnapshot {
 }
 
 export const cartManage = async (
-  params: CartManageParams
-): Promise<CartSnapshot> => {}
+  input: CartManageInput
+): Promise<CartManageResult | { error: { code: string; message: string } }> => {
+  const { action, variant_id: variantId, quantity = 1, line_id } = input
+  const pathNameParts = window.location.href
+    .replace(getBaseURL(), "")
+    .replace(/^\//, "")
+    .split("/")
+  const countryCode = pathNameParts[0]
+
+  if (!countryCode) {
+    return {
+      error: {
+        code: "INVALID_COUNTRY_CODE",
+        message: "Your country code is invalid.",
+      },
+    }
+  }
+
+  switch (action) {
+    case "add":
+      if (!variantId) {
+        return {
+          error: {
+            code: "MISSING_VARIANT",
+            message: "variant_id is required for add action",
+          },
+        }
+      }
+
+      await addToCart({ variantId, quantity, countryCode })
+  }
+
+  const cart = await retrieveCart()
+
+  if (!cart) {
+    return {
+      error: {
+        code: "CART_MISSING",
+        message: "Cart is missing",
+      },
+    }
+  }
+
+  return mapCartToResult(cart)
+}
+
+const mapCartToResult = (cart: StoreCart) => {
+  return {
+    cart: {
+      id: cart.id,
+      currency_code: cart.currency_code,
+      subtotal: cart.subtotal ?? 0,
+      total: cart.total ?? 0,
+      discount_total: cart.discount_total,
+      items:
+        cart.items?.map((item: StoreCartLineItem) => ({
+          id: item.id,
+          title: item.title,
+          variant_id: item.variant_id ?? "",
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+          total: item.total,
+        })) || [],
+      discount_codes:
+        cart.promotions
+          ?.map((p: StoreCartPromotion) => p.code)
+          .filter((code): code is string => code !== undefined) || [],
+    },
+  }
+}
+
+export const cartManageTool = {
+  name: "cart_manage",
+  description: "Manage shopping cart (add, remove, update, view)",
+  inputSchema: {
+    type: "object",
+    properties: {
+      action: {
+        type: "string",
+        enum: ["add", "remove", "update", "view"],
+        description: "Action to perform",
+      },
+      variant_id: {
+        type: "string",
+        description: "Variant ID (required for add)",
+      },
+      quantity: { type: "number", description: "Quantity (default: 1)" },
+      line_id: {
+        type: "string",
+        description: "Line item ID (required for remove/update)",
+      },
+    },
+    required: ["action"],
+  },
+  handler: cartManage,
+}

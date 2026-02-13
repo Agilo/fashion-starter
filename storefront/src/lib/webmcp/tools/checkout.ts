@@ -1,6 +1,6 @@
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime"
 
-interface NavigateToProductInput {
+export interface NavigateToProductInput {
   handle: string
 }
 
@@ -12,6 +12,7 @@ export const navigateToProduct = async (
     if (router) router.push(`/products/${input.handle}`)
     return { success: true }
   } catch (error) {
+    console.log(error)
     return {
       error: {
         code: "NAVIGATION_FAILED",
@@ -29,6 +30,7 @@ export const navigateToCart = async (
     if (router) router.push("/cart")
     return { success: true }
   } catch (error) {
+    console.log(error)
     return {
       error: {
         code: "NAVIGATION_FAILED",

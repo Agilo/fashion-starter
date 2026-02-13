@@ -2,6 +2,7 @@ import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.share
 import { isWebMCPSupported } from "./is-supported"
 import { navigateToCartTool, navigateToProductTool } from "./tools/checkout"
 import { productsSearchTool } from "./tools/products-search"
+import { cartManageTool } from "./tools/cart"
 
 interface Navigator {
   modelContext?: unknown
@@ -21,6 +22,7 @@ export const registerWebMCPTools = (router?: AppRouterInstance) => {
       productsSearchTool,
       navigateToProductTool,
       navigateToCartTool,
+      cartManageTool,
     ]
 
     tools.forEach((tool) => {
