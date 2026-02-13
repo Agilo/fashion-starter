@@ -1,4 +1,5 @@
 import { isWebMCPSupported } from "./is-supported"
+import { productsSearchTool } from "./tools/products-search"
 
 interface Navigator {
   modelContext?: unknown
@@ -11,6 +12,10 @@ export const registerWebMCPTools = () => {
   }
 
   const modelContext = (navigator as Navigator).modelContext
+
+  try {
+    const tools = [productsSearchTool]
+  } catch (err) {}
 
   try {
     // TODO: registrirati sve alate ovdje

@@ -1,4 +1,3 @@
-import { sdk } from "@lib/config"
 import { StoreProduct } from "@medusajs/types"
 
 interface ProductSearchInput {
@@ -34,6 +33,9 @@ interface ProductSearchResult {
   }>
 }
 
+const MEDUSA_BACKEND_URL =
+  process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000"
+
 export const productsSearch = async (
   params: ProductSearchInput
 ): Promise<
@@ -64,7 +66,7 @@ export const productsSearch = async (
     queryParams.append("limit", limit.toString())
 
     const response = await fetch(
-      `http://localhost:9000/api/store/products?${queryParams.toString()}`,
+      `${MEDUSA_BACKEND_URL}/store/products?${queryParams.toString()}`,
       {
         method: "GET",
         headers: {
