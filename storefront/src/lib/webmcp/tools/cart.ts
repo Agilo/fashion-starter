@@ -10,6 +10,7 @@ import {
   StoreCartLineItem,
   StoreCartPromotion,
 } from "@medusajs/types"
+import { WebMCPTool, WebMCPToolContext, WebMCPToolResult } from "../types"
 
 interface CartManageInput {
   action: "add" | "remove" | "update" | "view"
@@ -18,7 +19,7 @@ interface CartManageInput {
   line_id?: string
 }
 
-interface CartManageResult {
+interface CartManageData {
   cart: {
     id: string
     currency_code: string
@@ -38,8 +39,9 @@ interface CartManageResult {
 }
 
 export const cartManage = async (
-  input: CartManageInput
-): Promise<CartManageResult | { error: { code: string; message: string } }> => {
+  input: CartManageInput,
+  context?: WebMCPToolContext
+): Promise<WebMCPToolResult<CartManageData>> => {
   const { action, variant_id: variantId, quantity = 1, line_id: lineId } = input
   const pathNameParts = window.location.href
     .replace(getBaseURL(), "")
@@ -49,6 +51,7 @@ export const cartManage = async (
 
   if (!countryCode) {
     return {
+      ok: false,
       error: {
         code: "INVALID_COUNTRY_CODE",
         message: "Your country code is invalid.",
@@ -56,10 +59,33 @@ export const cartManage = async (
     }
   }
 
+  if (action !== "view" && context?.client) {
+    const actionConfirmed = await context.client.requestUserInteraction(() =>
+      Promise.resolve(
+        window.confirm(
+          `Confirm cart action: ${action}${
+            action === "add" ? ` ${quantity} item(s)` : ""
+          }?`
+        )
+      )
+    )
+
+    if (!actionConfirmed) {
+      return {
+        ok: false,
+        error: {
+          code: "USER_CANCELLED",
+          message: "User cancelled cart action confirmation.",
+        },
+      }
+    }
+  }
+
   switch (action) {
     case "add":
       if (!variantId) {
         return {
+          ok: false,
           error: {
             code: "MISSING_VARIANT",
             message: "variant_id is required for add action",
@@ -72,6 +98,7 @@ export const cartManage = async (
     case "update":
       if (!lineId) {
         return {
+          ok: false,
           error: {
             code: "MISSING_LINE_ID",
             message: "line_id is required for update action",
@@ -84,6 +111,7 @@ export const cartManage = async (
     case "remove":
       if (!lineId) {
         return {
+          ok: false,
           error: {
             code: "MISSING_LINE_ID",
             message: "line_id is required for remove action",
@@ -101,6 +129,7 @@ export const cartManage = async (
 
   if (!cart) {
     return {
+      ok: false,
       error: {
         code: "CART_MISSING",
         message: "Cart is missing",
@@ -108,7 +137,13 @@ export const cartManage = async (
     }
   }
 
-  return mapCartToResult(cart)
+  return {
+    ok: true,
+    data: mapCartToResult(cart),
+    meta: {
+      tool: "cart.manage",
+    },
+  }
 }
 
 const mapCartToResult = (cart: StoreCart) => {
@@ -136,8 +171,8 @@ const mapCartToResult = (cart: StoreCart) => {
   }
 }
 
-export const cartManageTool = {
-  name: "cart_manage",
+export const cartManageTool: WebMCPTool<CartManageInput, CartManageData> = {
+  name: "cart.manage",
   description: "Manage shopping cart (add, remove, update, view)",
   inputSchema: {
     type: "object",
@@ -158,6 +193,36 @@ export const cartManageTool = {
       },
     },
     required: ["action"],
+    oneOf: [
+      {
+        properties: {
+          action: { const: "add" },
+          variant_id: { type: "string" },
+        },
+        required: ["action", "variant_id"],
+      },
+      {
+        properties: {
+          action: { const: "remove" },
+          line_id: { type: "string" },
+        },
+        required: ["action", "line_id"],
+      },
+      {
+        properties: {
+          action: { const: "update" },
+          line_id: { type: "string" },
+        },
+        required: ["action", "line_id"],
+      },
+      {
+        properties: {
+          action: { const: "view" },
+        },
+        required: ["action"],
+      },
+    ],
+    additionalProperties: false,
   },
   handler: cartManage,
 }
