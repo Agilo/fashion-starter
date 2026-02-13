@@ -126,7 +126,7 @@ const mapCartToResult = (cart: StoreCart) => {
           variant_id: item.variant_id ?? "",
           quantity: item.quantity,
           unit_price: item.unit_price,
-          total: item.total,
+          total: item.total ?? 0,
         })) || [],
       discount_codes:
         cart.promotions
