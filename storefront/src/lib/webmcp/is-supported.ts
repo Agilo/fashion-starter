@@ -5,5 +5,15 @@ export const isWebMCPSupported = (): boolean => {
 
   if (!enabled) return false
 
-  return "modelContext" in navigator
+  if (!window.isSecureContext) return false
+
+  const nav = navigator as Navigator & {
+    modelContext?: {
+      provideContext?: (options?: { tools?: unknown[] }) => void
+    }
+  }
+
+  return (
+    !!nav.modelContext && typeof nav.modelContext.provideContext === "function"
+  )
 }
