@@ -162,14 +162,19 @@ export const productsSearchTool: WebMCPTool<
   ProductSearchData
 > = {
   name: "products.search",
-  description: "Search for products with filters and sorting",
+  description:
+    "Search and retrieve product information (price, variants, options, categories, tags) with optional filters and sorting.",
   annotations: {
     readOnlyHint: true,
   },
   inputSchema: {
     type: "object",
     properties: {
-      query: { type: "string", description: "Search query" },
+      query: {
+        type: "string",
+        description:
+          "Search query. Can be omitted to fetch products by filters only.",
+      },
       collection_ids: { type: "array", items: { type: "string" } },
       category_ids: { type: "array", items: { type: "string" } },
       type_ids: { type: "array", items: { type: "string" } },

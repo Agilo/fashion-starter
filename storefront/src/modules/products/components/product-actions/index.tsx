@@ -4,6 +4,7 @@ import { isEqual } from "lodash"
 import { useEffect, useMemo, useState } from "react"
 import { HttpTypes } from "@medusajs/types"
 import * as ReactAria from "react-aria-components"
+import { useSearchParams } from "next/navigation"
 import { getVariantItemsInStock } from "@lib/util/inventory"
 import { Button } from "@/components/Button"
 import { NumberField } from "@/components/NumberField"
@@ -48,6 +49,9 @@ const optionsAsKeymap = (
 
 const priorityOptions = ["Material", "Color", "Size"]
 
+const normalizeOptionKey = (key: string) =>
+  key.trim().toLowerCase().replace(/\s+/g, "_")
+
 const getInitialOptions = (product: ProductActionsProps["product"]) => {
   if (product.variants?.length === 1) {
     const variantOptions = optionsAsKeymap(product.variants[0].options)
@@ -73,6 +77,7 @@ const getInitialOptions = (product: ProductActionsProps["product"]) => {
 }
 
 function ProductActions({ product, materials, disabled }: ProductActionsProps) {
+  const searchParams = useSearchParams()
   const [options, setOptions] = useState<Record<string, string | undefined>>(
     getInitialOptions(product) ?? {}
   )
@@ -88,6 +93,59 @@ function ProductActions({ product, materials, disabled }: ProductActionsProps) {
       setOptions(initialOptions)
     }
   }, [product])
+
+  useEffect(() => {
+    const optionEntries = Array.from(searchParams.entries()).filter(([key]) =>
+      key.startsWith("mcp_opt_")
+    )
+
+    if (!optionEntries.length || !product.options?.length) {
+      return
+    }
+
+    const requestedValues = optionEntries.reduce(
+      (acc, [key, value]) => {
+        const normalizedKey = normalizeOptionKey(key.replace(/^mcp_opt_/, ""))
+        acc[normalizedKey] = value
+        return acc
+      },
+      {} as Record<string, string>
+    )
+
+    const mappedOptions = (product.options ?? []).reduce(
+      (acc, option) => {
+        const optionIdKey = normalizeOptionKey(option.id)
+        const optionTitleKey = normalizeOptionKey(option.title ?? "")
+        const selectedValue =
+          requestedValues[optionIdKey] ?? requestedValues[optionTitleKey]
+
+        if (!selectedValue) {
+          return acc
+        }
+
+        const allowedValues = new Set(
+          (option.values ?? []).map((value) => value.value)
+        )
+
+        if (allowedValues.size && !allowedValues.has(selectedValue)) {
+          return acc
+        }
+
+        acc[option.id] = selectedValue
+        return acc
+      },
+      {} as Record<string, string>
+    )
+
+    if (!Object.keys(mappedOptions).length) {
+      return
+    }
+
+    setOptions((prev) => ({
+      ...prev,
+      ...mappedOptions,
+    }))
+  }, [searchParams, product.options])
 
   const selectedVariant = useMemo(() => {
     if (!product.variants || product.variants.length === 0) {
