@@ -1,19 +1,39 @@
-import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime"
+import { WebMCPTool, WebMCPToolResult } from "../types"
 
 export interface NavigateToProductInput {
   handle: string
 }
 
+type NavigateToProductData = {
+  path: string
+}
+
 export const navigateToProduct = async (
   input: NavigateToProductInput,
-  router?: AppRouterInstance
-) => {
+  context?: {
+    router?: {
+      push: (href: string) => void
+    }
+  }
+): Promise<WebMCPToolResult<NavigateToProductData>> => {
+  const path = `/products/${input.handle}`
+
   try {
-    if (router) router.push(`/products/${input.handle}`)
-    return { success: true }
+    context?.router?.push(path)
+
+    return {
+      ok: true,
+      data: {
+        path,
+      },
+      meta: {
+        tool: "navigation.toProduct",
+      },
+    }
   } catch (error) {
     console.error(error)
     return {
+      ok: false,
       error: {
         code: "NAVIGATION_FAILED",
         message: "Failed to navigate to product",
@@ -23,15 +43,31 @@ export const navigateToProduct = async (
 }
 
 export const navigateToCart = async (
-  input: Record<string, never>,
-  router?: AppRouterInstance
-) => {
+  _input: Record<string, never>,
+  context?: {
+    router?: {
+      push: (href: string) => void
+    }
+  }
+): Promise<WebMCPToolResult<NavigateToProductData>> => {
+  const path = "/cart"
+
   try {
-    if (router) router.push("/cart")
-    return { success: true }
+    context?.router?.push(path)
+
+    return {
+      ok: true,
+      data: {
+        path,
+      },
+      meta: {
+        tool: "navigation.toCart",
+      },
+    }
   } catch (error) {
     console.error(error)
     return {
+      ok: false,
       error: {
         code: "NAVIGATION_FAILED",
         message: "Failed to navigate to cart",
@@ -40,25 +76,39 @@ export const navigateToCart = async (
   }
 }
 
-export const navigateToProductTool = {
-  name: "navigate_to_product",
+export const navigateToProductTool: WebMCPTool<
+  NavigateToProductInput,
+  NavigateToProductData
+> = {
+  name: "navigation.toProduct",
   description: "Navigate to product detail page",
+  annotations: {
+    readOnlyHint: true,
+  },
   inputSchema: {
     type: "object",
     properties: {
       handle: { type: "string", description: "Product handle/slug" },
     },
     required: ["handle"],
+    additionalProperties: false,
   },
   handler: navigateToProduct,
 }
 
-export const navigateToCartTool = {
-  name: "navigate_to_cart",
+export const navigateToCartTool: WebMCPTool<
+  Record<string, never>,
+  NavigateToProductData
+> = {
+  name: "navigation.toCart",
   description: "Navigate to shopping cart page",
+  annotations: {
+    readOnlyHint: true,
+  },
   inputSchema: {
     type: "object",
     properties: {},
+    additionalProperties: false,
   },
   handler: navigateToCart,
 }
