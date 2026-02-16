@@ -14,7 +14,10 @@ export const retrieveOrder = cache(async (id: unknown) => {
 
   const order = await sdk.client
     .fetch<HttpTypes.StoreOrderResponse>(`/store/orders/${id}`, {
-      query: { fields: "*payment_collections.payments" },
+      query: {
+        fields:
+          "*payment_collections.payments,*items,*items.metadata,*items.variant,*items.product,+cart.id",
+      },
       next: { tags: ["orders"] },
       headers: { ...(await getAuthHeaders()) },
     })

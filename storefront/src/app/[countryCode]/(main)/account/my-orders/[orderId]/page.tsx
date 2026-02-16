@@ -11,6 +11,7 @@ import { Icon } from "@/components/Icon"
 import { ButtonLink } from "@/components/Button"
 import { getCustomer } from "@lib/data/customer"
 import { redirect } from "next/navigation"
+import { hasReturnableItems } from "@lib/util/returns"
 
 export const metadata: Metadata = {
   title: "Account - Order Details",
@@ -97,6 +98,8 @@ export default async function AccountOrderPage({
 
   const { orderId } = await params
   const order = await retrieveOrder(orderId)
+
+  const hasReturnableItemsInOrder = hasReturnableItems(order)
 
   return (
     <>
@@ -232,7 +235,7 @@ export default async function AccountOrderPage({
                 items.
               </p>
             </div>
-            {order.fulfillment_status === "delivered" && (
+            {hasReturnableItemsInOrder && (
               <ButtonLink
                 href={`/account/my-orders/${order.id}/return`}
                 variant="outline"

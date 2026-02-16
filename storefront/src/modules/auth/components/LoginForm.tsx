@@ -62,7 +62,7 @@ export const LoginForm = withReactQueryProvider<{
         >
           Forgot password?
         </LocalizedLink>
-        {!data?.success && (
+        {data && !data?.success && (
           <p className="text-red-primary text-sm">{data?.message}</p>
         )}
         <SubmitButton isLoading={isPending}>Log in</SubmitButton>
