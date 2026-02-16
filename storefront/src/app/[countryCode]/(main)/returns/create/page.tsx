@@ -1,10 +1,12 @@
 import { Metadata } from "next"
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 
 import { retrieveOrder } from "@lib/data/orders"
-import { listReturnReasons } from "@lib/data/return-reasons"
 import { ReturnCreationTemplate } from "@modules/returns/templates/ReturnCreationTemplate"
 import { Layout } from "@/components/Layout"
+import { listReturnReasons, listReturnShippingOptions } from "@lib/data/returns"
+import { HttpTypes } from "@medusajs/types"
+import { hasReturnableItems } from "@lib/util/returns"
 
 export const metadata: Metadata = {
   title: "Return Items - Guest",
@@ -25,35 +27,26 @@ export default async function GuestReturnCreatePage({ searchParams }: Props) {
     notFound()
   }
 
-  // In a real app, you would:
-  // 1. Verify the email matches the order's email
-  // 2. Check if order is eligible for return
-  const order = await retrieveOrder(orderId).catch(() => null)
+  const order = (await retrieveOrder(orderId)) as
+    | (HttpTypes.StoreOrder & { cart: { id: string } })
+    | null
 
-  if (!order) {
-    notFound()
+  if (!order || !hasReturnableItems(order)) {
+    redirect("/returns")
   }
 
-  // Verify email matches (simplified check)
-  // In real implementation, this would be done securely on the server
-  /* if (order.email?.toLowerCase() !== email.toLowerCase()) {
-    notFound()
-  } */
-
-  // Check if order is eligible for return
-  const isEligible = order.fulfillment_status === "delivered"
-
-  if (!isEligible) {
-    notFound()
-  }
-
-  const returnReasons = await listReturnReasons()
+  const [shippingOptions, returnReasons] = await Promise.all([
+    listReturnShippingOptions(order.cart.id),
+    listReturnReasons(),
+  ])
 
   return (
     <Layout>
       <ReturnCreationTemplate
         order={order}
         returnReasons={returnReasons}
+        shippingOptions={shippingOptions}
+        cartId={order.cart.id}
         isGuest
       />
     </Layout>

@@ -1,5 +1,5 @@
-import { GuestReturnsTemplate } from "@modules/returns/templates/GuestReturnsTemplate"
 import { Metadata } from "next"
+import { GuestReturnSearchTemplate } from "@modules/returns/templates/GuestReturnSearchTemplate"
 
 export const metadata: Metadata = {
   title: "Create Return",
@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 }
 
 export default function GuestReturnsPage() {
-  return <GuestReturnsTemplate />
+  return <GuestReturnSearchTemplate />
 }

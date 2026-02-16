@@ -1,5 +1,6 @@
 "use server"
 
+import { redirect } from "next/navigation"
 import { sdk } from "@lib/config"
 import { getAuthHeaders, getCacheOptions } from "@lib/data/cookies"
 import medusaError from "@lib/util/medusa-error"
@@ -106,4 +107,51 @@ export const createReturnRequest = async (
       error: err.message,
       return: null,
     }))
+}
+
+export const verifyGuestOrderAccess = async (
+  orderId: string,
+  email: string
+) => {
+  try {
+    const order = await sdk.client
+      .fetch<HttpTypes.StoreOrderResponse>(`/store/orders/${orderId}`, {
+        method: "GET",
+        cache: "no-store",
+      })
+      .then(({ order }) => order)
+
+    if (order.email?.toLowerCase() !== email.toLowerCase()) {
+      throw new Error(
+        "Order not found. Please check your order ID and email address."
+      )
+    }
+
+    const hasReturnable = order.items?.some((item) => {
+      const deliveredQty = item.detail?.delivered_quantity || 0
+      const returnRequestedQty = item.detail?.return_requested_quantity || 0
+      const returnReceivedQty = item.detail?.return_received_quantity || 0
+      const writtenOffQty = item.detail?.written_off_quantity || 0
+      return (
+        deliveredQty - returnRequestedQty - returnReceivedQty - writtenOffQty >
+        0
+      )
+    })
+
+    if (!hasReturnable) {
+      throw new Error("This order has no items available for return.")
+    }
+
+    const params = new URLSearchParams({ orderId, email })
+    redirect(`/returns/create?${params.toString()}`)
+  } catch (err) {
+    if (err instanceof Error && err.message.includes("NEXT_REDIRECT")) {
+      throw err
+    }
+    throw new Error(
+      err instanceof Error
+        ? err.message
+        : "Unable to verify order. Please check your details and try again."
+    )
+  }
 }
