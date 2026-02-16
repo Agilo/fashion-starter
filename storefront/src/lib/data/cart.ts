@@ -296,6 +296,32 @@ export async function applyPromotions(codes: string[]) {
     .catch(medusaError)
 }
 
+export async function removePromotions(codes: string[]) {
+  const cartId = await getCartId()
+  if (!cartId) {
+    throw new Error("No existing cart found")
+  }
+
+  if (!Array.isArray(codes) || !codes.length) {
+    throw new Error("No promotion codes provided")
+  }
+
+  if (codes.some((code) => typeof code !== "string" || !code.trim())) {
+    throw new Error("Invalid promotion codes")
+  }
+
+  await sdk.client
+    .fetch<HttpTypes.StoreCartResponse>(`/store/carts/${cartId}/promotions`, {
+      method: "DELETE",
+      body: { promo_codes: codes },
+      headers: { ...(await getAuthHeaders()) },
+    })
+    .then(() => {
+      revalidateTag("cart")
+    })
+    .catch(medusaError)
+}
+
 export async function setEmail({
   email,
   country_code,
