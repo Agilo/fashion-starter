@@ -4,6 +4,7 @@ import { navigateToCartTool, navigateToProductTool } from "./tools/checkout"
 import { productsSearchTool } from "./tools/products-search"
 import { cartManageTool } from "./tools/cart"
 import { WebMCPClient } from "./types"
+import { applyPromotionTool, removePromotionTool } from "./tools/promotion"
 
 interface Navigator extends globalThis.Navigator {
   modelContext: {
@@ -62,6 +63,8 @@ export const registerWebMCPTools = (router?: AppRouterInstance) => {
       navigateToProductTool,
       navigateToCartTool,
       cartManageTool,
+      applyPromotionTool,
+      removePromotionTool,
     ] as RegisterableWebMCPTool[]
 
     modelContext.provideContext({
