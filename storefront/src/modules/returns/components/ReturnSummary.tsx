@@ -1,17 +1,11 @@
-"use client"
-
 import * as React from "react"
 import { twMerge } from "tailwind-merge"
 import { convertToLocale } from "@lib/util/money"
-import { RefundMethod } from "./RefundMethodSelect"
 
 type ReturnSummaryProps = {
   itemsCount: number
   totalReturnValue: number
   currencyCode: string
-  refundMethod: RefundMethod
-  storeCreditBonus?: number
-  shippingRefund?: number
   className?: string
 }
 
@@ -19,17 +13,8 @@ export const ReturnSummary: React.FC<ReturnSummaryProps> = ({
   itemsCount,
   totalReturnValue,
   currencyCode,
-  refundMethod,
-  storeCreditBonus = 10,
-  shippingRefund = 0,
   className,
 }) => {
-  const bonusAmount =
-    refundMethod === "store_credit"
-      ? (totalReturnValue * storeCreditBonus) / 100
-      : 0
-  const totalRefund = totalReturnValue + bonusAmount + shippingRefund
-
   return (
     <div
       className={twMerge(
@@ -51,31 +36,6 @@ export const ReturnSummary: React.FC<ReturnSummaryProps> = ({
             })}
           </span>
         </div>
-
-        {shippingRefund > 0 && (
-          <div className="flex justify-between">
-            <span className="text-grayscale-500">Shipping refund</span>
-            <span>
-              {convertToLocale({
-                currency_code: currencyCode,
-                amount: shippingRefund,
-              })}
-            </span>
-          </div>
-        )}
-
-        {bonusAmount > 0 && (
-          <div className="flex justify-between text-green-700">
-            <span>Store credit bonus (+{storeCreditBonus}%)</span>
-            <span>
-              +
-              {convertToLocale({
-                currency_code: currencyCode,
-                amount: bonusAmount,
-              })}
-            </span>
-          </div>
-        )}
       </div>
 
       <div className="border-t border-grayscale-200 pt-4">
@@ -84,15 +44,10 @@ export const ReturnSummary: React.FC<ReturnSummaryProps> = ({
           <span className="text-lg font-semibold">
             {convertToLocale({
               currency_code: currencyCode,
-              amount: totalRefund,
+              amount: totalReturnValue,
             })}
           </span>
         </div>
-        <p className="text-xs text-grayscale-500 mt-1">
-          {refundMethod === "store_credit"
-            ? "As store credit"
-            : "To original payment method"}
-        </p>
       </div>
 
       <div className="border-t border-grayscale-200 pt-4">

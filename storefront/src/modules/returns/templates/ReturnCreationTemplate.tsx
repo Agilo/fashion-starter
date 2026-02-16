@@ -1,112 +1,124 @@
 "use client"
 
 import * as React from "react"
-import Image from "next/image"
 import Link from "next/link"
+import { useFormStatus } from "react-dom"
 import { HttpTypes } from "@medusajs/types"
 import { Icon } from "@/components/Icon"
 import { Button } from "@/components/Button"
 import { LocalizedLink } from "@/components/LocalizedLink"
-import { convertToLocale } from "@lib/util/money"
 import {
   UiCheckbox,
   UiCheckboxBox,
   UiCheckboxIcon,
 } from "@/components/ui/Checkbox"
-import { NumberField } from "@/components/NumberField"
-import {
-  ReturnReasonSelect,
-  ReturnReason,
-} from "@modules/returns/components/ReturnReasonSelect"
-import {
-  RefundMethodSelect,
-  RefundMethod,
-} from "@modules/returns/components/RefundMethodSelect"
-import {
-  ReturnShippingOptions,
-  ReturnShippingMethod,
-} from "@modules/returns/components/ReturnShippingOptions"
+import { ReturnReason } from "@modules/returns/components/ReturnReasonSelect"
+import ReturnItemSelector, {
+  ReturnItemSelection,
+} from "@modules/returns/components/ReturnItemSelector"
+import { enhanceItemsWithReturnStatus } from "@lib/util/returns"
+import ReturnShippingSelector from "@modules/returns/components/ReturnShippingSelector"
 import { ReturnSummary } from "@modules/returns/components/ReturnSummary"
 import { twJoin } from "tailwind-merge"
+import { createReturnRequest } from "@lib/data/returns"
 
-type ReturnItemState = {
-  id: string
-  isSelected: boolean
-  returnQuantity: number
-  maxQuantity: number
-  reason?: string
-  otherReasonText?: string
-  unitPrice: number
+function SubmitButton({
+  isDisabled,
+  selectedItemsCount,
+}: {
+  isDisabled: boolean
+  selectedItemsCount: number
+}) {
+  const { pending } = useFormStatus()
+
+  return (
+    <>
+      <Button
+        isFullWidth
+        className="mt-6"
+        isDisabled={isDisabled || pending}
+        isLoading={pending}
+        loadingText="Submitting..."
+        type="submit"
+      >
+        Submit Return Request
+      </Button>
+      {selectedItemsCount === 0 && (
+        <p className="text-xs text-grayscale-500 text-center mt-3">
+          Select at least one item to return
+        </p>
+      )}
+    </>
+  )
 }
 
 type ReturnCreationTemplateProps = {
   order: HttpTypes.StoreOrder
   returnReasons: ReturnReason[]
+  shippingOptions: HttpTypes.StoreCartShippingOption[]
+  cartId: string
   isGuest?: boolean
 }
 
 export const ReturnCreationTemplate: React.FC<ReturnCreationTemplateProps> = ({
   order,
   returnReasons,
+  shippingOptions,
+  cartId,
   isGuest = false,
 }) => {
-  /* TODO: check this state */
-  const [returnItems, setReturnItems] = React.useState<
-    Record<string, ReturnItemState>
-  >(() => {
-    const initial: Record<string, ReturnItemState> = {}
-    order.items?.forEach((item) => {
-      initial[item.id] = {
-        id: item.id,
-        isSelected: false,
-        returnQuantity: 1,
-        maxQuantity: item.quantity,
-        reason: undefined,
-        otherReasonText: "",
-        unitPrice: item.unit_price ?? 0,
-      }
-    })
-    return initial
+  const [selectedItems, setSelectedItems] = React.useState<
+    ReturnItemSelection[]
+  >([])
+  const [selectedShippingOption, setSelectedShippingOption] = React.useState("")
+  const [termsAccepted, setTermsAccepted] = React.useState(false)
+  const [state, formAction] = React.useActionState(createReturnRequest, {
+    success: false,
+    error: null,
+    return: null,
   })
 
-  const [refundMethod, setRefundMethod] =
-    React.useState<RefundMethod>("original_payment")
-  const [shippingMethod, setShippingMethod] =
-    React.useState<ReturnShippingMethod>("prepaid_label")
-  const [termsAccepted, setTermsAccepted] = React.useState(false)
-  const [isSubmitting, setIsSubmitting] = React.useState(false)
-  const [isSubmitted, setIsSubmitted] = React.useState(false)
-
-  // Calculate selected items and totals
-  const selectedItems = Object.values(returnItems).filter(
-    (item) => item.isSelected
-  )
-  const totalReturnValue = selectedItems.reduce(
-    (sum, item) => sum + item.unitPrice * item.returnQuantity,
-    0
+  const itemsWithDeliveryStatus = enhanceItemsWithReturnStatus(
+    order.items || []
   )
 
-  const updateItem = (itemId: string, updates: Partial<ReturnItemState>) => {
-    setReturnItems((prev) => ({
-      ...prev,
-      [itemId]: { ...prev[itemId], ...updates },
-    }))
+  const handleItemSelection = ({
+    id,
+    quantity,
+    return_reason_id,
+    note,
+  }: ReturnItemSelection) => {
+    setSelectedItems((prev) => {
+      const existing = prev.find((item) => item.id === id)
+      if (existing) {
+        if (quantity === 0) {
+          return prev.filter((item) => item.id !== id)
+        }
+        return prev.map((item) => {
+          return item.id === id
+            ? { ...item, quantity, return_reason_id, note }
+            : item
+        })
+      } else if (quantity > 0) {
+        return [...prev, { id, quantity, return_reason_id, note }]
+      }
+      return prev
+    })
   }
 
-  const handleSubmit = async () => {
-    setIsSubmitting(true)
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    setIsSubmitting(false)
-    setIsSubmitted(true)
+  const handleSubmit = (formData: FormData) => {
+    formData.append("order_id", order.id)
+    formData.append("items", JSON.stringify(selectedItems))
+    formData.append("return_shipping_option_id", selectedShippingOption)
+    const locationId = shippingOptions.find(
+      (opt) => opt.id === selectedShippingOption
+      //@ts-ignore
+    )?.service_zone.fulfillment_set.location.id
+    formData.append("location_id", locationId)
+    formAction(formData)
   }
 
-  const isFormValid =
-    selectedItems.length > 0 &&
-    selectedItems.every((item) => item.reason) &&
-    termsAccepted
-
-  if (isSubmitted) {
+  if (state.success && state.return) {
     return (
       <div
         className={twJoin(
@@ -151,208 +163,92 @@ export const ReturnCreationTemplate: React.FC<ReturnCreationTemplateProps> = ({
     >
       <h1 className="text-md md:text-lg mb-8 md:mb-13">Return items</h1>
 
-      <div className="flex flex-col gap-6 mb-13">
-        <div className="rounded-xs border border-grayscale-200 p-4">
-          <div className="flex gap-4 items-center mb-4">
-            <Icon name="receipt" className="w-4 h-4" />
-            <p className="font-medium">Order #{order.display_id}</p>
-          </div>
-          <div className="flex flex-wrap gap-x-8 gap-y-2 text-sm text-grayscale-500">
-            <p>Order date: {new Date(order.created_at).toLocaleDateString()}</p>
-            {typeof order.metadata?.delivered_at === "string" && (
+      <form action={handleSubmit}>
+        <div className="flex flex-col gap-6 mb-13">
+          <div className="rounded-xs border border-grayscale-200 p-4">
+            <div className="flex gap-4 items-center mb-4">
+              <Icon name="receipt" className="w-4 h-4" />
+              <p className="font-medium">Order #{order.display_id}</p>
+            </div>
+            <div className="flex flex-wrap gap-x-8 gap-y-2 text-sm text-grayscale-500">
               <p>
-                Delivered:{" "}
-                {new Date(order.metadata.delivered_at).toLocaleDateString()}
+                Order date: {new Date(order.created_at).toLocaleDateString()}
               </p>
-            )}
+              {typeof order.metadata?.delivered_at === "string" && (
+                <p>
+                  Delivered:{" "}
+                  {new Date(order.metadata.delivered_at).toLocaleDateString()}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="rounded-xs border border-grayscale-200 p-4">
+            <h2 className="font-semibold mb-4">Select Items to Return</h2>
+            <ReturnItemSelector
+              items={itemsWithDeliveryStatus}
+              returnReasons={returnReasons}
+              onItemSelectionChange={handleItemSelection}
+              selectedItems={selectedItems}
+              currencyCode={order.currency_code}
+            />
+          </div>
+          <div className="rounded-xs border border-grayscale-200 p-4">
+            <h2 className="font-semibold mb-4">Return Shipping</h2>
+            <ReturnShippingSelector
+              shippingOptions={shippingOptions}
+              selectedOption={selectedShippingOption}
+              onOptionSelect={setSelectedShippingOption}
+              cartId={cartId}
+              currencyCode={order.currency_code}
+            />
+          </div>
+
+          <div className="rounded-xs border border-grayscale-200 p-4">
+            <UiCheckbox isSelected={termsAccepted} onChange={setTermsAccepted}>
+              <UiCheckboxBox>
+                <UiCheckboxIcon />
+              </UiCheckboxBox>
+              <span>
+                I have read and agree to the{" "}
+                <Link href="/return-policy" className="underline">
+                  Return Policy
+                </Link>{" "}
+                and{" "}
+                <Link href="/terms-of-use" className="underline">
+                  Terms and Conditions
+                </Link>
+              </span>
+            </UiCheckbox>
           </div>
         </div>
-
-        <div className="rounded-xs border border-grayscale-200 p-4">
-          <h2 className="font-semibold mb-4">Select Items to Return</h2>
-          <div className="flex flex-col gap-4">
-            {order.items?.map((item) => {
-              const itemState = returnItems[item.id]
-              return (
-                <div
-                  key={item.id}
-                  className={`flex flex-col gap-4 p-4 border rounded-xs transition-colors ${
-                    itemState?.isSelected
-                      ? "border-black"
-                      : "border-grayscale-200"
-                  }`}
-                >
-                  <div className="flex gap-4">
-                    <UiCheckbox
-                      isSelected={itemState?.isSelected ?? false}
-                      onChange={(selected) =>
-                        updateItem(item.id, { isSelected: selected })
-                      }
-                      className="self-start mt-1"
-                    >
-                      <UiCheckboxBox>
-                        <UiCheckboxIcon />
-                      </UiCheckboxBox>
-                    </UiCheckbox>
-
-                    {item.thumbnail && (
-                      <div className="w-20 aspect-[3/4] relative overflow-hidden rounded-2xs shrink-0">
-                        <Image
-                          src={item.thumbnail}
-                          alt={item.title}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                    )}
-
-                    <div className="flex-1 flex flex-col gap-2">
-                      <div>
-                        <p className="font-medium">{item.product_title}</p>
-                        {item.variant?.options?.map((option) => (
-                          <p
-                            key={option.id}
-                            className="text-xs text-grayscale-500"
-                          >
-                            <span>{option.option?.title}: </span>
-                            {option.value}
-                          </p>
-                        ))}
-                      </div>
-                      <div className="flex flex-wrap gap-4 items-center justify-between mt-auto">
-                        <p className="text-xs text-grayscale-500">
-                          Original quantity: {item.quantity}
-                        </p>
-                        <p className="font-medium">
-                          {convertToLocale({
-                            currency_code: order.currency_code,
-                            amount: item.unit_price ?? 0,
-                          })}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {itemState?.isSelected && (
-                    <div className="ml-8 flex flex-col gap-4 pt-4 border-t border-grayscale-200">
-                      <div className="flex flex-wrap gap-4 items-center justify-between">
-                        <label className="text-sm text-grayscale-600">
-                          Quantity to return:
-                        </label>
-                        <NumberField
-                          size="sm"
-                          value={itemState.returnQuantity}
-                          onChange={(value) =>
-                            updateItem(item.id, { returnQuantity: value })
-                          }
-                          minValue={1}
-                          maxValue={item.quantity}
-                          className="w-28"
-                        />
-                      </div>
-
-                      <div className="flex flex-col gap-2">
-                        <label className="text-sm text-grayscale-600">
-                          Reason for return:{" "}
-                          <span className="text-red-600">*</span>
-                        </label>
-                        <ReturnReasonSelect
-                          value={itemState.reason}
-                          onChange={(reason) => updateItem(item.id, { reason })}
-                          returnReasons={returnReasons}
-                        />
-                      </div>
-                      {/* TODO: add TextArea component */}
-                      {itemState.reason === "other" && (
-                        <div className="flex flex-col gap-2">
-                          <label className="text-sm text-grayscale-600">
-                            Please explain:
-                          </label>
-                          <textarea
-                            value={itemState.otherReasonText}
-                            onChange={(e) =>
-                              updateItem(item.id, {
-                                otherReasonText: e.target.value,
-                              })
-                            }
-                            className="w-full h-20 p-3 text-sm border border-grayscale-200 rounded-xs focus:border-grayscale-500 focus:outline-none resize-none"
-                            placeholder="Please provide more details..."
-                          />
-                        </div>
-                      )}
-
-                      <div className="flex justify-between items-center pt-2 border-t border-grayscale-100">
-                        <span className="text-sm text-grayscale-600">
-                          Refund amount:
-                        </span>
-                        <span className="font-medium">
-                          {convertToLocale({
-                            currency_code: order.currency_code,
-                            amount:
-                              (item.unit_price ?? 0) * itemState.returnQuantity,
-                          })}
-                        </span>
-                      </div>
-                    </div>
-                  )}
-                </div>
+        <div className="lg:sticky lg:top-32">
+          <ReturnSummary
+            itemsCount={selectedItems.length}
+            totalReturnValue={selectedItems.reduce((total, selected) => {
+              const item = itemsWithDeliveryStatus.find(
+                (itm) => itm.id === selected.id
               )
-            })}
-          </div>
-        </div>
-        <div className="rounded-xs border border-grayscale-200 p-4">
-          <h2 className="font-semibold mb-4">Refund Method</h2>
-          <RefundMethodSelect value={refundMethod} onChange={setRefundMethod} />
-        </div>
-        <div className="rounded-xs border border-grayscale-200 p-4">
-          <h2 className="font-semibold mb-4">Return Shipping</h2>
-          <ReturnShippingOptions
-            value={shippingMethod}
-            onChange={setShippingMethod}
+              if (!item) return total
+              return total + item.unit_price * selected.quantity
+            }, 0)}
+            currencyCode={order.currency_code}
           />
+          <SubmitButton
+            isDisabled={
+              selectedItems.length === 0 ||
+              selectedShippingOption === "" ||
+              !termsAccepted
+            }
+            selectedItemsCount={selectedItems.length}
+          />
+          {state.error && (
+            <div className="bg-red-50 border border-red-200 rounded-md p-4 mt-4">
+              <p className="text-red-800 text-sm">{state.error}</p>
+            </div>
+          )}
         </div>
-        <div className="rounded-xs border border-grayscale-200 p-4">
-          <UiCheckbox isSelected={termsAccepted} onChange={setTermsAccepted}>
-            <UiCheckboxBox>
-              <UiCheckboxIcon />
-            </UiCheckboxBox>
-            <span>
-              I have read and agree to the{" "}
-              <Link href="/return-policy" className="underline">
-                Return Policy
-              </Link>{" "}
-              and{" "}
-              <Link href="/terms-of-use" className="underline">
-                Terms and Conditions
-              </Link>
-            </span>
-          </UiCheckbox>
-        </div>
-      </div>
-      <div className="lg:sticky lg:top-32">
-        <ReturnSummary
-          itemsCount={selectedItems.length}
-          totalReturnValue={totalReturnValue}
-          currencyCode={order.currency_code}
-          refundMethod={refundMethod}
-          storeCreditBonus={10}
-        />
-        <Button
-          isFullWidth
-          className="mt-6"
-          isVisuallyDisabled={!isFormValid}
-          isLoading={isSubmitting}
-          loadingText="Submitting..."
-          onPress={handleSubmit}
-        >
-          Submit Return Request
-        </Button>
-        {selectedItems.length === 0 && (
-          <p className="text-xs text-grayscale-500 text-center mt-3">
-            Select at least one item to return
-          </p>
-        )}
-      </div>
+      </form>
     </div>
   )
 }

@@ -50,3 +50,47 @@ export const enhanceItemsWithReturnStatus = (
     }
   })
 }
+
+export type OrderReturnStatus = {
+  hasReturns: boolean
+  totalDelivered: number
+  totalReturnRequested: number
+  totalReturnReceived: number
+  isFullyReturned: boolean
+  isPartiallyReturned: boolean
+  hasReturnRequests: boolean
+}
+
+export const getOrderReturnStatus = (
+  order: HttpTypes.StoreOrder
+): OrderReturnStatus => {
+  let totalDelivered = 0
+  let totalReturnRequested = 0
+  let totalReturnReceived = 0
+
+  for (const item of order.items || []) {
+    const detail = item.detail
+    if (!detail) continue
+
+    totalDelivered += detail.delivered_quantity || 0
+    totalReturnRequested += detail.return_requested_quantity || 0
+    totalReturnReceived += detail.return_received_quantity || 0
+  }
+
+  const hasReturns = totalReturnRequested > 0 || totalReturnReceived > 0
+  const isFullyReturned =
+    totalDelivered > 0 && totalReturnReceived >= totalDelivered
+  const isPartiallyReturned =
+    totalReturnReceived > 0 && totalReturnReceived < totalDelivered
+  const hasReturnRequests = totalReturnRequested > 0
+
+  return {
+    hasReturns,
+    totalDelivered,
+    totalReturnRequested,
+    totalReturnReceived,
+    isFullyReturned,
+    isPartiallyReturned,
+    hasReturnRequests,
+  }
+}

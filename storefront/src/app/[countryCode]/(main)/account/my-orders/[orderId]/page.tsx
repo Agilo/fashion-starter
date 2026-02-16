@@ -11,7 +11,7 @@ import { Icon } from "@/components/Icon"
 import { ButtonLink } from "@/components/Button"
 import { getCustomer } from "@lib/data/customer"
 import { redirect } from "next/navigation"
-import { hasReturnableItems } from "@lib/util/returns"
+import { hasReturnableItems, getOrderReturnStatus } from "@lib/util/returns"
 
 export const metadata: Metadata = {
   title: "Account - Order Details",
@@ -19,6 +19,82 @@ export const metadata: Metadata = {
 }
 
 const OrderStatus: React.FC<{ order: HttpTypes.StoreOrder }> = ({ order }) => {
+  const returnStatus = getOrderReturnStatus(order)
+
+  if (returnStatus.isFullyReturned) {
+    return (
+      <UiTagList>
+        <UiTag isActive iconName="package" className="self-start mt-auto">
+          Packing
+        </UiTag>
+        <UiTagListDivider />
+        <UiTag isActive iconName="truck" className="self-start mt-auto">
+          Delivering
+        </UiTag>
+        <UiTagListDivider />
+        <UiTag isActive iconName="check" className="self-start mt-auto">
+          Delivered
+        </UiTag>
+        <UiTagListDivider />
+        <UiTag isActive iconName="refresh" className="self-start mt-auto">
+          Return in Progress
+        </UiTag>
+        <UiTagListDivider />
+        <UiTag isActive iconName="refresh" className="self-start mt-auto">
+          Fully Returned
+        </UiTag>
+      </UiTagList>
+    )
+  }
+
+  if (returnStatus.hasReturnRequests) {
+    return (
+      <UiTagList>
+        <UiTag isActive iconName="package" className="self-start mt-auto">
+          Packing
+        </UiTag>
+        <UiTagListDivider />
+        <UiTag isActive iconName="truck" className="self-start mt-auto">
+          Delivering
+        </UiTag>
+        <UiTagListDivider />
+        <UiTag isActive iconName="check" className="self-start mt-auto">
+          Delivered
+        </UiTag>
+        <UiTagListDivider />
+        <UiTag isActive iconName="refresh" className="self-start mt-auto">
+          Return in Progress
+        </UiTag>
+      </UiTagList>
+    )
+  }
+
+  if (returnStatus.isPartiallyReturned) {
+    return (
+      <UiTagList>
+        <UiTag isActive iconName="package" className="self-start mt-auto">
+          Packing
+        </UiTag>
+        <UiTagListDivider />
+        <UiTag isActive iconName="truck" className="self-start mt-auto">
+          Delivering
+        </UiTag>
+        <UiTagListDivider />
+        <UiTag isActive iconName="check" className="self-start mt-auto">
+          Delivered
+        </UiTag>
+        <UiTagListDivider />
+        <UiTag isActive iconName="refresh" className="self-start mt-auto">
+          Return in Progress
+        </UiTag>
+        <UiTagListDivider />
+        <UiTag isActive iconName="refresh" className="self-start mt-auto">
+          Partially Returned
+        </UiTag>
+      </UiTagList>
+    )
+  }
+
   if (order.fulfillment_status === "canceled") {
     return (
       <UiTagList>
@@ -100,6 +176,7 @@ export default async function AccountOrderPage({
   const order = await retrieveOrder(orderId)
 
   const hasReturnableItemsInOrder = hasReturnableItems(order)
+  const returnStatus = getOrderReturnStatus(order)
 
   return (
     <>
@@ -116,10 +193,17 @@ export default async function AccountOrderPage({
             <p>{new Date(order.created_at).toLocaleDateString()}</p>
           </div>
         </div>
-        <div className="rounded-xs border border-grayscale-200 p-4">
-          <div className="flex flex-wrap gap-x-10 gap-y-8 justify-between items-end w-full">
-            <OrderStatus order={order} />
-          </div>
+        <div className="rounded-xs border border-grayscale-200 p-4 flex flex-wrap gap-x-10 gap-y-8 justify-between items-end w-full">
+          <OrderStatus order={order} />
+          {returnStatus.hasReturns && (
+            <ButtonLink
+              href={`/account/my-orders/returns/${order.id}`}
+              variant="outline"
+              size="sm"
+            >
+              Return Details
+            </ButtonLink>
+          )}
         </div>
         <div className="flex max-sm:flex-col gap-x-4 gap-y-6 md:flex-col lg:flex-row">
           <div className="flex-1 overflow-hidden rounded-xs border border-grayscale-200 p-4">

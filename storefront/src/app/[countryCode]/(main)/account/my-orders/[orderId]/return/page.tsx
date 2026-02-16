@@ -3,8 +3,10 @@ import { redirect } from "next/navigation"
 
 import { getCustomer } from "@lib/data/customer"
 import { retrieveOrder } from "@lib/data/orders"
-import { listReturnReasons } from "@lib/data/return-reasons"
 import { ReturnCreationTemplate } from "@modules/returns/templates/ReturnCreationTemplate"
+import { listReturnReasons, listReturnShippingOptions } from "@lib/data/returns"
+import { HttpTypes } from "@medusajs/types/dist/bundles"
+import { hasReturnableItems } from "@lib/util/returns"
 
 export const metadata: Metadata = {
   title: "Account - Return Items",
@@ -23,19 +25,29 @@ export default async function ReturnPage({ params }: Props) {
   }
 
   const { orderId } = await params
-  const order = await retrieveOrder(orderId)
+  const order = (await retrieveOrder(orderId)) as
+    | (HttpTypes.StoreOrder & { cart: { id: string } })
+    | null
 
   if (!order) {
     redirect("/account/my-orders")
   }
 
-  const isEligible = order.fulfillment_status === "delivered"
-
-  if (!isEligible) {
+  if (!hasReturnableItems(order)) {
     redirect(`/account/my-orders/${orderId}`)
   }
 
-  const returnReasons = await listReturnReasons()
+  const [shippingOptions, returnReasons] = await Promise.all([
+    listReturnShippingOptions(order.cart.id),
+    listReturnReasons(),
+  ])
 
-  return <ReturnCreationTemplate order={order} returnReasons={returnReasons} />
+  return (
+    <ReturnCreationTemplate
+      order={order}
+      returnReasons={returnReasons}
+      shippingOptions={shippingOptions}
+      cartId={order?.cart?.id || ""}
+    />
+  )
 }

@@ -11,7 +11,7 @@ import { UiTag } from "@/components/ui/Tag"
 import { LocalizedLink } from "@/components/LocalizedLink"
 import { getCustomer } from "@lib/data/customer"
 import { redirect } from "next/navigation"
-import { hasReturnableItems } from "@lib/util/returns"
+import { hasReturnableItems, getOrderReturnStatus } from "@lib/util/returns"
 
 export const metadata: Metadata = {
   title: "Account - Orders",
@@ -22,6 +22,44 @@ const OrderStatus: React.FC<{
   order: HttpTypes.StoreOrder
   className?: string
 }> = ({ order, className }) => {
+  const returnStatus = getOrderReturnStatus(order)
+
+  if (returnStatus.hasReturnRequests) {
+    return (
+      <UiTag
+        iconName="refresh"
+        isActive
+        className={twMerge("self-start mt-auto", className)}
+      >
+        Return in Progress
+      </UiTag>
+    )
+  }
+
+  if (returnStatus.isFullyReturned) {
+    return (
+      <UiTag
+        iconName="refresh"
+        isActive
+        className={twMerge("self-start mt-auto", className)}
+      >
+        Fully Returned
+      </UiTag>
+    )
+  }
+
+  if (returnStatus.isPartiallyReturned) {
+    return (
+      <UiTag
+        iconName="refresh"
+        isActive
+        className={twMerge("self-start mt-auto", className)}
+      >
+        Partially Returned
+      </UiTag>
+    )
+  }
+
   if (order.fulfillment_status === "canceled") {
     return (
       <UiTag

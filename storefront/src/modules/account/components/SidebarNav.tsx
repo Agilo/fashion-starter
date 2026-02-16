@@ -32,15 +32,6 @@ export const SidebarNav: React.FC = () => {
       >
         My orders
       </LocalizedLink>
-      <LocalizedLink
-        href="/account/returns"
-        className={twJoin(
-          "flex items-start break py-4 max-md:whitespace-nowrap",
-          currentPath.startsWith("/account/returns") && "font-semibold"
-        )}
-      >
-        My returns
-      </LocalizedLink>
     </>
   )
 }
