@@ -1,7 +1,5 @@
 import { retrieveCart } from "@lib/data/cart"
-import { CartSnapshot, WebMCPTool, WebMCPToolResult } from "../types"
-import { StoreCartLineItem, StoreCartPromotion } from "@medusajs/types"
-import { boolean } from "zod"
+import { WebMCPTool, WebMCPToolResult } from "../types"
 
 export interface NavigateToProductInput {
   handle: string

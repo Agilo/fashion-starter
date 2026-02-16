@@ -6,11 +6,6 @@ import {
 } from "@lib/data/cart"
 import { getBaseURL } from "@lib/util/env"
 import {
-  StoreCart,
-  StoreCartLineItem,
-  StoreCartPromotion,
-} from "@medusajs/types"
-import {
   CartSnapshot,
   WebMCPTool,
   WebMCPToolContext,
