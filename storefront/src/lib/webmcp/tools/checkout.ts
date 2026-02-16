@@ -1,11 +1,14 @@
-import { WebMCPTool, WebMCPToolResult } from "../types"
+import { retrieveCart } from "@lib/data/cart"
+import { CartSnapshot, WebMCPTool, WebMCPToolResult } from "../types"
+import { StoreCartLineItem, StoreCartPromotion } from "@medusajs/types"
+import { boolean } from "zod"
 
 export interface NavigateToProductInput {
   handle: string
   options?: Record<string, string>
 }
 
-type NavigateToProductData = {
+type NavigateToResult = {
   path: string
 }
 
@@ -19,7 +22,7 @@ export const navigateToProduct = async (
       push: (href: string) => void
     }
   }
-): Promise<WebMCPToolResult<NavigateToProductData>> => {
+): Promise<WebMCPToolResult<NavigateToResult>> => {
   const normalizedOptionKeys = new Set(
     Object.keys(input.options ?? {}).map((key) => normalizeOptionKey(key))
   )
@@ -84,7 +87,7 @@ export const navigateToCart = async (
       push: (href: string) => void
     }
   }
-): Promise<WebMCPToolResult<NavigateToProductData>> => {
+): Promise<WebMCPToolResult<NavigateToResult>> => {
   const path = "/cart"
 
   try {
@@ -111,9 +114,60 @@ export const navigateToCart = async (
   }
 }
 
+export const checkoutPrepare = async (
+  _input: Record<string, never>,
+  context?: {
+    router?: {
+      push: (href: string) => void
+    }
+  }
+): Promise<WebMCPToolResult<NavigateToResult>> => {
+  const path = "/checkout"
+
+  try {
+    const cart = await retrieveCart()
+
+    if (!cart) {
+      return {
+        ok: false,
+        error: {
+          code: "CART_MISSING",
+          message: "Cart is missing",
+        },
+      }
+    }
+
+    if (!cart.items || cart.items.length < 1) {
+      return {
+        ok: false,
+        error: {
+          code: "CART_EMPTY",
+          message: "Cart is empty",
+        },
+      }
+    }
+
+    context?.router?.push(path)
+
+    return {
+      ok: true,
+      data: { path },
+      meta: { tool: "checkout.prepare" },
+    }
+  } catch (error) {
+    return {
+      ok: false,
+      error: {
+        code: "CHECKOUT_PREPARE_FAILED",
+        message: "Failed to prepare checkout",
+      },
+    }
+  }
+}
+
 export const navigateToProductTool: WebMCPTool<
   NavigateToProductInput,
-  NavigateToProductData
+  NavigateToResult
 > = {
   name: "navigation.toProduct",
   description:
@@ -140,7 +194,7 @@ export const navigateToProductTool: WebMCPTool<
 
 export const navigateToCartTool: WebMCPTool<
   Record<string, never>,
-  NavigateToProductData
+  NavigateToResult
 > = {
   name: "navigation.toCart",
   description: "Navigate to shopping cart page",
@@ -153,4 +207,22 @@ export const navigateToCartTool: WebMCPTool<
     additionalProperties: false,
   },
   handler: navigateToCart,
+}
+
+export const checkoutPrepareTool: WebMCPTool<
+  Record<string, never>,
+  NavigateToResult
+> = {
+  name: "checkout.prepare",
+  description:
+    "Validate that the shopping cart has items and navigate to the checkout page. Performs pre-checkout validation (checks cart exists and is not empty) before proceeding. Returns error if cart is missing or empty.",
+  annotations: {
+    readOnlyHint: false,
+  },
+  inputSchema: {
+    type: "object",
+    properties: {},
+    additionalProperties: false,
+  },
+  handler: checkoutPrepare,
 }

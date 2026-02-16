@@ -1,6 +1,10 @@
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime"
 import { isWebMCPSupported } from "./is-supported"
-import { navigateToCartTool, navigateToProductTool } from "./tools/checkout"
+import {
+  checkoutPrepareTool,
+  navigateToCartTool,
+  navigateToProductTool,
+} from "./tools/checkout"
 import { productsSearchTool } from "./tools/products-search"
 import { cartManageTool } from "./tools/cart"
 import { WebMCPClient } from "./types"
@@ -65,6 +69,7 @@ export const registerWebMCPTools = (router?: AppRouterInstance) => {
       cartManageTool,
       applyPromotionTool,
       removePromotionTool,
+      checkoutPrepareTool,
     ] as RegisterableWebMCPTool[]
 
     modelContext.provideContext({

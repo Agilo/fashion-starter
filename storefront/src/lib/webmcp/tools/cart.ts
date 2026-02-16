@@ -10,7 +10,13 @@ import {
   StoreCartLineItem,
   StoreCartPromotion,
 } from "@medusajs/types"
-import { WebMCPTool, WebMCPToolContext, WebMCPToolResult } from "../types"
+import {
+  CartSnapshot,
+  WebMCPTool,
+  WebMCPToolContext,
+  WebMCPToolResult,
+} from "../types"
+import { mapCartToResult } from "../utils"
 
 interface CartManageInput {
   action: "add" | "remove" | "update" | "view"
@@ -19,29 +25,10 @@ interface CartManageInput {
   line_id?: string
 }
 
-interface CartManageData {
-  cart: {
-    id: string
-    currency_code: string
-    subtotal: number
-    total: number
-    discount_total?: number
-    items: Array<{
-      id: string
-      title: string
-      variant_id: string
-      quantity: number
-      unit_price: number
-      total: number
-    }>
-    discount_codes?: string[]
-  }
-}
-
 export const cartManage = async (
   input: CartManageInput,
   context?: WebMCPToolContext
-): Promise<WebMCPToolResult<CartManageData>> => {
+): Promise<WebMCPToolResult<CartSnapshot>> => {
   const { action, variant_id: variantId, quantity = 1, line_id: lineId } = input
   const pathNameParts = window.location.href
     .replace(getBaseURL(), "")
@@ -146,32 +133,7 @@ export const cartManage = async (
   }
 }
 
-const mapCartToResult = (cart: StoreCart) => {
-  return {
-    cart: {
-      id: cart.id,
-      currency_code: cart.currency_code,
-      subtotal: cart.subtotal ?? 0,
-      total: cart.total ?? 0,
-      discount_total: cart.discount_total,
-      items:
-        cart.items?.map((item: StoreCartLineItem) => ({
-          id: item.id,
-          title: item.title,
-          variant_id: item.variant_id ?? "",
-          quantity: item.quantity,
-          unit_price: item.unit_price,
-          total: item.total ?? 0,
-        })) || [],
-      discount_codes:
-        cart.promotions
-          ?.map((p: StoreCartPromotion) => p.code)
-          .filter((code): code is string => code !== undefined) || [],
-    },
-  }
-}
-
-export const cartManageTool: WebMCPTool<CartManageInput, CartManageData> = {
+export const cartManageTool: WebMCPTool<CartManageInput, CartSnapshot> = {
   name: "cart.manage",
   description: "Manage shopping cart (add, remove, update, view)",
   inputSchema: {
