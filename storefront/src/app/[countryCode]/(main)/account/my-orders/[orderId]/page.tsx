@@ -65,6 +65,10 @@ const OrderStatus: React.FC<{ order: HttpTypes.StoreOrder }> = ({ order }) => {
         <UiTag isActive iconName="refresh" className="self-start mt-auto">
           Return in Progress
         </UiTag>
+        <UiTagListDivider />
+        <UiTag iconName="refresh" className="self-start mt-auto">
+          Fully/Partially Returned
+        </UiTag>
       </UiTagList>
     )
   }
@@ -197,7 +201,7 @@ export default async function AccountOrderPage({
           <OrderStatus order={order} />
           {returnStatus.hasReturns && (
             <ButtonLink
-              href={`/account/my-orders/returns/${order.id}`}
+              href={`/account/my-orders/${order.id}/return`}
               variant="outline"
               size="sm"
             >
@@ -321,7 +325,7 @@ export default async function AccountOrderPage({
             </div>
             {hasReturnableItemsInOrder && (
               <ButtonLink
-                href={`/account/my-orders/${order.id}/return`}
+                href={`/account/my-orders/${order.id}/return/create`}
                 variant="outline"
                 size="sm"
               >

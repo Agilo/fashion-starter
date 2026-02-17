@@ -190,7 +190,7 @@ export default async function AccountMyOrdersPage({ searchParams }: PageProps) {
                       {hasReturnableItemsInOrder && (
                         <>
                           <ButtonLink
-                            href={`/account/my-orders/${order.id}/return`}
+                            href={`/account/my-orders/${order.id}/return/create`}
                             variant="outline"
                             size="md"
                             className="sm:hidden"
@@ -198,7 +198,7 @@ export default async function AccountMyOrdersPage({ searchParams }: PageProps) {
                             Return
                           </ButtonLink>
                           <ButtonLink
-                            href={`/account/my-orders/${order.id}/return`}
+                            href={`/account/my-orders/${order.id}/return/create`}
                             variant="outline"
                             size="sm"
                             className="max-sm:hidden"
