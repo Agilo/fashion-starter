@@ -23,17 +23,18 @@ const Item = ({ item, className }: ItemProps) => {
   const maxQuantity = item.variant ? getVariantItemsInStock(item.variant) : 0
 
   const [quantity, setQuantity] = React.useState(item.quantity)
+  const timerRef = React.useRef<ReturnType<typeof setTimeout>>(null)
 
-  React.useEffect(() => {
-    const handler = setTimeout(() => {
-      if (quantity !== item.quantity) {
-        mutateAsync({ lineId: item.id, quantity })
-      }
-    }, 500)
-
-    return () => clearTimeout(handler)
-     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [quantity, item])
+  const handleQuantityChange = React.useCallback(
+    (newQuantity: number) => {
+      setQuantity(newQuantity)
+      if (timerRef.current) clearTimeout(timerRef.current)
+      timerRef.current = setTimeout(() => {
+        mutateAsync({ lineId: item.id, quantity: newQuantity })
+      }, 500)
+    },
+    [item.id, mutateAsync]
+  )
 
   return (
     <div
@@ -64,11 +65,12 @@ const Item = ({ item, className }: ItemProps) => {
             <LineItemUnitPrice item={item} className="sm:hidden" />
           </div>
           <NumberField
+            key={item.id}
             size="sm"
             minValue={1}
             maxValue={maxQuantity}
             value={quantity}
-            onChange={setQuantity}
+            onChange={handleQuantityChange}
             isDisabled={isPending}
             className="w-25"
             aria-label="Quantity"
