@@ -23,7 +23,7 @@ const Item = ({ item, className }: ItemProps) => {
   const maxQuantity = item.variant ? getVariantItemsInStock(item.variant) : 0
 
   const [quantity, setQuantity] = React.useState(item.quantity)
-  const timerRef = React.useRef<ReturnType<typeof setTimeout>>(null)
+  const timerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const handleQuantityChange = React.useCallback(
     (newQuantity: number) => {
