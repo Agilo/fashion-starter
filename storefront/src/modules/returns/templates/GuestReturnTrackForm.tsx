@@ -7,35 +7,36 @@ import { Button } from "@/components/Button"
 import { Form, InputField } from "@/components/Forms"
 import { LocalizedLink } from "@/components/LocalizedLink"
 import { Layout } from "@/components/Layout"
+import { trackGuestReturn } from "@lib/data/returns"
 
 const trackingSchema = z.object({
   orderId: z.string().min(1, "Order ID is required"),
-  email: z.string().email("Please enter a valid email address"),
+  email: z.email("Please enter a valid email address"),
 })
 
-type TrackingFormValues = z.infer<typeof trackingSchema>
+type FormData = z.infer<typeof trackingSchema>
 
-type GuestReturnTrackingTemplateProps = {
-  onReturnFound?: (orderId: string, email: string) => void
-}
-
-export const GuestReturnTrackingTemplate: React.FC<
-  GuestReturnTrackingTemplateProps
-> = ({ onReturnFound }) => {
+export const GuestReturnTrackForm: React.FC = () => {
   const [error, setError] = React.useState<string | null>(null)
   const [isLoading, setIsLoading] = React.useState(false)
 
-  const handleSubmit = async (values: TrackingFormValues) => {
+  const handleSubmit = async (data: FormData) => {
     setError(null)
     setIsLoading(true)
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    try {
+      await trackGuestReturn(data.orderId, data.email)
+    } catch (err) {
+      if (err instanceof Error && err.message.includes("NEXT_REDIRECT")) {
+        return
+      }
 
-    setIsLoading(false)
-
-    if (onReturnFound) {
-      onReturnFound(values.orderId, values.email)
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Unable to find return. Please check your details and try again."
+      )
+      setIsLoading(false)
     }
   }
 
@@ -59,19 +60,14 @@ export const GuestReturnTrackingTemplate: React.FC<
             inputProps={{ uiSize: "lg" }}
             className="mb-6"
           />
-          {error && (
-            <div className="flex items-center gap-2 p-3 bg-red-50 text-red-700 rounded-xs text-sm">
-              <Icon name="info" className="w-4 h-4 shrink-0" />
-              <p>{error}</p>
-            </div>
-          )}
+          {error && <p className="text-red-primary text-sm mb-6">{error}</p>}
           <Button
             type="submit"
             isFullWidth
             isLoading={isLoading}
-            loadingText="Looking up order..."
+            loadingText="Looking up return..."
           >
-            Find My Order
+            Track Return
           </Button>
         </Form>
         <div className="mt-8 text-center text-grayscale-500">

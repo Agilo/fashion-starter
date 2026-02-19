@@ -16,7 +16,7 @@ const guestAccessSchema = z.object({
 
 type FormData = z.infer<typeof guestAccessSchema>
 
-export const GuestReturnSearchTemplate: React.FC = () => {
+export const GuestReturnCreateForm: React.FC = () => {
   const [error, setError] = React.useState<string | null>(null)
   const [isLoading, setIsLoading] = React.useState(false)
 

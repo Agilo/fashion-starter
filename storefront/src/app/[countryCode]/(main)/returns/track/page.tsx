@@ -1,5 +1,5 @@
-import { GuestReturnTrackingTemplate } from "@modules/returns/templates/GuestReturnTrackingTemplate"
 import { Metadata } from "next"
+import { GuestReturnTrackForm } from "@modules/returns/templates/GuestReturnTrackForm"
 
 export const metadata: Metadata = {
   title: "Track Your Return",
@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 }
 
 export default function GuestReturnTrackingPage() {
-  return <GuestReturnTrackingTemplate />
+  return <GuestReturnTrackForm />
 }

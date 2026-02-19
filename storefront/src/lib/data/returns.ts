@@ -155,3 +155,43 @@ export const verifyGuestOrderAccess = async (
     )
   }
 }
+
+export const trackGuestReturn = async (orderId: string, email: string) => {
+  try {
+    const order = await sdk.client
+      .fetch<HttpTypes.StoreOrderResponse>(`/store/orders/${orderId}`, {
+        method: "GET",
+        cache: "no-store",
+      })
+      .then(({ order }) => order)
+
+    if (order.email?.toLowerCase() !== email.toLowerCase()) {
+      throw new Error(
+        "Order not found. Please check your order ID and email address."
+      )
+    }
+
+    const hasReturns = order.items?.some((item) => {
+      const returnRequestedQty = item.detail?.return_requested_quantity || 0
+      const returnReceivedQty = item.detail?.return_received_quantity || 0
+      return returnRequestedQty > 0 || returnReceivedQty > 0
+    })
+
+    if (!hasReturns) {
+      throw new Error(
+        "No return found for this order. Please check your order ID."
+      )
+    }
+
+    redirect(`/returns/track/${orderId}`)
+  } catch (err) {
+    if (err instanceof Error && err.message.includes("NEXT_REDIRECT")) {
+      throw err
+    }
+    throw new Error(
+      err instanceof Error
+        ? err.message
+        : "Unable to find return. Please check your details and try again."
+    )
+  }
+}
