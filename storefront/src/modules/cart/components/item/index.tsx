@@ -19,7 +19,7 @@ type ItemProps = {
 
 const Item = ({ item, className }: ItemProps) => {
   const { handle } = item.variant?.product ?? {}
-  const { mutateAsync, isPending, error } = useUpdateLineItem()
+  const { mutate, isPending, error } = useUpdateLineItem()
   const maxQuantity = item.variant ? getVariantItemsInStock(item.variant) : 0
 
   const [quantity, setQuantity] = React.useState(item.quantity)
@@ -30,10 +30,10 @@ const Item = ({ item, className }: ItemProps) => {
       setQuantity(newQuantity)
       if (timerRef.current) clearTimeout(timerRef.current)
       timerRef.current = setTimeout(() => {
-        mutateAsync({ lineId: item.id, quantity: newQuantity })
+        mutate({ lineId: item.id, quantity: newQuantity })
       }, 500)
     },
-    [item.id, mutateAsync]
+    [item.id, mutate]
   )
 
   return (
