@@ -23,6 +23,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { z } from "zod"
 
 export const useCart = ({ enabled }: { enabled: boolean }) => {
@@ -66,12 +67,25 @@ export const useCartPaymentMethods = (regionId: string) => {
   })
 }
 
+type UpdateLineItemContext = {
+  previousCart: HttpTypes.StoreCart | null | undefined
+}
+
+const coerceMutationContext = (
+  context: UpdateLineItemContext | void | unknown
+): UpdateLineItemContext => {
+  if (context && typeof context === "object") {
+    return context as UpdateLineItemContext
+  }
+  return { previousCart: undefined }
+}
+
 export const useUpdateLineItem = (
   options?: UseMutationOptions<
     void,
     Error,
     { lineId: string; quantity: number },
-    unknown
+    UpdateLineItemContext
   >
 ) => {
   const queryClient = useQueryClient()
@@ -84,6 +98,55 @@ export const useUpdateLineItem = (
       })
       return response
     },
+    ...options,
+    onMutate: async ({ lineId, quantity, ...rest }, ...restArgs) => {
+      await queryClient.cancelQueries({ queryKey: ["cart"] })
+
+      const userContext = await options?.onMutate?.(
+        { lineId, quantity, ...rest },
+        ...restArgs
+      )
+
+      const previousCart = queryClient.getQueryData<HttpTypes.StoreCart | null>(
+        ["cart"]
+      )
+
+      queryClient.setQueryData(
+        ["cart"],
+        (old: HttpTypes.StoreCart | null | undefined) => {
+          if (!old) return old
+          return {
+            ...old,
+            items: (old.items ?? []).map((cartItem) =>
+              cartItem.id === lineId ? { ...cartItem, quantity } : cartItem
+            ),
+          }
+        }
+      )
+
+      const previousItem = previousCart?.items?.find((i) => i.id === lineId)
+      if (previousItem) {
+        const delta = quantity - previousItem.quantity
+        queryClient.setQueryData(
+          ["cart", "cart-quantity"],
+          (old: number | undefined) => Math.max(0, (old ?? 0) + delta)
+        )
+      }
+
+      return { ...coerceMutationContext(userContext), previousCart }
+    },
+    onError: (error, variables, onMutateResult, context) => {
+      if (onMutateResult?.previousCart) {
+        queryClient.setQueryData(["cart"], onMutateResult.previousCart)
+        const total = (onMutateResult.previousCart.items ?? []).reduce(
+          (acc, i) => acc + i.quantity,
+          0
+        )
+        queryClient.setQueryData(["cart", "cart-quantity"], total)
+      }
+
+      options?.onError?.(error, variables, onMutateResult, context)
+    },
     async onSuccess(...args) {
       await queryClient.invalidateQueries({
         exact: false,
@@ -92,12 +155,137 @@ export const useUpdateLineItem = (
 
       await options?.onSuccess?.(...args)
     },
-    ...options,
   })
 }
 
+type LineItemQuantityUpdater = {
+  quantity: number
+  error: Error | null
+  onQuantityChange: (value: number) => void
+  onQuantityCommit: (value: number) => void
+  onQuantityFocus: () => void
+  onQuantityBlur: () => void
+}
+
+export const useLineItemQuantityUpdater = ({
+  lineId,
+  initialQuantity,
+}: {
+  lineId: string
+  initialQuantity: number
+}): LineItemQuantityUpdater => {
+  const { mutateAsync, error, reset } = useUpdateLineItem({
+    onSuccess: () => {
+      reset()
+    },
+  })
+  const [quantity, setQuantity] = useState(initialQuantity)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const inFlightRef = useRef(false)
+  const queuedQuantityRef = useRef<number | null>(null)
+  const lastCommittedRef = useRef(initialQuantity)
+  const isEditingRef = useRef(false)
+
+  useEffect(() => {
+    lastCommittedRef.current = initialQuantity
+
+    if (isEditingRef.current) return
+    setQuantity(initialQuantity)
+  }, [initialQuantity])
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current)
+        timerRef.current = null
+      }
+    }
+  }, [])
+
+  const flushQuantityUpdate = useCallback(async () => {
+    if (inFlightRef.current) return
+    const quantityToCommit = queuedQuantityRef.current
+    if (
+      quantityToCommit === null ||
+      quantityToCommit === lastCommittedRef.current
+    ) {
+      return
+    }
+
+    inFlightRef.current = true
+    queuedQuantityRef.current = null
+    lastCommittedRef.current = quantityToCommit
+
+    try {
+      await mutateAsync({ lineId, quantity: quantityToCommit })
+    } finally {
+      inFlightRef.current = false
+      if (queuedQuantityRef.current !== null) {
+        void flushQuantityUpdate()
+      }
+    }
+  }, [lineId, mutateAsync])
+
+  const scheduleQuantityUpdate = useCallback(
+    (nextQuantity: number) => {
+      queuedQuantityRef.current = nextQuantity
+      if (timerRef.current) clearTimeout(timerRef.current)
+      timerRef.current = setTimeout(() => {
+        void flushQuantityUpdate()
+      }, 350)
+    },
+    [flushQuantityUpdate]
+  )
+
+  const onQuantityChange = useCallback(
+    (newQuantity: number) => {
+      setQuantity(newQuantity)
+      scheduleQuantityUpdate(newQuantity)
+    },
+    [scheduleQuantityUpdate]
+  )
+
+  const onQuantityCommit = useCallback(
+    (newQuantity: number) => {
+      queuedQuantityRef.current = newQuantity
+      if (timerRef.current) {
+        clearTimeout(timerRef.current)
+        timerRef.current = null
+      }
+      void flushQuantityUpdate()
+    },
+    [flushQuantityUpdate]
+  )
+
+  const onQuantityFocus = useCallback(() => {
+    isEditingRef.current = true
+  }, [])
+
+  const onQuantityBlur = useCallback(() => {
+    isEditingRef.current = false
+  }, [])
+
+  return {
+    quantity,
+    error: error ?? null,
+    onQuantityChange,
+    onQuantityCommit,
+    onQuantityFocus,
+    onQuantityBlur,
+  }
+}
+
+type DeleteLineItemContext = {
+  previousCart: HttpTypes.StoreCart | null | undefined
+}
+
 export const useDeleteLineItem = (
-  options?: UseMutationOptions<void, Error, { lineId: string }, unknown>
+  options?: UseMutationOptions<
+    void,
+    Error,
+    { lineId: string },
+    DeleteLineItemContext
+  >
 ) => {
   const queryClient = useQueryClient()
 
@@ -108,6 +296,50 @@ export const useDeleteLineItem = (
 
       return response
     },
+    ...options,
+    onMutate: async ({ lineId }) => {
+      await queryClient.cancelQueries({ queryKey: ["cart"] })
+
+      const previousCart = queryClient.getQueryData<HttpTypes.StoreCart | null>(
+        ["cart"]
+      )
+
+      queryClient.setQueryData(
+        ["cart"],
+        (old: HttpTypes.StoreCart | null | undefined) => {
+          if (!old) return old
+          return {
+            ...old,
+            items: (old.items ?? []).filter((item) => item.id !== lineId),
+          }
+        }
+      )
+
+      const removedItem = previousCart?.items?.find(
+        (item) => item.id === lineId
+      )
+      if (removedItem) {
+        queryClient.setQueryData(
+          ["cart", "cart-quantity"],
+          (old: number | undefined) =>
+            Math.max(0, (old ?? 0) - removedItem.quantity)
+        )
+      }
+
+      return { previousCart }
+    },
+    onError: (error, variables, onMutateResult, context) => {
+      if (onMutateResult?.previousCart) {
+        queryClient.setQueryData(["cart"], onMutateResult.previousCart)
+        const total = (onMutateResult.previousCart.items ?? []).reduce(
+          (acc, item) => acc + item.quantity,
+          0
+        )
+        queryClient.setQueryData(["cart", "cart-quantity"], total)
+      }
+
+      options?.onError?.(error, variables, onMutateResult, context)
+    },
     async onSuccess(...args) {
       await queryClient.invalidateQueries({
         exact: false,
@@ -116,7 +348,6 @@ export const useDeleteLineItem = (
 
       await options?.onSuccess?.(...args)
     },
-    ...options,
   })
 }
 
@@ -141,6 +372,7 @@ export const useAddLineItem = (
 
       return response
     },
+    ...options,
     async onSuccess(...args) {
       await queryClient.invalidateQueries({
         exact: false,
@@ -149,7 +381,6 @@ export const useAddLineItem = (
 
       await options?.onSuccess?.(...args)
     },
-    ...options,
   })
 }
 
@@ -173,6 +404,7 @@ export const useSetShippingMethod = (
 
       return response
     },
+    ...options,
     async onSuccess(...args) {
       await queryClient.invalidateQueries({
         exact: false,
@@ -181,7 +413,6 @@ export const useSetShippingMethod = (
 
       await options?.onSuccess?.(...args)
     },
-    ...options,
   })
 }
 
@@ -239,6 +470,7 @@ export const useSetShippingAddress = (
       const response = await setAddresses(payload)
       return response
     },
+    ...options,
     async onSuccess(...args) {
       await queryClient.invalidateQueries({
         exact: false,
@@ -247,7 +479,6 @@ export const useSetShippingAddress = (
 
       await options?.onSuccess?.(...args)
     },
-    ...options,
   })
 }
 
@@ -267,6 +498,7 @@ export const useSetEmail = (
       const response = await setEmail(payload)
       return response
     },
+    ...options,
     async onSuccess(...args) {
       await queryClient.invalidateQueries({
         exact: false,
@@ -275,7 +507,6 @@ export const useSetEmail = (
 
       await options?.onSuccess?.(...args)
     },
-    ...options,
   })
 }
 
@@ -297,6 +528,7 @@ export const useInitiatePaymentSession = (
 
       return response
     },
+    ...options,
     async onSuccess(...args) {
       await queryClient.invalidateQueries({
         exact: false,
@@ -305,7 +537,6 @@ export const useInitiatePaymentSession = (
 
       await options?.onSuccess?.(...args)
     },
-    ...options,
   })
 }
 
@@ -325,6 +556,7 @@ export const useSetPaymentMethod = (
 
       return response
     },
+    ...options,
     async onSuccess(...args) {
       await queryClient.invalidateQueries({
         exact: false,
@@ -333,7 +565,6 @@ export const useSetPaymentMethod = (
 
       await options?.onSuccess?.(...args)
     },
-    ...options,
   })
 }
 
@@ -401,6 +632,7 @@ export const useApplyPromotions = (
 
       return response
     },
+    ...options,
     async onSuccess(...args) {
       await queryClient.invalidateQueries({
         exact: false,
@@ -409,7 +641,6 @@ export const useApplyPromotions = (
 
       await options?.onSuccess?.(...args)
     },
-    ...options,
   })
 }
 
@@ -427,6 +658,7 @@ export const useUpdateRegion = (
     mutationFn: async ({ countryCode, currentPath }) => {
       await updateRegion(countryCode, currentPath)
     },
+    ...options,
     async onSuccess(...args) {
       await queryClient.invalidateQueries({
         exact: false,
@@ -443,6 +675,5 @@ export const useUpdateRegion = (
 
       await options?.onSuccess?.(...args)
     },
-    ...options,
   })
 }

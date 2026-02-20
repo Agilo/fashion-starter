@@ -7,7 +7,7 @@ import * as ReactAria from "react-aria-components"
 import { useSearchParams } from "next/navigation"
 import { getVariantItemsInStock } from "@lib/util/inventory"
 import { Button } from "@/components/Button"
-import { NumberField } from "@/components/NumberField"
+import { InputNumberField } from "@/components/InputNumberField"
 import {
   UiSelectButton,
   UiSelectIcon,
@@ -343,7 +343,7 @@ function ProductActions({ product, materials, disabled }: ProductActionsProps) {
         </div>
       )}
       <div className="flex max-sm:flex-col gap-4">
-        <NumberField
+        <InputNumberField
           isDisabled={
             !itemsInStock || !selectedVariant || !!disabled || isPending
           }
