@@ -66,7 +66,9 @@ export const useCartPaymentMethods = (regionId: string) => {
   })
 }
 
-type UpdateLineItemContext = { previousCart: HttpTypes.StoreCart | undefined }
+type UpdateLineItemContext = {
+  previousCart: HttpTypes.StoreCart | null | undefined
+}
 
 export const useUpdateLineItem = (
   options?: UseMutationOptions<
@@ -90,13 +92,13 @@ export const useUpdateLineItem = (
     onMutate: async ({ lineId, quantity }) => {
       await queryClient.cancelQueries({ queryKey: ["cart"] })
 
-      const previousCart = queryClient.getQueryData<HttpTypes.StoreCart>([
-        "cart",
-      ])
+      const previousCart = queryClient.getQueryData<HttpTypes.StoreCart | null>(
+        ["cart"]
+      )
 
       queryClient.setQueryData(
         ["cart"],
-        (old: HttpTypes.StoreCart | undefined) => {
+        (old: HttpTypes.StoreCart | null | undefined) => {
           if (!old) return old
           return {
             ...old,
@@ -139,7 +141,9 @@ export const useUpdateLineItem = (
   })
 }
 
-type DeleteLineItemContext = { previousCart: HttpTypes.StoreCart | undefined }
+type DeleteLineItemContext = {
+  previousCart: HttpTypes.StoreCart | null | undefined
+}
 
 export const useDeleteLineItem = (
   options?: UseMutationOptions<
@@ -162,13 +166,13 @@ export const useDeleteLineItem = (
     onMutate: async ({ lineId }) => {
       await queryClient.cancelQueries({ queryKey: ["cart"] })
 
-      const previousCart = queryClient.getQueryData<HttpTypes.StoreCart>([
-        "cart",
-      ])
+      const previousCart = queryClient.getQueryData<HttpTypes.StoreCart | null>(
+        ["cart"]
+      )
 
       queryClient.setQueryData(
         ["cart"],
-        (old: HttpTypes.StoreCart | undefined) => {
+        (old: HttpTypes.StoreCart | null | undefined) => {
           if (!old) return old
           return {
             ...old,
