@@ -5,12 +5,11 @@ import ErrorMessage from "@modules/checkout/components/error-message"
 import DeleteButton from "@modules/common/components/delete-button"
 import LineItemUnitPrice from "@modules/common/components/line-item-unit-price"
 import Thumbnail from "@modules/products/components/thumbnail"
-import { NumberField } from "@/components/NumberField"
+import { InputNumberField } from "@/components/InputNumberField"
 import { LocalizedLink } from "@/components/LocalizedLink"
 import { twMerge } from "tailwind-merge"
-import { useUpdateLineItem } from "hooks/cart"
+import { useLineItemQuantityUpdater } from "hooks/cart"
 import { withReactQueryProvider } from "@lib/util/react-query"
-import * as React from "react"
 
 type ItemProps = {
   item: HttpTypes.StoreCartLineItem
@@ -19,22 +18,18 @@ type ItemProps = {
 
 const Item = ({ item, className }: ItemProps) => {
   const { handle } = item.variant?.product ?? {}
-  const { mutate, isPending, error } = useUpdateLineItem()
+  const {
+    quantity,
+    error,
+    onQuantityChange,
+    onQuantityCommit,
+    onQuantityFocus,
+    onQuantityBlur,
+  } = useLineItemQuantityUpdater({
+    lineId: item.id,
+    initialQuantity: item.quantity,
+  })
   const maxQuantity = item.variant ? getVariantItemsInStock(item.variant) : 0
-
-  const [quantity, setQuantity] = React.useState(item.quantity)
-  const timerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  const handleQuantityChange = React.useCallback(
-    (newQuantity: number) => {
-      setQuantity(newQuantity)
-      if (timerRef.current) clearTimeout(timerRef.current)
-      timerRef.current = setTimeout(() => {
-        mutate({ lineId: item.id, quantity: newQuantity })
-      }, 500)
-    },
-    [item.id, mutate]
-  )
 
   return (
     <div
@@ -64,14 +59,16 @@ const Item = ({ item, className }: ItemProps) => {
             </p>
             <LineItemUnitPrice item={item} className="sm:hidden" />
           </div>
-          <NumberField
+          <InputNumberField
             key={item.id}
             size="sm"
             minValue={1}
             maxValue={maxQuantity}
             value={quantity}
-            onChange={handleQuantityChange}
-            isDisabled={isPending}
+            onChange={onQuantityChange}
+            onCommit={onQuantityCommit}
+            onFocus={onQuantityFocus}
+            onBlur={onQuantityBlur}
             className="w-25"
             aria-label="Quantity"
           />
