@@ -328,15 +328,17 @@ export const useDeleteLineItem = (
 
       return { previousCart }
     },
-    onError: (_error, _variables, context) => {
-      if (context?.previousCart) {
-        queryClient.setQueryData(["cart"], context.previousCart)
-        const total = (context.previousCart.items ?? []).reduce(
+    onError: (error, variables, onMutateResult, context) => {
+      if (onMutateResult?.previousCart) {
+        queryClient.setQueryData(["cart"], onMutateResult.previousCart)
+        const total = (onMutateResult.previousCart.items ?? []).reduce(
           (acc, item) => acc + item.quantity,
           0
         )
         queryClient.setQueryData(["cart", "cart-quantity"], total)
       }
+
+      options?.onError?.(error, variables, onMutateResult, context)
     },
     async onSuccess(...args) {
       await queryClient.invalidateQueries({
