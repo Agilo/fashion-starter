@@ -86,6 +86,7 @@ export const useUpdateLineItem = (
       })
       return response
     },
+    ...options,
     onMutate: async ({ lineId, quantity }) => {
       await queryClient.cancelQueries({ queryKey: ["cart"] })
 
@@ -135,7 +136,6 @@ export const useUpdateLineItem = (
 
       await options?.onSuccess?.(...args)
     },
-    ...options,
   })
 }
 
@@ -158,6 +158,7 @@ export const useDeleteLineItem = (
 
       return response
     },
+    ...options,
     onMutate: async ({ lineId }) => {
       await queryClient.cancelQueries({ queryKey: ["cart"] })
 
@@ -207,7 +208,6 @@ export const useDeleteLineItem = (
 
       await options?.onSuccess?.(...args)
     },
-    ...options,
   })
 }
 
@@ -232,6 +232,7 @@ export const useAddLineItem = (
 
       return response
     },
+    ...options,
     async onSuccess(...args) {
       await queryClient.invalidateQueries({
         exact: false,
@@ -240,7 +241,6 @@ export const useAddLineItem = (
 
       await options?.onSuccess?.(...args)
     },
-    ...options,
   })
 }
 
@@ -264,6 +264,7 @@ export const useSetShippingMethod = (
 
       return response
     },
+    ...options,
     async onSuccess(...args) {
       await queryClient.invalidateQueries({
         exact: false,
@@ -272,7 +273,6 @@ export const useSetShippingMethod = (
 
       await options?.onSuccess?.(...args)
     },
-    ...options,
   })
 }
 
@@ -330,6 +330,7 @@ export const useSetShippingAddress = (
       const response = await setAddresses(payload)
       return response
     },
+    ...options,
     async onSuccess(...args) {
       await queryClient.invalidateQueries({
         exact: false,
@@ -338,7 +339,6 @@ export const useSetShippingAddress = (
 
       await options?.onSuccess?.(...args)
     },
-    ...options,
   })
 }
 
@@ -358,6 +358,7 @@ export const useSetEmail = (
       const response = await setEmail(payload)
       return response
     },
+    ...options,
     async onSuccess(...args) {
       await queryClient.invalidateQueries({
         exact: false,
@@ -366,7 +367,6 @@ export const useSetEmail = (
 
       await options?.onSuccess?.(...args)
     },
-    ...options,
   })
 }
 
@@ -388,6 +388,7 @@ export const useInitiatePaymentSession = (
 
       return response
     },
+    ...options,
     async onSuccess(...args) {
       await queryClient.invalidateQueries({
         exact: false,
@@ -396,7 +397,6 @@ export const useInitiatePaymentSession = (
 
       await options?.onSuccess?.(...args)
     },
-    ...options,
   })
 }
 
@@ -416,6 +416,7 @@ export const useSetPaymentMethod = (
 
       return response
     },
+    ...options,
     async onSuccess(...args) {
       await queryClient.invalidateQueries({
         exact: false,
@@ -424,7 +425,6 @@ export const useSetPaymentMethod = (
 
       await options?.onSuccess?.(...args)
     },
-    ...options,
   })
 }
 
@@ -492,6 +492,7 @@ export const useApplyPromotions = (
 
       return response
     },
+    ...options,
     async onSuccess(...args) {
       await queryClient.invalidateQueries({
         exact: false,
@@ -500,7 +501,6 @@ export const useApplyPromotions = (
 
       await options?.onSuccess?.(...args)
     },
-    ...options,
   })
 }
 
@@ -518,6 +518,7 @@ export const useUpdateRegion = (
     mutationFn: async ({ countryCode, currentPath }) => {
       await updateRegion(countryCode, currentPath)
     },
+    ...options,
     async onSuccess(...args) {
       await queryClient.invalidateQueries({
         exact: false,
@@ -534,6 +535,5 @@ export const useUpdateRegion = (
 
       await options?.onSuccess?.(...args)
     },
-    ...options,
   })
 }
