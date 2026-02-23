@@ -10,11 +10,11 @@ export const metadata: Metadata = {
   description: "View your return request details",
 }
 
-type Props = {
+export default async function AccountReturnDetailsPage({
+  params,
+}: {
   params: Promise<{ orderId: string }>
-}
-
-export default async function AccountReturnDetailsPage({ params }: Props) {
+}) {
   const customer = await getCustomer().catch(() => null)
 
   if (!customer) {

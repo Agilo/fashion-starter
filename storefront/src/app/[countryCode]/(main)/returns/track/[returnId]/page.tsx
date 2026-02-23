@@ -9,11 +9,11 @@ export const metadata: Metadata = {
   description: "View your return request details",
 }
 
-type Props = {
+export default async function ReturnDetailsPage({
+  params,
+}: {
   params: Promise<{ orderId: string }>
-}
-
-export default async function ReturnDetailsPage({ params }: Props) {
+}) {
   const { orderId } = await params
 
   const order = await retrieveOrder(orderId)

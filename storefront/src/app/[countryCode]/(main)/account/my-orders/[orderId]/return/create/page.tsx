@@ -13,11 +13,11 @@ export const metadata: Metadata = {
   description: "Request a return for your order",
 }
 
-type Props = {
+export default async function ReturnPage({
+  params,
+}: {
   params: Promise<{ orderId: string }>
-}
-
-export default async function ReturnPage({ params }: Props) {
+}) {
   const customer = await getCustomer().catch(() => null)
 
   if (!customer) {
