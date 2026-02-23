@@ -1,124 +1,30 @@
 import * as React from "react"
 import { Metadata } from "next"
 import Image from "next/image"
-import { HttpTypes } from "@medusajs/types"
-import { twMerge } from "tailwind-merge"
 
 import { listOrders } from "@lib/data/orders"
 import { Pagination } from "@modules/store/components/pagination"
 import { ButtonLink } from "@/components/Button"
-import { UiTag } from "@/components/ui/Tag"
 import { LocalizedLink } from "@/components/LocalizedLink"
 import { getCustomer } from "@lib/data/customer"
 import { redirect } from "next/navigation"
-import { hasReturnableItems, getOrderReturnStatus } from "@lib/util/returns"
+import { hasReturnableItems } from "@lib/util/returns"
+import { OrderStatusTag } from "@modules/order/components/OrderTag"
 
 export const metadata: Metadata = {
   title: "Account - Orders",
   description: "Check your order history",
 }
 
-const OrderStatus: React.FC<{
-  order: HttpTypes.StoreOrder
-  className?: string
-}> = ({ order, className }) => {
-  const returnStatus = getOrderReturnStatus(order)
+const ORDERS_PER_PAGE = 6
 
-  if (returnStatus.hasReturnRequests) {
-    return (
-      <UiTag
-        iconName="refresh"
-        isActive
-        className={twMerge("self-start mt-auto", className)}
-      >
-        Return in Progress
-      </UiTag>
-    )
-  }
-
-  if (returnStatus.isFullyReturned) {
-    return (
-      <UiTag
-        iconName="refresh"
-        isActive
-        className={twMerge("self-start mt-auto", className)}
-      >
-        Fully Returned
-      </UiTag>
-    )
-  }
-
-  if (returnStatus.isPartiallyReturned) {
-    return (
-      <UiTag
-        iconName="refresh"
-        isActive
-        className={twMerge("self-start mt-auto", className)}
-      >
-        Partially Returned
-      </UiTag>
-    )
-  }
-
-  if (order.fulfillment_status === "canceled") {
-    return (
-      <UiTag
-        iconName="close"
-        isActive
-        className={twMerge("self-start mt-auto", className)}
-      >
-        Canceled
-      </UiTag>
-    )
-  }
-
-  if (order.fulfillment_status === "delivered") {
-    return (
-      <UiTag
-        iconName="check"
-        isActive
-        className={twMerge("self-start mt-auto", className)}
-      >
-        Delivered
-      </UiTag>
-    )
-  }
-
-  if (
-    order.fulfillment_status === "shipped" ||
-    order.fulfillment_status === "partially_delivered"
-  ) {
-    return (
-      <UiTag
-        iconName="truck"
-        isActive
-        className={twMerge("self-start mt-auto", className)}
-      >
-        Delivering
-      </UiTag>
-    )
-  }
-
-  return (
-    <UiTag
-      iconName="package"
-      isActive
-      className={twMerge("self-start mt-auto", className)}
-    >
-      Packing
-    </UiTag>
-  )
-}
-
-type PageProps = {
+export default async function AccountMyOrdersPage({
+  searchParams,
+}: {
   searchParams: Promise<{
     page?: string
   }>
-}
-
-const ORDERS_PER_PAGE = 6
-
-export default async function AccountMyOrdersPage({ searchParams }: PageProps) {
+}) {
   const { page } = await searchParams
 
   const customer = await getCustomer().catch(() => null)
@@ -150,7 +56,10 @@ export default async function AccountMyOrdersPage({ searchParams }: PageProps) {
                 >
                   <div className="flex max-sm:flex-col-reverse md:flex-col-reverse lg:flex-row gap-y-6 gap-x-10 justify-between">
                     <div className="flex-shrink-0">
-                      <OrderStatus order={order} className="sm:hidden mb-6" />
+                      <OrderStatusTag
+                        order={order}
+                        className="sm:hidden mb-6"
+                      />
                       <div className="mb-2">
                         <LocalizedLink
                           href={`/account/my-orders/${order.id}`}
@@ -185,7 +94,7 @@ export default async function AccountMyOrdersPage({ searchParams }: PageProps) {
                     </div>
                   </div>
                   <div className="flex max-sm:flex-col justify-between gap-6">
-                    <OrderStatus order={order} className="max-sm:hidden" />
+                    <OrderStatusTag order={order} className="max-sm:hidden" />
                     <div className="flex flex-wrap gap-3 sm:self-end md:self-start lg:self-end">
                       {hasReturnableItemsInOrder && (
                         <>
