@@ -137,15 +137,8 @@ export default async function AccountOrderPage({
           {order.items?.map((item) => (
             <OrderItem
               key={item.id}
-              id={item.id}
-              thumbnail={item.thumbnail}
-              product_handle={item.product_handle}
-              product_title={item.product_title}
-              title={item.title}
-              quantity={item.quantity}
+              item={item}
               currencyCode={order.currency_code}
-              amount={item.total}
-              variant={item.variant}
               className="flex gap-x-4 sm:gap-x-8 gap-y-6 pb-6 border-b border-grayscale-100 last:border-0 last:pb-0"
             />
           ))}

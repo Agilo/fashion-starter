@@ -2,37 +2,31 @@ import * as React from "react"
 import Image from "next/image"
 import { LocalizedLink } from "@/components/LocalizedLink"
 import { convertToLocale } from "@lib/util/money"
+import { StoreOrderLineItem } from "@medusajs/types/dist/http/order/store/entities"
 
 type OrderItemProps = {
-  id: string
-  thumbnail: string | null
-  product_handle: string | null
-  product_title: string | null
-  title: string
-  quantity: number
+  item: StoreOrderLineItem
   currencyCode: string
-  amount: number
-  variant?: {
-    options?: Array<{
-      id: string
-      option?: { title?: string } | null
-      value: string
-    }> | null
-  }
   className?: string
 }
 
 export const OrderItem: React.FC<OrderItemProps> = ({
-  thumbnail,
-  product_handle,
-  product_title,
-  title,
-  quantity,
+  item,
   currencyCode,
-  amount,
-  variant,
   className,
 }) => {
+  const {
+    thumbnail,
+    product_handle,
+    product_title,
+    title,
+    quantity,
+    variant,
+    discount_total,
+    original_total,
+    total,
+  } = item
+
   return (
     <div className={className}>
       {thumbnail && (
@@ -67,11 +61,21 @@ export const OrderItem: React.FC<OrderItemProps> = ({
                 {quantity}
               </p>
             </div>
-            <div className="sm:text-md">
-              <p>
+            <div>
+              <div className="line-through text-grayscale-400 sm:text-sm">
+                {!!discount_total && (
+                  <p>
+                    {convertToLocale({
+                      currency_code: currencyCode,
+                      amount: original_total,
+                    })}
+                  </p>
+                )}
+              </div>
+              <p className="sm:text-md">
                 {convertToLocale({
                   currency_code: currencyCode,
-                  amount: amount,
+                  amount: total,
                 })}
               </p>
             </div>
