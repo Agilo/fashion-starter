@@ -1,24 +1,13 @@
 import { UiTag } from "@/components/ui/Tag"
 import { HttpTypes, StoreReturn } from "@medusajs/types"
 import { twMerge } from "tailwind-merge"
+import { getReturnCoverage } from "@lib/util/returns"
 
 export const OrderStatusTag: React.FC<{
   order: HttpTypes.StoreOrder & { returns?: StoreReturn[] }
   className?: string
 }> = ({ order, className }) => {
-  const orderItemIds = new Set((order.items || []).map((item) => item.id))
-  const returnedItemIds = new Set(
-    (order.returns || []).flatMap((ret) =>
-      (ret.items || []).map((retItem) => retItem.item_id)
-    )
-  )
-
-  const hasAnyReturnedItem = Array.from(orderItemIds).some((id) =>
-    returnedItemIds.has(id)
-  )
-  const areAllItemsReturned =
-    orderItemIds.size > 0 &&
-    Array.from(orderItemIds).every((id) => returnedItemIds.has(id))
+  const { hasAnyReturnedItem, areAllItemsReturned } = getReturnCoverage(order)
 
   if (
     order.fulfillment_status === "delivered" &&
@@ -63,7 +52,7 @@ export const OrderStatusTag: React.FC<{
     )
   }
 
-  if (order.fulfillment_status === "canceled") {
+  if (order.status === "canceled") {
     return (
       <UiTag
         iconName="close"

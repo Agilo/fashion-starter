@@ -99,7 +99,7 @@ export default async function AccountMyOrdersPage({
                       {hasReturnableItemsInOrder && (
                         <>
                           <ButtonLink
-                            href={`/account/my-orders/${order.id}/return/create`}
+                            href={`/account/my-orders/${order.id}/return`}
                             variant="outline"
                             size="md"
                             className="sm:hidden"
@@ -107,7 +107,7 @@ export default async function AccountMyOrdersPage({
                             Return
                           </ButtonLink>
                           <ButtonLink
-                            href={`/account/my-orders/${order.id}/return/create`}
+                            href={`/account/my-orders/${order.id}/return`}
                             variant="outline"
                             size="sm"
                             className="max-sm:hidden"

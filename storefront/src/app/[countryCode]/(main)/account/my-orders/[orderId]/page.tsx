@@ -1,168 +1,25 @@
 import * as React from "react"
 import { Metadata } from "next"
-import { HttpTypes } from "@medusajs/types"
 
 import { retrieveOrder } from "@lib/data/orders"
 import { OrderTotals } from "@modules/order/components/OrderTotals"
 import { OrderItem } from "@modules/order/components/item/OrderItem"
-import { UiTag } from "@/components/ui/Tag"
-import { UiTagList, UiTagListDivider } from "@/components/ui/TagList"
 import { Icon } from "@/components/Icon"
-import { ButtonLink } from "@/components/Button"
 import { getCustomer } from "@lib/data/customer"
 import { redirect } from "next/navigation"
-import { hasReturnableItems, getOrderReturnStatus } from "@lib/util/returns"
+import {
+  getOrderReturns,
+  hasReturnableItems,
+  type OrderWithReturns,
+} from "@lib/util/returns"
+import { convertToLocale } from "@lib/util/money"
+import { OrderStatus } from "@modules/order/components/OrderStatus"
+import { ReturnItem } from "@modules/order/components/ReturnItem"
+import { LocalizedButtonLink } from "@/components/LocalizedLink"
 
 export const metadata: Metadata = {
   title: "Account - Order Details",
   description: "Check your order history",
-}
-
-const OrderStatus: React.FC<{ order: HttpTypes.StoreOrder }> = ({ order }) => {
-  const returnStatus = getOrderReturnStatus(order)
-
-  if (returnStatus.isFullyReturned) {
-    return (
-      <UiTagList>
-        <UiTag isActive iconName="package" className="self-start mt-auto">
-          Packing
-        </UiTag>
-        <UiTagListDivider />
-        <UiTag isActive iconName="truck" className="self-start mt-auto">
-          Delivering
-        </UiTag>
-        <UiTagListDivider />
-        <UiTag isActive iconName="check" className="self-start mt-auto">
-          Delivered
-        </UiTag>
-        <UiTagListDivider />
-        <UiTag isActive iconName="refresh" className="self-start mt-auto">
-          Return in Progress
-        </UiTag>
-        <UiTagListDivider />
-        <UiTag isActive iconName="refresh" className="self-start mt-auto">
-          Fully Returned
-        </UiTag>
-      </UiTagList>
-    )
-  }
-
-  if (returnStatus.hasReturnRequests) {
-    return (
-      <UiTagList>
-        <UiTag isActive iconName="package" className="self-start mt-auto">
-          Packing
-        </UiTag>
-        <UiTagListDivider />
-        <UiTag isActive iconName="truck" className="self-start mt-auto">
-          Delivering
-        </UiTag>
-        <UiTagListDivider />
-        <UiTag isActive iconName="check" className="self-start mt-auto">
-          Delivered
-        </UiTag>
-        <UiTagListDivider />
-        <UiTag isActive iconName="refresh" className="self-start mt-auto">
-          Return in Progress
-        </UiTag>
-        <UiTagListDivider />
-        <UiTag iconName="refresh" className="self-start mt-auto">
-          Fully/Partially Returned
-        </UiTag>
-      </UiTagList>
-    )
-  }
-
-  if (returnStatus.isPartiallyReturned) {
-    return (
-      <UiTagList>
-        <UiTag isActive iconName="package" className="self-start mt-auto">
-          Packing
-        </UiTag>
-        <UiTagListDivider />
-        <UiTag isActive iconName="truck" className="self-start mt-auto">
-          Delivering
-        </UiTag>
-        <UiTagListDivider />
-        <UiTag isActive iconName="check" className="self-start mt-auto">
-          Delivered
-        </UiTag>
-        <UiTagListDivider />
-        <UiTag isActive iconName="refresh" className="self-start mt-auto">
-          Return in Progress
-        </UiTag>
-        <UiTagListDivider />
-        <UiTag isActive iconName="refresh" className="self-start mt-auto">
-          Partially Returned
-        </UiTag>
-      </UiTagList>
-    )
-  }
-
-  if (order.fulfillment_status === "canceled") {
-    return (
-      <UiTagList>
-        <UiTag iconName="close" isActive className="self-start mt-auto">
-          Canceled
-        </UiTag>
-      </UiTagList>
-    )
-  }
-
-  if (order.fulfillment_status === "delivered") {
-    return (
-      <UiTagList>
-        <UiTag isActive iconName="package" className="self-start mt-auto">
-          Packing
-        </UiTag>
-        <UiTagListDivider />
-        <UiTag isActive iconName="truck" className="self-start mt-auto">
-          Delivering
-        </UiTag>
-        <UiTagListDivider />
-        <UiTag isActive iconName="check" className="self-start mt-auto">
-          Delivered
-        </UiTag>
-      </UiTagList>
-    )
-  }
-
-  if (
-    order.fulfillment_status === "shipped" ||
-    order.fulfillment_status === "partially_delivered"
-  ) {
-    return (
-      <UiTagList>
-        <UiTag isActive iconName="package" className="self-start mt-auto">
-          Packing
-        </UiTag>
-        <UiTagListDivider />
-        <UiTag isActive iconName="truck" className="self-start mt-auto">
-          Delivering
-        </UiTag>
-        <UiTagListDivider />
-        <UiTag iconName="check" className="self-start mt-auto">
-          Delivered
-        </UiTag>
-      </UiTagList>
-    )
-  }
-
-  return (
-    <UiTagList>
-      <UiTag isActive iconName="package" className="self-start mt-auto">
-        Packing
-      </UiTag>
-      <UiTagListDivider />
-      <UiTag iconName="truck" className="self-start mt-auto">
-        Delivering
-      </UiTag>
-      <UiTagListDivider />
-      <UiTag iconName="check" className="self-start mt-auto">
-        Delivered
-      </UiTag>
-    </UiTagList>
-  )
 }
 
 export default async function AccountOrderPage({
@@ -177,10 +34,10 @@ export default async function AccountOrderPage({
   }
 
   const { orderId } = await params
-  const order = await retrieveOrder(orderId)
+  const order = (await retrieveOrder(orderId)) as OrderWithReturns
 
   const hasReturnableItemsInOrder = hasReturnableItems(order)
-  const returnStatus = getOrderReturnStatus(order)
+  const orderReturns = getOrderReturns(order)
 
   return (
     <>
@@ -199,15 +56,6 @@ export default async function AccountOrderPage({
         </div>
         <div className="rounded-xs border border-grayscale-200 p-4 flex flex-wrap gap-x-10 gap-y-8 justify-between items-end w-full">
           <OrderStatus order={order} />
-          {returnStatus.hasReturns && (
-            <ButtonLink
-              href={`/account/my-orders/${order.id}/return`}
-              variant="outline"
-              size="sm"
-            >
-              Return Details
-            </ButtonLink>
-          )}
         </div>
         <div className="flex max-sm:flex-col gap-x-4 gap-y-6 md:flex-col lg:flex-row">
           <div className="flex-1 overflow-hidden rounded-xs border border-grayscale-200 p-4">
@@ -312,25 +160,92 @@ export default async function AccountOrderPage({
           <OrderTotals order={order} />
         </div>
         <div className="rounded-xs border border-grayscale-200 p-4">
-          <div className="flex flex-wrap gap-8 items-center justify-between">
-            <div>
-              <div className="flex gap-4 items-center mb-4">
-                <Icon name="undo" />
-                <p className="text-grayscale-500">Returns</p>
-              </div>
-              <p className="text-xs">
-                Returns are available for the first 14 days after receiving your
-                items.
-              </p>
+          <div className="flex gap-4 items-center mb-6">
+            <Icon name="undo" />
+            <p className="text-grayscale-500">Returns</p>
+          </div>
+          {orderReturns && orderReturns.length > 0 && (
+            <div className="flex flex-col gap-6 mb-4">
+              {orderReturns.map((eachReturn, index) => (
+                <div
+                  key={eachReturn.id || `return-${index}`}
+                  className="flex flex-col gap-4 p-4 rounded-xs border border-grayscale-100"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      {eachReturn.display_id && (
+                        <p className="font-medium">
+                          Return #{eachReturn.display_id}
+                        </p>
+                      )}
+                      {eachReturn.status && (
+                        <p className="text-sm text-grayscale-500 capitalize">
+                          {eachReturn.status.replace("_", " ")}
+                        </p>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      <p className="font-medium">
+                        {convertToLocale({
+                          amount: eachReturn.refund_amount || 0,
+                          currency_code: eachReturn.currency_code,
+                        })}
+                      </p>
+                      <p className="text-xs text-grayscale-500">
+                        {new Date(eachReturn.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-3">
+                    {eachReturn.items.map((returnItem) => (
+                      <ReturnItem
+                        key={returnItem.id}
+                        id={returnItem.id}
+                        thumbnail={returnItem.item?.thumbnail || null}
+                        product_handle={returnItem.item?.product_handle || null}
+                        product_title={returnItem.item?.product_title || null}
+                        title={
+                          returnItem.item?.title ||
+                          returnItem.item?.product_title ||
+                          ""
+                        }
+                        quantity={returnItem.quantity}
+                        currencyCode={eachReturn.currency_code}
+                        amount={
+                          (returnItem.item?.unit_price || 0) *
+                          (returnItem.quantity || 0)
+                        }
+                        variant={returnItem.item?.variant || null}
+                        className="flex gap-x-4 gap-y-6 pb-6 border-b border-grayscale-100"
+                      />
+                    ))}
+                  </div>
+                  {eachReturn.id && (
+                    <LocalizedButtonLink
+                      href={`/account/my-orders/${order.id}/return/${eachReturn.id}`}
+                      variant="outline"
+                      size="sm"
+                    >
+                      View Details
+                    </LocalizedButtonLink>
+                  )}
+                </div>
+              ))}
             </div>
+          )}
+          <div className="flex justify-between items-center gap-8">
+            <p className="text-xs">
+              Returns are available for the first 14 days after receiving your
+              items.
+            </p>
             {hasReturnableItemsInOrder && (
-              <ButtonLink
-                href={`/account/my-orders/${order.id}/return/create`}
+              <LocalizedButtonLink
+                href={`/account/my-orders/${order.id}/return`}
                 variant="outline"
                 size="sm"
               >
                 Start Return
-              </ButtonLink>
+              </LocalizedButtonLink>
             )}
           </div>
         </div>

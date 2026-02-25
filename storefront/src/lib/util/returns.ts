@@ -1,5 +1,29 @@
 import { HttpTypes } from "@medusajs/types"
 
+export type OrderWithReturns = HttpTypes.StoreOrder & {
+  returns?: HttpTypes.StoreReturn[]
+}
+
+export const getReturnCoverage = (
+  order: OrderWithReturns
+): {
+  hasAnyReturnedItem: boolean
+  areAllItemsReturned: boolean
+} => {
+  const items = order.items || []
+  const returnedItemIds = new Set(
+    (order.returns || []).flatMap((ret) =>
+      (ret.items || []).map((retItem) => retItem.item_id)
+    )
+  )
+
+  return {
+    hasAnyReturnedItem: items.some((item) => returnedItemIds.has(item.id)),
+    areAllItemsReturned:
+      items.length > 0 && items.every((item) => returnedItemIds.has(item.id)),
+  }
+}
+
 export type ItemWithDeliveryStatus = HttpTypes.StoreOrderLineItem & {
   deliveredQuantity: number
   returnableQuantity: number
@@ -10,17 +34,19 @@ export type ItemWithDeliveryStatus = HttpTypes.StoreOrderLineItem & {
 export const calculateReturnableQuantity = (
   item: HttpTypes.StoreOrderLineItem
 ): number => {
-  const deliveredQuantity = item.detail?.delivered_quantity || 0
-  const returnRequestedQuantity = item.detail?.return_requested_quantity || 0
-  const returnReceivedQuantity = item.detail?.return_received_quantity || 0
-  const writtenOffQuantity = item.detail?.written_off_quantity || 0
+  const {
+    delivered_quantity = 0,
+    return_requested_quantity = 0,
+    return_received_quantity = 0,
+    written_off_quantity = 0,
+  } = item.detail || {}
 
   return Math.max(
     0,
-    deliveredQuantity -
-      returnRequestedQuantity -
-      returnReceivedQuantity -
-      writtenOffQuantity
+    delivered_quantity -
+      return_requested_quantity -
+      return_received_quantity -
+      written_off_quantity
   )
 }
 
@@ -51,46 +77,22 @@ export const enhanceItemsWithReturnStatus = (
   })
 }
 
-export type OrderReturnStatus = {
-  hasReturns: boolean
-  totalDelivered: number
-  totalReturnRequested: number
-  totalReturnReceived: number
-  isFullyReturned: boolean
-  isPartiallyReturned: boolean
-  hasReturnRequests: boolean
+export type ReturnItemWithOrderItem = HttpTypes.StoreReturnItem & {
+  item: HttpTypes.StoreOrderLineItem | null
 }
 
-export const getOrderReturnStatus = (
-  order: HttpTypes.StoreOrder
-): OrderReturnStatus => {
-  let totalDelivered = 0
-  let totalReturnRequested = 0
-  let totalReturnReceived = 0
+export type ReturnWithOrderItems = Omit<HttpTypes.StoreReturn, "items"> & {
+  items: ReturnItemWithOrderItem[]
+  currency_code: string
+}
 
-  for (const item of order.items || []) {
-    const detail = item.detail
-    if (!detail) continue
-
-    totalDelivered += detail.delivered_quantity || 0
-    totalReturnRequested += detail.return_requested_quantity || 0
-    totalReturnReceived += detail.return_received_quantity || 0
-  }
-
-  const hasReturns = totalReturnRequested > 0 || totalReturnReceived > 0
-  const isFullyReturned =
-    totalDelivered > 0 && totalReturnReceived >= totalDelivered
-  const isPartiallyReturned =
-    totalReturnReceived > 0 && totalReturnReceived < totalDelivered
-  const hasReturnRequests = totalReturnRequested > 0
-
-  return {
-    hasReturns,
-    totalDelivered,
-    totalReturnRequested,
-    totalReturnReceived,
-    isFullyReturned,
-    isPartiallyReturned,
-    hasReturnRequests,
-  }
+export const getOrderReturns = (
+  order: OrderWithReturns
+): ReturnWithOrderItems[] => {
+  return (
+    order.returns?.map((ret) => ({
+      ...(ret as ReturnWithOrderItems),
+      currency_code: order.currency_code,
+    })) || []
+  )
 }
