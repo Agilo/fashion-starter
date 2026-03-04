@@ -1,7 +1,7 @@
 import { HttpTypes } from "@medusajs/types"
 
 export type OrderWithReturns = HttpTypes.StoreOrder & {
-  returns?: HttpTypes.StoreReturn[]
+  returns?: Omit<ReturnWithOrderItems, "currency_code">[]
 }
 
 export const getReturnCoverage = (
@@ -77,22 +77,60 @@ export const enhanceItemsWithReturnStatus = (
   })
 }
 
-export type ReturnItemWithOrderItem = HttpTypes.StoreReturnItem & {
-  item: HttpTypes.StoreOrderLineItem | null
+type BigNumberRawValue = { value: string | number; precision?: number }
+
+export type ReturnItemWithLineItem = HttpTypes.StoreReturnItem & {
+  item: HttpTypes.StoreOrderLineItem
+  reason: {
+    id: string
+    value: string
+    label: string
+    description?: string | null
+  } | null
+  created_at: string
+  updated_at: string
+  deleted_at: string | null
+  raw_quantity: BigNumberRawValue
+  raw_received_quantity: BigNumberRawValue
+  raw_damaged_quantity: BigNumberRawValue
 }
 
 export type ReturnWithOrderItems = Omit<HttpTypes.StoreReturn, "items"> & {
-  items: ReturnItemWithOrderItem[]
+  items: ReturnItemWithLineItem[]
   currency_code: string
 }
 
 export const getOrderReturns = (
   order: OrderWithReturns
 ): ReturnWithOrderItems[] => {
+  const orderItemsById = new Map(
+    (order.items || []).map((item) => [item.id, item])
+  )
+
   return (
     order.returns?.map((ret) => ({
       ...(ret as ReturnWithOrderItems),
       currency_code: order.currency_code,
+      items: ((ret as ReturnWithOrderItems).items || []).map((retItem) => ({
+        ...retItem,
+        item: orderItemsById.get(retItem.item_id) ?? retItem.item,
+      })),
     })) || []
   )
 }
+
+export const calcReturnItemAmount = (
+  returnItem: ReturnWithOrderItems["items"][number]
+): number => {
+  const item = returnItem.item
+  if (!item) return 0
+  const totalAdjustments =
+    item.adjustments?.reduce((s, a) => s + a.amount, 0) ?? 0
+  const discountedUnitPrice = item.unit_price - totalAdjustments / item.quantity
+  return discountedUnitPrice * returnItem.quantity
+}
+
+export const calcExpectedRefundAmount = (
+  returnEntity: ReturnWithOrderItems
+): number =>
+  returnEntity.items.reduce((sum, ri) => sum + calcReturnItemAmount(ri), 0)

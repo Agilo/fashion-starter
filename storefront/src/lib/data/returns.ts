@@ -5,6 +5,7 @@ import { sdk } from "@lib/config"
 import { getAuthHeaders, getCacheOptions } from "@lib/data/cookies"
 import medusaError from "@lib/util/medusa-error"
 import { HttpTypes } from "@medusajs/types"
+import { hasReturnableItems, OrderWithReturns } from "@lib/util/returns"
 
 export const listReturnReasons = async () => {
   const headers = {
@@ -109,40 +110,37 @@ export const createReturnRequest = async (
     }))
 }
 
+const fetchAndVerifyGuestOrder = async (
+  orderId: string,
+  email: string
+): Promise<OrderWithReturns> => {
+  const order = await sdk.client
+    .fetch<{ order: OrderWithReturns }>(`/store/orders/${orderId}`, {
+      method: "GET",
+      cache: "no-store",
+    })
+    .then(({ order }) => order)
+
+  if (order.email?.toLowerCase() !== email.toLowerCase()) {
+    throw new Error("Order not found. Please check your details and try again.")
+  }
+
+  return order
+}
+
 export const verifyGuestOrderAccess = async (
   orderId: string,
   email: string
 ) => {
   try {
-    const order = await sdk.client
-      .fetch<HttpTypes.StoreOrderResponse>(`/store/orders/${orderId}`, {
-        method: "GET",
-        cache: "no-store",
-      })
-      .then(({ order }) => order)
+    const order = await fetchAndVerifyGuestOrder(orderId, email)
 
-    if (order.email?.toLowerCase() !== email.toLowerCase()) {
-      throw new Error(
-        "Order not found. Please check your order ID and email address."
-      )
-    }
-
-    const hasReturnable = order.items?.some((item) => {
-      const deliveredQty = item.detail?.delivered_quantity || 0
-      const returnRequestedQty = item.detail?.return_requested_quantity || 0
-      const returnReceivedQty = item.detail?.return_received_quantity || 0
-      const writtenOffQty = item.detail?.written_off_quantity || 0
-      return (
-        deliveredQty - returnRequestedQty - returnReceivedQty - writtenOffQty >
-        0
-      )
-    })
-
-    if (!hasReturnable) {
+    if (!hasReturnableItems(order)) {
       throw new Error("This order has no items available for return.")
     }
 
     const params = new URLSearchParams({ orderId, email })
+
     redirect(`/returns/create?${params.toString()}`)
   } catch (err) {
     if (err instanceof Error && err.message.includes("NEXT_REDIRECT")) {
@@ -158,28 +156,11 @@ export const verifyGuestOrderAccess = async (
 
 export const trackGuestReturn = async (orderId: string, email: string) => {
   try {
-    const order = await sdk.client
-      .fetch<HttpTypes.StoreOrderResponse>(`/store/orders/${orderId}`, {
-        method: "GET",
-        cache: "no-store",
-      })
-      .then(({ order }) => order)
+    const order = await fetchAndVerifyGuestOrder(orderId, email)
 
-    if (order.email?.toLowerCase() !== email.toLowerCase()) {
+    if (!hasReturnableItems(order)) {
       throw new Error(
-        "Order not found. Please check your order ID and email address."
-      )
-    }
-
-    const hasReturns = order.items?.some((item) => {
-      const returnRequestedQty = item.detail?.return_requested_quantity || 0
-      const returnReceivedQty = item.detail?.return_received_quantity || 0
-      return returnRequestedQty > 0 || returnReceivedQty > 0
-    })
-
-    if (!hasReturns) {
-      throw new Error(
-        "No return found for this order. Please check your order ID."
+        "Unable to find return. Please check your details and try again."
       )
     }
 
