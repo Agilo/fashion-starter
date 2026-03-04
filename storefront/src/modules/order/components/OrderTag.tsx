@@ -1,28 +1,15 @@
 import { UiTag } from "@/components/ui/Tag"
-import { HttpTypes, StoreReturn } from "@medusajs/types"
 import { twMerge } from "tailwind-merge"
-import { getReturnCoverage } from "@lib/util/returns"
+import { getReturnCoverage, OrderWithReturns } from "@lib/util/returns"
 
 export const OrderStatusTag: React.FC<{
-  order: HttpTypes.StoreOrder & { returns?: StoreReturn[] }
+  order: OrderWithReturns
   className?: string
 }> = ({ order, className }) => {
   const { hasAnyReturnedItem, areAllItemsReturned } = getReturnCoverage(order)
-
-  if (
-    order.fulfillment_status === "delivered" &&
-    order.returns?.some((r) => r.status === "requested")
-  ) {
-    return (
-      <UiTag
-        iconName="refresh"
-        isActive
-        className={twMerge("self-start mt-auto", className)}
-      >
-        Return in Progress
-      </UiTag>
-    )
-  }
+  const hasActiveReturn = order.returns?.some(
+    (r) => r.status && r.status !== "canceled"
+  )
 
   if (order.fulfillment_status === "delivered" && areAllItemsReturned) {
     return (
@@ -48,6 +35,18 @@ export const OrderStatusTag: React.FC<{
         className={twMerge("self-start mt-auto", className)}
       >
         Partially Returned
+      </UiTag>
+    )
+  }
+
+  if (order.fulfillment_status === "delivered" && hasActiveReturn) {
+    return (
+      <UiTag
+        iconName="refresh"
+        isActive
+        className={twMerge("self-start mt-auto", className)}
+      >
+        Return in Progress
       </UiTag>
     )
   }
