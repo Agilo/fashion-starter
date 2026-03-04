@@ -151,12 +151,24 @@ const ReturnItemSelector: React.FC<ReturnItemSelectorProps> = ({
                       </p>
                     )}
                   </div>
-                  <p className="font-medium">
-                    {convertToLocale({
-                      currency_code: currencyCode,
-                      amount: item.unit_price,
-                    })}
-                  </p>
+                  <div className="text-right">
+                    {!!item.discount_total && (
+                      <p className="text-xs text-grayscale-500 line-through">
+                        {convertToLocale({
+                          currency_code: currencyCode,
+                          amount: item.unit_price,
+                        })}
+                      </p>
+                    )}
+                    <p className="font-medium">
+                      {convertToLocale({
+                        currency_code: currencyCode,
+                        amount: item.discount_total
+                          ? item.refundable_total_per_unit
+                          : item.unit_price,
+                      })}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -228,7 +240,8 @@ const ReturnItemSelector: React.FC<ReturnItemSelectorProps> = ({
                         {convertToLocale({
                           currency_code: currencyCode,
                           amount:
-                            item.unit_price * (selectedItem?.quantity || 0),
+                            item.refundable_total_per_unit *
+                            (selectedItem?.quantity || 0),
                         })}
                       </span>
                     </div>

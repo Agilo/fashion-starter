@@ -1,35 +1,44 @@
-import { getPricesForVariant } from "@lib/util/get-product-price"
+import { convertToLocale } from "@lib/util/money"
 import { HttpTypes } from "@medusajs/types"
 import { twMerge } from "tailwind-merge"
 
 type LineItemUnitPriceProps = {
   item: HttpTypes.StoreCartLineItem | HttpTypes.StoreOrderLineItem
+  currencyCode: string
   className?: string
   regularPriceClassName?: string
 }
 
 const LineItemUnitPrice = ({
   item,
+  currencyCode,
   className,
   regularPriceClassName,
 }: LineItemUnitPriceProps) => {
-  const {
-    original_price,
-    calculated_price,
-    original_price_number,
-    calculated_price_number,
-  } = item.variant ? (getPricesForVariant(item.variant) ?? {}) : {}
-  const hasReducedPrice =
-    (calculated_price_number ?? 0) < (original_price_number ?? 0)
+  const hasDiscount =
+    "discount_total" in item &&
+    (item as HttpTypes.StoreOrderLineItem).discount_total > 0
+
+  const effectiveUnitPrice = hasDiscount
+    ? (item as HttpTypes.StoreOrderLineItem).refundable_total_per_unit
+    : item.unit_price
 
   return (
     <div className={className}>
-      {hasReducedPrice ? (
+      {hasDiscount ? (
         <>
           <p className="text-base sm:text-sm font-semibold text-red-primary">
-            {calculated_price}
+            {convertToLocale({
+              amount: effectiveUnitPrice,
+              currency_code: currencyCode,
+            })}
           </p>
-          <p className="text-grayscale-500 line-through">{original_price}</p>
+          <p className="text-grayscale-500 line-through">
+            {convertToLocale({
+              amount: item.unit_price,
+              currency_code: currencyCode,
+            })}
+          </p>
         </>
       ) : (
         <p
@@ -38,7 +47,10 @@ const LineItemUnitPrice = ({
             regularPriceClassName
           )}
         >
-          {calculated_price}
+          {convertToLocale({
+            amount: item.unit_price,
+            currency_code: currencyCode,
+          })}
         </p>
       )}
     </div>

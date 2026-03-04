@@ -14,10 +14,11 @@ import * as React from "react"
 
 type ItemProps = {
   item: HttpTypes.StoreCartLineItem
+  currencyCode: string
   className?: string
 }
 
-const Item = ({ item, className }: ItemProps) => {
+const Item = ({ item, currencyCode, className }: ItemProps) => {
   const { handle } = item.variant?.product ?? {}
   const { mutateAsync, isPending, error } = useUpdateLineItem()
   const maxQuantity = item.variant ? getVariantItemsInStock(item.variant) : 0
@@ -32,7 +33,7 @@ const Item = ({ item, className }: ItemProps) => {
     }, 500)
 
     return () => clearTimeout(handler)
-     // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [quantity, item])
 
   return (
@@ -61,7 +62,11 @@ const Item = ({ item, className }: ItemProps) => {
             <p className="text-grayscale-500 text-xs sm:text-base max-sm:mb-4">
               {item.variant?.title}
             </p>
-            <LineItemUnitPrice item={item} className="sm:hidden" />
+            <LineItemUnitPrice
+              item={item}
+              currencyCode={currencyCode}
+              className="sm:hidden"
+            />
           </div>
           <NumberField
             size="sm"
@@ -75,7 +80,11 @@ const Item = ({ item, className }: ItemProps) => {
           />
         </div>
         <div className="flex flex-col justify-between items-end text-right">
-          <LineItemUnitPrice item={item} className="max-sm:hidden" />
+          <LineItemUnitPrice
+            item={item}
+            currencyCode={currencyCode}
+            className="max-sm:hidden"
+          />
           <DeleteButton id={item.id} data-testid="product-delete-button" />
         </div>
       </div>

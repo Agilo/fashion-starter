@@ -14,8 +14,8 @@ import {
 } from "@lib/util/returns"
 import { convertToLocale } from "@lib/util/money"
 import { OrderStatus } from "@modules/order/components/OrderStatus"
-import { ReturnItem } from "@modules/order/components/ReturnItem"
-import { LocalizedButtonLink } from "@/components/LocalizedLink"
+import { LocalizedButtonLink, LocalizedLink } from "@/components/LocalizedLink"
+import Image from "next/image"
 
 export const metadata: Metadata = {
   title: "Account - Order Details",
@@ -137,7 +137,15 @@ export default async function AccountOrderPage({
           {order.items?.map((item) => (
             <OrderItem
               key={item.id}
-              item={item}
+              thumbnail={item.thumbnail || ""}
+              product_handle={item.product_handle || ""}
+              product_title={item.product_title || ""}
+              title={item.title || ""}
+              quantity={item.quantity || 0}
+              variant={item.variant}
+              //@ts-expect-error - to be removed when fulfilled_total is added to the type
+              fulfilled_total={item.fulfilled_total || 0}
+              unit_price={item.unit_price || 0}
               currencyCode={order.currency_code}
               className="flex gap-x-4 sm:gap-x-8 gap-y-6 pb-6 border-b border-grayscale-100 last:border-0 last:pb-0"
             />
@@ -171,47 +179,45 @@ export default async function AccountOrderPage({
                           Return #{eachReturn.display_id}
                         </p>
                       )}
-                      {eachReturn.status && (
-                        <p className="text-sm text-grayscale-500 capitalize">
-                          {eachReturn.status.replace("_", " ")}
-                        </p>
-                      )}
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium">
-                        {convertToLocale({
-                          amount: eachReturn.refund_amount || 0,
-                          currency_code: eachReturn.currency_code,
-                        })}
-                      </p>
                       <p className="text-xs text-grayscale-500">
                         {new Date(eachReturn.created_at).toLocaleDateString()}
                       </p>
                     </div>
+                    <p className="text-right font-medium">
+                      {convertToLocale({
+                        currency_code: eachReturn.currency_code,
+                        amount: eachReturn.items.reduce((sum, returnItem) => {
+                          const item = returnItem.item
+                          if (!item) return sum
+                          const totalAdjustments =
+                            item.adjustments?.reduce(
+                              (s, a) => s + a.amount,
+                              0
+                            ) ?? 0
+                          const discountedUnitPrice =
+                            item.unit_price - totalAdjustments / item.quantity
+                          return sum + discountedUnitPrice * returnItem.quantity
+                        }, 0),
+                      })}
+                    </p>
                   </div>
-                  <div className="flex flex-col gap-3">
-                    {eachReturn.items.map((returnItem) => (
-                      <ReturnItem
-                        key={returnItem.id}
-                        id={returnItem.id}
-                        thumbnail={returnItem.item?.thumbnail || null}
-                        product_handle={returnItem.item?.product_handle || null}
-                        product_title={returnItem.item?.product_title || null}
-                        title={
-                          returnItem.item?.title ||
-                          returnItem.item?.product_title ||
-                          ""
-                        }
-                        quantity={returnItem.quantity}
-                        currencyCode={eachReturn.currency_code}
-                        amount={
-                          (returnItem.item?.unit_price || 0) *
-                          (returnItem.quantity || 0)
-                        }
-                        variant={returnItem.item?.variant || null}
-                        className="flex gap-x-4 gap-y-6 pb-6 border-b border-grayscale-100"
-                      />
-                    ))}
+                  <div className="flex overflow-x-auto gap-3">
+                    {eachReturn.items
+                      ?.filter((item) => item.item.thumbnail)
+                      .map((item) => (
+                        <LocalizedLink
+                          key={item.id}
+                          href={`/products/${item.item.product_handle}`}
+                          className="shrink-0 w-19 aspect-[3/4] rounded-2xs relative overflow-hidden"
+                        >
+                          <Image
+                            src={item.item.thumbnail!}
+                            alt={item.item.title}
+                            fill
+                            className="object-cover"
+                          />
+                        </LocalizedLink>
+                      ))}
                   </div>
                   {eachReturn.id && (
                     <LocalizedButtonLink

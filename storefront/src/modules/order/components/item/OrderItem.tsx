@@ -2,30 +2,36 @@ import * as React from "react"
 import Image from "next/image"
 import { LocalizedLink } from "@/components/LocalizedLink"
 import { convertToLocale } from "@lib/util/money"
-import { StoreOrderLineItem } from "@medusajs/types/dist/http/order/store/entities"
+import { twJoin } from "tailwind-merge"
+import { StoreProductVariant } from "@medusajs/types"
 
 type OrderItemProps = {
-  item: StoreOrderLineItem
+  thumbnail: string
+  product_handle: string
+  product_title: string
+  title: string
+  variant?: StoreProductVariant
+  quantity: number
+  fulfilled_total: number
+  unit_price: number
   currencyCode: string
   className?: string
 }
 
 export const OrderItem: React.FC<OrderItemProps> = ({
-  item,
+  thumbnail,
+  product_handle,
+  product_title,
+  title,
+  variant,
+  quantity,
+  fulfilled_total,
+  unit_price,
   currencyCode,
   className,
 }) => {
-  const {
-    thumbnail,
-    product_handle,
-    product_title,
-    title,
-    quantity,
-    variant,
-    discount_total,
-    original_total,
-    total,
-  } = item
+  const discountedUnitPrice = fulfilled_total / quantity
+  const hasDiscount = discountedUnitPrice < unit_price
 
   return (
     <div className={className}>
@@ -34,7 +40,12 @@ export const OrderItem: React.FC<OrderItemProps> = ({
           href={`/products/${product_handle}`}
           className="max-w-25 sm:max-w-37 shrink-0 aspect-[3/4] w-full relative overflow-hidden"
         >
-          <Image src={thumbnail} alt={title} fill className="object-cover" />
+          <Image
+            src={thumbnail}
+            alt={title || "Product image"}
+            fill
+            className="object-cover"
+          />
         </LocalizedLink>
       )}
       <div className="flex flex-col flex-1">
@@ -62,22 +73,27 @@ export const OrderItem: React.FC<OrderItemProps> = ({
               </p>
             </div>
             <div>
-              <div className="line-through text-grayscale-400 sm:text-sm">
-                {!!discount_total && (
+              <p
+                className={twJoin(
+                  "sm:text-md",
+                  hasDiscount && "text-red-primary font-semibold"
+                )}
+              >
+                {convertToLocale({
+                  currency_code: currencyCode,
+                  amount: discountedUnitPrice,
+                })}
+              </p>
+              {hasDiscount && (
+                <div className="line-through text-grayscale-400 sm:text-sm">
                   <p>
                     {convertToLocale({
                       currency_code: currencyCode,
-                      amount: original_total,
+                      amount: unit_price,
                     })}
                   </p>
-                )}
-              </div>
-              <p className="sm:text-md">
-                {convertToLocale({
-                  currency_code: currencyCode,
-                  amount: total,
-                })}
-              </p>
+                </div>
+              )}
             </div>
           </div>
         </div>

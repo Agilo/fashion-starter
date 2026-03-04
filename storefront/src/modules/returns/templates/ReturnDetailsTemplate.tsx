@@ -4,7 +4,11 @@ import { convertToLocale } from "@lib/util/money"
 import { OrderItem } from "@modules/order/components/item/OrderItem"
 import { twJoin } from "tailwind-merge"
 import { ReturnStatus } from "@modules/returns/components/ReturnStatus"
-import { ReturnWithOrderItems } from "@lib/util/returns"
+import {
+  calcExpectedRefundAmount,
+  calcReturnItemAmount,
+  ReturnWithOrderItems,
+} from "@lib/util/returns"
 
 type ReturnDetailsTemplateProps = {
   returnEntity: ReturnWithOrderItems
@@ -15,6 +19,8 @@ export const ReturnDetailsTemplate: React.FC<ReturnDetailsTemplateProps> = ({
   returnEntity,
   isGuest = false,
 }) => {
+  const expectedRefundAmount = calcExpectedRefundAmount(returnEntity)
+
   return (
     <div
       className={twJoin("max-w-4xl mx-auto", isGuest && "py-32 min-h-screen")}
@@ -36,21 +42,26 @@ export const ReturnDetailsTemplate: React.FC<ReturnDetailsTemplateProps> = ({
           <ReturnStatus returnEntity={returnEntity} />
         </div>
         <div className="rounded-xs border border-grayscale-200 p-4 flex flex-col gap-6">
-          {returnEntity.items?.map((returnItem) => (
-            <OrderItem
-              key={returnItem.id}
-              id={returnItem.id}
-              thumbnail={returnItem?.item?.thumbnail || null}
-              product_handle={returnItem.item?.product_handle || null}
-              product_title={returnItem.item?.product_title || null}
-              title={returnItem.item?.title || ""}
-              quantity={returnItem.quantity}
-              currencyCode={returnEntity.currency_code}
-              amount={returnItem.item?.total || 0}
-              variant={returnItem.item?.variant}
-              className="flex gap-x-4 sm:gap-x-8 gap-y-6 pb-6 border-b border-grayscale-100 last:border-0 last:pb-0"
-            />
-          ))}
+          {returnEntity.items?.map((returnItem) => {
+            const item = returnItem.item
+            const discountedUnitPrice =
+              calcReturnItemAmount(returnItem) / returnItem.quantity
+            return (
+              <OrderItem
+                key={returnItem.id || ""}
+                thumbnail={item?.thumbnail || ""}
+                product_handle={item?.product_handle || ""}
+                product_title={item?.product_title || ""}
+                title={item?.title || ""}
+                quantity={returnItem.quantity}
+                variant={item?.variant || undefined}
+                fulfilled_total={discountedUnitPrice * returnItem.quantity}
+                unit_price={item?.unit_price || 0}
+                currencyCode={returnEntity.currency_code}
+                className="flex gap-x-4 sm:gap-x-8 gap-y-6 pb-6 border-b border-grayscale-100 last:border-0 last:pb-0"
+              />
+            )
+          })}
         </div>
         <div className="rounded-xs border border-grayscale-200 p-4">
           <div className="flex gap-4 items-center mb-4">
@@ -67,7 +78,7 @@ export const ReturnDetailsTemplate: React.FC<ReturnDetailsTemplateProps> = ({
               <p>
                 {convertToLocale({
                   currency_code: returnEntity.currency_code,
-                  amount: returnEntity.refund_amount || 0,
+                  amount: returnEntity.refund_amount || expectedRefundAmount,
                 })}
               </p>
             </div>

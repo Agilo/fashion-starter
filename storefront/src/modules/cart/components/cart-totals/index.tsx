@@ -20,7 +20,7 @@ const CartTotals: React.FC<CartTotalsProps> = ({
   const {
     currency_code,
     total,
-    subtotal,
+    item_subtotal,
     tax_total,
     shipping_total,
     discount_total,
@@ -40,9 +40,9 @@ const CartTotals: React.FC<CartTotalsProps> = ({
           <p
             className="self-end"
             data-testid="cart-subtotal"
-            data-value={subtotal || 0}
+            data-value={item_subtotal || 0}
           >
-            {convertToLocale({ amount: subtotal ?? 0, currency_code })}
+            {convertToLocale({ amount: item_subtotal ?? 0, currency_code })}
           </p>
         </div>
         {!!discount_total && (

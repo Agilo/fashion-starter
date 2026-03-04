@@ -230,7 +230,7 @@ export const ReturnCreationTemplate: React.FC<ReturnCreationTemplateProps> = ({
                 (itm) => itm.id === selected.id
               )
               if (!item) return total
-              return total + item.unit_price * selected.quantity
+              return total + item.refundable_total_per_unit * selected.quantity
             }, 0)}
             currencyCode={order.currency_code}
           />
