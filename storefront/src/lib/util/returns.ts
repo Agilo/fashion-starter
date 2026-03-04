@@ -11,16 +11,29 @@ export const getReturnCoverage = (
   areAllItemsReturned: boolean
 } => {
   const items = order.items || []
-  const returnedItemIds = new Set(
-    (order.returns || []).flatMap((ret) =>
-      (ret.items || []).map((retItem) => retItem.item_id)
-    )
+
+  // Sum up returned quantities per item_id
+  const returnedQuantities = new Map<string, number>()
+  for (const ret of order.returns || []) {
+    for (const retItem of ret.items || []) {
+      const current = returnedQuantities.get(retItem.item_id) || 0
+      returnedQuantities.set(retItem.item_id, current + retItem.quantity)
+    }
+  }
+
+  const hasAnyReturnedItem = items.some(
+    (item) => (returnedQuantities.get(item.id) || 0) > 0
   )
 
+  const areAllItemsReturned =
+    items.length > 0 &&
+    items.every(
+      (item) => (returnedQuantities.get(item.id) || 0) >= item.quantity
+    )
+
   return {
-    hasAnyReturnedItem: items.some((item) => returnedItemIds.has(item.id)),
-    areAllItemsReturned:
-      items.length > 0 && items.every((item) => returnedItemIds.has(item.id)),
+    hasAnyReturnedItem,
+    areAllItemsReturned,
   }
 }
 
