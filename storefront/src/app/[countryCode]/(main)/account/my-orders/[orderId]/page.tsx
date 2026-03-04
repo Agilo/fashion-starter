@@ -42,7 +42,7 @@ export default async function AccountOrderPage({
   return (
     <>
       <h1 className="text-md md:text-lg mb-8 md:mb-13">
-        Order: {order.display_id}
+        Order #{order.display_id}
       </h1>
       <div className="flex flex-col gap-6">
         <div className="rounded-xs border border-grayscale-200 flex flex-wrap justify-between p-4">

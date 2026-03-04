@@ -65,7 +65,7 @@ export default async function AccountMyOrdersPage({
                           href={`/account/my-orders/${order.id}`}
                           className="text-md"
                         >
-                          <span className="font-semibold">Order:</span>{" "}
+                          <span className="font-semibold">Order</span> #
                           {order.display_id}
                         </LocalizedLink>
                       </div>
