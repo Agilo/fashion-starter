@@ -44,8 +44,6 @@ export const ReturnDetailsTemplate: React.FC<ReturnDetailsTemplateProps> = ({
         <div className="rounded-xs border border-grayscale-200 p-4 flex flex-col gap-6">
           {returnEntity.items?.map((returnItem) => {
             const item = returnItem.item
-            const discountedUnitPrice =
-              calcReturnItemAmount(returnItem) / returnItem.quantity
             return (
               <OrderItem
                 key={returnItem.id || ""}
@@ -55,7 +53,7 @@ export const ReturnDetailsTemplate: React.FC<ReturnDetailsTemplateProps> = ({
                 title={item?.title || ""}
                 quantity={returnItem.quantity}
                 variant={item?.variant || undefined}
-                fulfilled_total={discountedUnitPrice * returnItem.quantity}
+                fulfilled_total={calcReturnItemAmount(returnItem)}
                 unit_price={item?.unit_price || 0}
                 currencyCode={returnEntity.currency_code}
                 className="flex gap-x-4 sm:gap-x-8 gap-y-6 pb-6 border-b border-grayscale-100 last:border-0 last:pb-0"
@@ -74,11 +72,11 @@ export const ReturnDetailsTemplate: React.FC<ReturnDetailsTemplateProps> = ({
               <p>Original Payment Method</p>
             </div>
             <div className="flex justify-between items-center text-md pt-4 border-t border-grayscale-200 mt-2">
-              <p>Total Refund</p>
+              <p>Est. Refund</p>
               <p>
                 {convertToLocale({
                   currency_code: returnEntity.currency_code,
-                  amount: returnEntity.refund_amount || expectedRefundAmount,
+                  amount: expectedRefundAmount,
                 })}
               </p>
             </div>

@@ -8,6 +8,7 @@ import { Icon } from "@/components/Icon"
 import { getCustomer } from "@lib/data/customer"
 import { redirect } from "next/navigation"
 import {
+  calcExpectedRefundAmount,
   getOrderReturns,
   hasReturnableItems,
   type OrderWithReturns,
@@ -186,18 +187,7 @@ export default async function AccountOrderPage({
                     <p className="text-right font-medium">
                       {convertToLocale({
                         currency_code: eachReturn.currency_code,
-                        amount: eachReturn.items.reduce((sum, returnItem) => {
-                          const item = returnItem.item
-                          if (!item) return sum
-                          const totalAdjustments =
-                            item.adjustments?.reduce(
-                              (s, a) => s + a.amount,
-                              0
-                            ) ?? 0
-                          const discountedUnitPrice =
-                            item.unit_price - totalAdjustments / item.quantity
-                          return sum + discountedUnitPrice * returnItem.quantity
-                        }, 0),
+                        amount: calcExpectedRefundAmount(eachReturn),
                       })}
                     </p>
                   </div>
