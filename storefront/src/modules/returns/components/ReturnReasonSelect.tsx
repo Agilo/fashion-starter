@@ -31,8 +31,8 @@ export const ReturnReasonSelect: React.FC<ReturnReasonSelectProps> = ({
 }) => {
   return (
     <ReactAria.Select
-      selectedKey={value}
-      onSelectionChange={(key) => onChange(key as string)}
+      value={value}
+      onChange={(key) => onChange(key as string)}
       className={twMerge("w-full", className)}
     >
       <UiSelectButton>

@@ -1,3 +1,5 @@
+"use client"
+
 import * as React from "react"
 import { Icon } from "@/components/Icon"
 import { convertToLocale } from "@lib/util/money"
@@ -9,25 +11,57 @@ import {
   calcReturnItemAmount,
   ReturnWithOrderItems,
 } from "@lib/util/returns"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/Tabs"
 
 type ReturnDetailsTemplateProps = {
-  returnEntity: ReturnWithOrderItems
+  returns?: ReturnWithOrderItems[]
+  returnEntity?: ReturnWithOrderItems
   isGuest?: boolean
 }
 
 export const ReturnDetailsTemplate: React.FC<ReturnDetailsTemplateProps> = ({
-  returnEntity,
+  returns,
+  returnEntity: singleReturn,
   isGuest = false,
 }) => {
+  const allReturns = returns || (singleReturn ? [singleReturn] : [])
+  const hasMultipleReturns = allReturns.length > 1
+
+  const [selectedReturnId, setSelectedReturnId] = React.useState(
+    allReturns[0]?.id || ""
+  )
+
+  const returnEntity =
+    allReturns.find((r) => r.id === selectedReturnId) || allReturns[0]
+
   const expectedRefundAmount = calcExpectedRefundAmount(returnEntity)
 
   return (
     <div
       className={twJoin("max-w-4xl mx-auto", isGuest && "py-32 min-h-screen")}
     >
-      <h1 className="text-md md:text-lg mb-8 md:mb-13">
-        {`Return #${returnEntity.display_id}`}
-      </h1>
+      <div className="mb-8 md:mb-13">
+        {!hasMultipleReturns && (
+          <h1 className="text-md md:text-lg mb-4">
+            {`Return #${returnEntity.display_id}`}
+          </h1>
+        )}
+        {hasMultipleReturns && (
+          <Tabs
+            defaultValue={allReturns[0]?.id || ""}
+            value={selectedReturnId}
+            onChange={setSelectedReturnId}
+          >
+            <TabsList>
+              {allReturns.map((ret) => (
+                <TabsTrigger key={ret.id} value={ret.id || ""}>
+                  Return #{ret.display_id}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+        )}
+      </div>
       <div className="flex flex-col gap-6">
         <div className="rounded-xs border border-grayscale-200 flex flex-wrap justify-between p-4">
           <div className="flex gap-4 items-center">

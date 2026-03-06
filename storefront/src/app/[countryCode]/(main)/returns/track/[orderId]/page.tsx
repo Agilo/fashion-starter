@@ -3,6 +3,7 @@ import { redirect } from "next/navigation"
 
 import { ReturnDetailsTemplate } from "@modules/returns/templates/ReturnDetailsTemplate"
 import { retrieveOrder } from "@lib/data/orders"
+import { getOrderReturns, type OrderWithReturns } from "@lib/util/returns"
 
 export const metadata: Metadata = {
   title: "Return Details",
@@ -16,11 +17,17 @@ export default async function ReturnDetailsPage({
 }) {
   const { orderId } = await params
 
-  const order = await retrieveOrder(orderId)
+  const order = (await retrieveOrder(orderId)) as OrderWithReturns
 
   if (!order) {
     redirect("/returns/track")
   }
 
-  return <ReturnDetailsTemplate order={order} isGuest />
+  const orderReturns = getOrderReturns(order)
+
+  if (!orderReturns || orderReturns.length === 0) {
+    redirect("/returns/track")
+  }
+
+  return <ReturnDetailsTemplate returns={orderReturns} isGuest />
 }

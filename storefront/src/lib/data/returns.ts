@@ -132,47 +132,25 @@ export const verifyGuestOrderAccess = async (
   orderId: string,
   email: string
 ) => {
-  try {
-    const order = await fetchAndVerifyGuestOrder(orderId, email)
+  const order = await fetchAndVerifyGuestOrder(orderId, email)
 
-    if (!hasReturnableItems(order)) {
-      throw new Error("This order has no items available for return.")
-    }
-
-    const params = new URLSearchParams({ orderId, email })
-
-    redirect(`/returns/create?${params.toString()}`)
-  } catch (err) {
-    if (err instanceof Error && err.message.includes("NEXT_REDIRECT")) {
-      throw err
-    }
-    throw new Error(
-      err instanceof Error
-        ? err.message
-        : "Unable to verify order. Please check your details and try again."
-    )
+  if (!hasReturnableItems(order)) {
+    throw new Error("This order has no items available for return.")
   }
+
+  const params = new URLSearchParams({ orderId, email })
+
+  redirect(`/returns/create?${params.toString()}`)
 }
 
 export const trackGuestReturn = async (orderId: string, email: string) => {
-  try {
-    const order = await fetchAndVerifyGuestOrder(orderId, email)
+  const order = await fetchAndVerifyGuestOrder(orderId, email)
 
-    if (!hasReturnableItems(order)) {
-      throw new Error(
-        "Unable to find return. Please check your details and try again."
-      )
-    }
-
-    redirect(`/returns/track/${orderId}`)
-  } catch (err) {
-    if (err instanceof Error && err.message.includes("NEXT_REDIRECT")) {
-      throw err
-    }
+  if (order?.returns?.length === 0) {
     throw new Error(
-      err instanceof Error
-        ? err.message
-        : "Unable to find return. Please check your details and try again."
+      "No returns found for this order. Please check your details and try again."
     )
   }
+
+  redirect(`/returns/track/${orderId}`)
 }
