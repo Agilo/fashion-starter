@@ -38,7 +38,10 @@ export const ReturnDetailsTemplate: React.FC<ReturnDetailsTemplateProps> = ({
 
   return (
     <div
-      className={twJoin("max-w-4xl mx-auto", isGuest && "py-32 min-h-screen")}
+      className={twJoin(
+        "max-w-4xl mx-auto",
+        isGuest && "py-32 min-h-screen col-span-full"
+      )}
     >
       <div className="mb-8 md:mb-13">
         {!hasMultipleReturns && (

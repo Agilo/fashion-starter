@@ -4,6 +4,7 @@ import { redirect } from "next/navigation"
 import { ReturnDetailsTemplate } from "@modules/returns/templates/ReturnDetailsTemplate"
 import { retrieveOrder } from "@lib/data/orders"
 import { getOrderReturns, type OrderWithReturns } from "@lib/util/returns"
+import { Layout } from "@/components/Layout"
 
 export const metadata: Metadata = {
   title: "Return Details",
@@ -29,5 +30,9 @@ export default async function ReturnDetailsPage({
     redirect("/returns/track")
   }
 
-  return <ReturnDetailsTemplate returns={orderReturns} isGuest />
+  return (
+    <Layout>
+      <ReturnDetailsTemplate returns={orderReturns} isGuest />
+    </Layout>
+  )
 }
