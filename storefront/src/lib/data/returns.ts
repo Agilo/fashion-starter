@@ -117,6 +117,10 @@ const fetchAndVerifyGuestOrder = async (
   const order = await sdk.client
     .fetch<{ order: OrderWithReturns }>(`/store/orders/${orderId}`, {
       method: "GET",
+      query: {
+        fields:
+          "*items,*items.variant,*items.product,*items.adjustments,*returns,*returns.*,+items.refundable_total_per_unit",
+      },
       cache: "no-store",
     })
     .then(({ order }) => order)
@@ -146,7 +150,7 @@ export const verifyGuestOrderAccess = async (
 export const trackGuestReturn = async (orderId: string, email: string) => {
   const order = await fetchAndVerifyGuestOrder(orderId, email)
 
-  if (order?.returns?.length === 0) {
+  if (!order.returns || order.returns.length === 0) {
     throw new Error(
       "No returns found for this order. Please check your details and try again."
     )
