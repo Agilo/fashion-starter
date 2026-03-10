@@ -29,8 +29,8 @@ const ReturnShippingSelector: React.FC<ReturnShippingSelectorProps> = ({
 }) => {
   const [isLoadingPrices, setIsLoadingPrices] = useState(true)
   const [calculatedPricesMap, setCalculatedPricesMap] = useState<
-    Record<string, number>
-  >({})
+    Record<string, number> | undefined
+  >(undefined)
 
   useEffect(() => {
     setIsLoadingPrices(true)
@@ -108,7 +108,7 @@ const ReturnShippingSelector: React.FC<ReturnShippingSelectorProps> = ({
                   amount: option.amount!,
                   currency_code: currencyCode,
                 })
-              ) : calculatedPricesMap[option.id] ? (
+              ) : calculatedPricesMap?.[option.id] !== undefined ? (
                 convertToLocale({
                   amount: calculatedPricesMap[option.id],
                   currency_code: currencyCode,
