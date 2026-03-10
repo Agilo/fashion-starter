@@ -37,5 +37,5 @@ export default async function AccountReturnDetailsPage({
     redirect(`/account/my-orders/${orderId}`)
   }
 
-  return <ReturnDetailsTemplate returnEntity={returnEntity} />
+  return <ReturnDetailsTemplate returns={[returnEntity]} />
 }

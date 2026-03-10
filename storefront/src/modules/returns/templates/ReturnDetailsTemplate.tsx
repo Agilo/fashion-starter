@@ -14,25 +14,21 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/Tabs"
 
 type ReturnDetailsTemplateProps = {
-  returns?: ReturnWithOrderItems[]
-  returnEntity?: ReturnWithOrderItems
+  returns: ReturnWithOrderItems[]
   isGuest?: boolean
 }
 
 export const ReturnDetailsTemplate: React.FC<ReturnDetailsTemplateProps> = ({
   returns,
-  returnEntity: singleReturn,
   isGuest = false,
 }) => {
-  const allReturns = returns || (singleReturn ? [singleReturn] : [])
-  const hasMultipleReturns = allReturns.length > 1
-
+  const hasMultipleReturns = returns.length > 1
   const [selectedReturnId, setSelectedReturnId] = React.useState(
-    allReturns[0]?.id || ""
+    returns[0]?.id || ""
   )
 
   const returnEntity =
-    allReturns.find((r) => r.id === selectedReturnId) || allReturns[0]
+    returns.find((r) => r.id === selectedReturnId) || returns[0]
 
   const expectedRefundAmount = calcExpectedRefundAmount(returnEntity)
 
@@ -51,12 +47,12 @@ export const ReturnDetailsTemplate: React.FC<ReturnDetailsTemplateProps> = ({
         )}
         {hasMultipleReturns && (
           <Tabs
-            defaultValue={allReturns[0]?.id || ""}
+            defaultValue={returns[0]?.id || ""}
             value={selectedReturnId}
             onChange={setSelectedReturnId}
           >
             <TabsList>
-              {allReturns.map((ret) => (
+              {returns.map((ret) => (
                 <TabsTrigger key={ret.id} value={ret.id || ""}>
                   Return #{ret.display_id}
                 </TabsTrigger>
