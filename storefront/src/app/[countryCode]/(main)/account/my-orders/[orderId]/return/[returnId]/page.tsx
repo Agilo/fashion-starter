@@ -1,10 +1,10 @@
 import { Metadata } from "next"
-import { redirect } from "next/navigation"
+import { notFound } from "next/navigation"
 
 import { getCustomer } from "@lib/data/customer"
 import { ReturnDetailsTemplate } from "@modules/returns/templates/ReturnDetailsTemplate"
-import { retrieveOrder } from "@lib/data/orders"
 import { getOrderReturns, type OrderWithReturns } from "@lib/util/returns"
+import { fetchAndVerifyOrder } from "@lib/data/returns"
 
 export const metadata: Metadata = {
   title: "Account - Return Details",
@@ -18,15 +18,19 @@ export default async function AccountReturnDetailsPage({
 }) {
   const customer = await getCustomer().catch(() => null)
 
-  if (!customer) {
-    redirect("/")
+  const { orderId, returnId } = await params
+
+  if (!customer || !orderId || !returnId) {
+    notFound()
   }
 
-  const { orderId, returnId } = await params
-  const order = (await retrieveOrder(orderId)) as OrderWithReturns
+  const order = (await fetchAndVerifyOrder(
+    orderId,
+    customer.email
+  )) as OrderWithReturns & { cart: { id: string } }
 
   if (!order) {
-    redirect("/account/my-orders")
+    notFound()
   }
 
   const orderReturns = getOrderReturns(order)
@@ -34,7 +38,7 @@ export default async function AccountReturnDetailsPage({
   const returnEntity = orderReturns?.find((r) => r.id === returnId)
 
   if (!returnEntity) {
-    redirect(`/account/my-orders/${orderId}`)
+    notFound()
   }
 
   return <ReturnDetailsTemplate returns={[returnEntity]} />

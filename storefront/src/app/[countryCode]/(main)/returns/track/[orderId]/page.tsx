@@ -4,7 +4,7 @@ import { notFound } from "next/navigation"
 import { ReturnDetailsTemplate } from "@modules/returns/templates/ReturnDetailsTemplate"
 import { getOrderReturns } from "@lib/util/returns"
 import { Layout } from "@/components/Layout"
-import { fetchAndVerifyGuestOrder } from "@lib/data/returns"
+import { fetchAndVerifyOrder } from "@lib/data/returns"
 
 export const metadata: Metadata = {
   title: "Return Details",
@@ -27,7 +27,7 @@ export default async function ReturnDetailsPage({
     notFound()
   }
 
-  const order = await fetchAndVerifyGuestOrder(orderId, email)
+  const order = await fetchAndVerifyOrder(orderId, email)
 
   if (!order) {
     notFound()

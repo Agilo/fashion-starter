@@ -4,7 +4,7 @@ import { notFound } from "next/navigation"
 import { ReturnCreationTemplate } from "@modules/returns/templates/ReturnCreationTemplate"
 import { Layout } from "@/components/Layout"
 import {
-  fetchAndVerifyGuestOrder,
+  fetchAndVerifyOrder,
   listReturnReasons,
   listReturnShippingOptions,
 } from "@lib/data/returns"
@@ -32,7 +32,7 @@ export default async function GuestReturnCreatePage({
     notFound()
   }
 
-  const order = (await fetchAndVerifyGuestOrder(
+  const order = (await fetchAndVerifyOrder(
     orderId,
     email
   )) as OrderWithReturns & { cart: { id: string } }

@@ -110,7 +110,7 @@ export const createReturnRequest = async (
     }))
 }
 
-export const fetchAndVerifyGuestOrder = async (
+export const fetchAndVerifyOrder = async (
   orderId: string,
   email: string
 ): Promise<OrderWithReturns> => {
@@ -137,7 +137,7 @@ export const verifyGuestOrderAccess = async (
   email: string,
   countryCode: string
 ) => {
-  const order = await fetchAndVerifyGuestOrder(orderId, email)
+  const order = await fetchAndVerifyOrder(orderId, email)
 
   if (!hasReturnableItems(order)) {
     throw new Error("This order has no items available for return.")
@@ -153,7 +153,7 @@ export const trackGuestReturn = async (
   email: string,
   countryCode: string
 ) => {
-  const order = await fetchAndVerifyGuestOrder(orderId, email)
+  const order = await fetchAndVerifyOrder(orderId, email)
 
   if (!order.returns || order.returns.length === 0) {
     throw new Error(
