@@ -24,7 +24,7 @@ const CartTemplate = () => {
           >
             <ItemsTemplate
               items={cart?.items}
-              currencyCode={cart?.currency_code}
+              currencyCode={cart.currency_code}
             />
           </LayoutColumn>
           <LayoutColumn start={{ base: 1, lg: 9, xl: 10 }} end={13}>
