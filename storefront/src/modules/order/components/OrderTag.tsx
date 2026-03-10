@@ -1,6 +1,7 @@
 import { UiTag } from "@/components/ui/Tag"
 import { twMerge } from "tailwind-merge"
 import { getReturnCoverage, OrderWithReturns } from "@lib/util/returns"
+import * as React from "react"
 
 export const OrderStatusTag: React.FC<{
   order: OrderWithReturns
