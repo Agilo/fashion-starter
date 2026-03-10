@@ -12,9 +12,11 @@ export const getReturnCoverage = (
 } => {
   const items = order.items || []
 
-  // Sum up returned quantities per item_id
+  // Sum up returned quantities per item_id, ignoring canceled returns
   const returnedQuantities = new Map<string, number>()
   for (const ret of order.returns || []) {
+    if (ret.status === "canceled") continue
+
     for (const retItem of ret.items || []) {
       const current = returnedQuantities.get(retItem.item_id) || 0
       returnedQuantities.set(retItem.item_id, current + retItem.quantity)
