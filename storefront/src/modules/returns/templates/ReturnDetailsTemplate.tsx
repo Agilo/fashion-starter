@@ -34,6 +34,10 @@ export const ReturnDetailsTemplate: React.FC<ReturnDetailsTemplateProps> = ({
   const returnEntity =
     allReturns.find((r) => r.id === selectedReturnId) || allReturns[0]
 
+  if (!returnEntity) {
+    return null
+  }
+
   const expectedRefundAmount = calcExpectedRefundAmount(returnEntity)
 
   return (
