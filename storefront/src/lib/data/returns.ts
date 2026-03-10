@@ -110,7 +110,7 @@ export const createReturnRequest = async (
     }))
 }
 
-const fetchAndVerifyGuestOrder = async (
+export const fetchAndVerifyGuestOrder = async (
   orderId: string,
   email: string
 ): Promise<OrderWithReturns> => {
@@ -119,7 +119,7 @@ const fetchAndVerifyGuestOrder = async (
       method: "GET",
       query: {
         fields:
-          "*items,*items.variant,*items.product,*items.adjustments,*returns,*returns.*,+items.refundable_total_per_unit",
+          "*payment_collections.payments,*items,*items.metadata,*items.variant,*items.product,*items.adjustments,+cart.id,+items.refundable_total_per_unit,+items.discount_total,*returns,*returns.*,+summary",
       },
       cache: "no-store",
     })
@@ -134,7 +134,8 @@ const fetchAndVerifyGuestOrder = async (
 
 export const verifyGuestOrderAccess = async (
   orderId: string,
-  email: string
+  email: string,
+  countryCode: string
 ) => {
   const order = await fetchAndVerifyGuestOrder(orderId, email)
 
@@ -142,12 +143,16 @@ export const verifyGuestOrderAccess = async (
     throw new Error("This order has no items available for return.")
   }
 
-  const params = new URLSearchParams({ orderId, email })
+  const params = new URLSearchParams({ email })
 
-  redirect(`/returns/create?${params.toString()}`)
+  redirect(`/${countryCode}/returns/create/${orderId}?${params.toString()}`)
 }
 
-export const trackGuestReturn = async (orderId: string, email: string) => {
+export const trackGuestReturn = async (
+  orderId: string,
+  email: string,
+  countryCode: string
+) => {
   const order = await fetchAndVerifyGuestOrder(orderId, email)
 
   if (!order.returns || order.returns.length === 0) {
@@ -156,5 +161,7 @@ export const trackGuestReturn = async (orderId: string, email: string) => {
     )
   }
 
-  redirect(`/returns/track/${orderId}`)
+  const params = new URLSearchParams({ email })
+
+  redirect(`/${countryCode}/returns/track/${orderId}?${params.toString()}`)
 }

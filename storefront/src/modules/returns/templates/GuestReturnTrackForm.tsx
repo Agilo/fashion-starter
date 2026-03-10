@@ -16,7 +16,9 @@ const trackingSchema = z.object({
 
 type FormData = z.infer<typeof trackingSchema>
 
-export const GuestReturnTrackForm: React.FC = () => {
+export const GuestReturnTrackForm: React.FC<{ countryCode: string }> = ({
+  countryCode,
+}) => {
   const [error, setError] = React.useState<string | null>(null)
   const [isLoading, setIsLoading] = React.useState(false)
 
@@ -25,7 +27,7 @@ export const GuestReturnTrackForm: React.FC = () => {
     setIsLoading(true)
 
     try {
-      await trackGuestReturn(data.orderId, data.email)
+      await trackGuestReturn(data.orderId, data.email, countryCode)
     } catch (err) {
       if (err instanceof Error && err.message.includes("NEXT_REDIRECT")) {
         return
@@ -85,7 +87,7 @@ export const GuestReturnTrackForm: React.FC = () => {
           Want to start a new return?
         </p>
         <LocalizedLink
-          href="/returns"
+          href="/returns/create"
           className="inline-flex items-center gap-2 text-sm font-medium border-b border-current"
         >
           Start a Return

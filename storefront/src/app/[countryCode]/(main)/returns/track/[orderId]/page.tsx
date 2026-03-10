@@ -1,10 +1,10 @@
 import { Metadata } from "next"
-import { redirect } from "next/navigation"
+import { notFound } from "next/navigation"
 
 import { ReturnDetailsTemplate } from "@modules/returns/templates/ReturnDetailsTemplate"
-import { retrieveOrder } from "@lib/data/orders"
-import { getOrderReturns, type OrderWithReturns } from "@lib/util/returns"
+import { getOrderReturns } from "@lib/util/returns"
 import { Layout } from "@/components/Layout"
+import { fetchAndVerifyGuestOrder } from "@lib/data/returns"
 
 export const metadata: Metadata = {
   title: "Return Details",
@@ -13,21 +13,30 @@ export const metadata: Metadata = {
 
 export default async function ReturnDetailsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ orderId: string }>
+  searchParams: Promise<{
+    email: string
+  }>
 }) {
   const { orderId } = await params
+  const { email } = await searchParams
 
-  const order = (await retrieveOrder(orderId)) as OrderWithReturns
+  if (!orderId || !email) {
+    notFound()
+  }
+
+  const order = await fetchAndVerifyGuestOrder(orderId, email)
 
   if (!order) {
-    redirect("/returns/track")
+    notFound()
   }
 
   const orderReturns = getOrderReturns(order)
 
   if (!orderReturns || orderReturns.length === 0) {
-    redirect("/returns/track")
+    notFound()
   }
 
   return (

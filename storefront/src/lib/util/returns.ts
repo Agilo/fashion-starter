@@ -90,22 +90,8 @@ export const enhanceItemsWithReturnStatus = (
   })
 }
 
-type BigNumberRawValue = { value: string | number; precision?: number }
-
 export type ReturnItemWithLineItem = HttpTypes.StoreReturnItem & {
   item: HttpTypes.StoreOrderLineItem
-  reason: {
-    id: string
-    value: string
-    label: string
-    description?: string | null
-  } | null
-  created_at: string
-  updated_at: string
-  deleted_at: string | null
-  raw_quantity: BigNumberRawValue
-  raw_received_quantity: BigNumberRawValue
-  raw_damaged_quantity: BigNumberRawValue
 }
 
 export type ReturnWithOrderItems = Omit<HttpTypes.StoreReturn, "items"> & {

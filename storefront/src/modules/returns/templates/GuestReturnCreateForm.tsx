@@ -16,7 +16,9 @@ const guestAccessSchema = z.object({
 
 type FormData = z.infer<typeof guestAccessSchema>
 
-export const GuestReturnCreateForm: React.FC = () => {
+export const GuestReturnCreateForm: React.FC<{ countryCode: string }> = ({
+  countryCode,
+}) => {
   const [error, setError] = React.useState<string | null>(null)
   const [isLoading, setIsLoading] = React.useState(false)
 
@@ -25,7 +27,7 @@ export const GuestReturnCreateForm: React.FC = () => {
     setIsLoading(true)
 
     try {
-      await verifyGuestOrderAccess(data.orderId, data.email)
+      await verifyGuestOrderAccess(data.orderId, data.email, countryCode)
     } catch (err) {
       if (err instanceof Error && err.message.includes("NEXT_REDIRECT")) {
         return

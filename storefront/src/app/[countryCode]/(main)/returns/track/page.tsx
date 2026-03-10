@@ -6,6 +6,12 @@ export const metadata: Metadata = {
   description: "Track the status of your return request",
 }
 
-export default function GuestReturnTrackingPage() {
-  return <GuestReturnTrackForm />
+export default async function GuestReturnTrackingPage({
+  params,
+}: {
+  params: Promise<{ countryCode: string }>
+}) {
+  const { countryCode } = await params
+
+  return <GuestReturnTrackForm countryCode={countryCode} />
 }

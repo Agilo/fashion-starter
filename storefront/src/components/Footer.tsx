@@ -44,7 +44,9 @@ export const Footer: React.FC = () => {
                     <LocalizedLink href="/">Delivery</LocalizedLink>
                   </li>
                   <li>
-                    <LocalizedLink href="/returns">Returns</LocalizedLink>
+                    <LocalizedLink href="/returns/create">
+                      Returns
+                    </LocalizedLink>
                   </li>
                 </ul>
                 <ul className="flex flex-col gap-6 md:gap-3.5">
