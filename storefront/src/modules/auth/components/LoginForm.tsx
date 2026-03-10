@@ -12,7 +12,7 @@ import { useRouter } from "next/navigation"
 import { emailFormSchema } from "@modules/checkout/components/email"
 
 const loginFormSchema = z.object({
-  email: z.string().email(),
+  email: z.email(),
   password: z.string().min(6),
 })
 
