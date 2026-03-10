@@ -5,12 +5,11 @@ import ErrorMessage from "@modules/checkout/components/error-message"
 import DeleteButton from "@modules/common/components/delete-button"
 import LineItemUnitPrice from "@modules/common/components/line-item-unit-price"
 import Thumbnail from "@modules/products/components/thumbnail"
-import { NumberField } from "@/components/NumberField"
+import { InputNumberField } from "@/components/InputNumberField"
 import { LocalizedLink } from "@/components/LocalizedLink"
 import { twMerge } from "tailwind-merge"
-import { useUpdateLineItem } from "hooks/cart"
+import { useLineItemQuantityUpdater } from "hooks/cart"
 import { withReactQueryProvider } from "@lib/util/react-query"
-import * as React from "react"
 
 type ItemProps = {
   item: HttpTypes.StoreCartLineItem
@@ -20,7 +19,17 @@ type ItemProps = {
 
 const Item = ({ item, currencyCode, className }: ItemProps) => {
   const { handle } = item.variant?.product ?? {}
-  const { mutateAsync, isPending, error } = useUpdateLineItem()
+  const {
+    quantity,
+    error,
+    onQuantityChange,
+    onQuantityCommit,
+    onQuantityFocus,
+    onQuantityBlur,
+  } = useLineItemQuantityUpdater({
+    lineId: item.id,
+    initialQuantity: item.quantity,
+  })
   const maxQuantity = item.variant ? getVariantItemsInStock(item.variant) : 0
 
   const [quantity, setQuantity] = React.useState(item.quantity)
@@ -68,13 +77,16 @@ const Item = ({ item, currencyCode, className }: ItemProps) => {
               className="sm:hidden"
             />
           </div>
-          <NumberField
+          <InputNumberField
+            key={item.id}
             size="sm"
             minValue={1}
             maxValue={maxQuantity}
             value={quantity}
-            onChange={setQuantity}
-            isDisabled={isPending}
+            onChange={onQuantityChange}
+            onCommit={onQuantityCommit}
+            onFocus={onQuantityFocus}
+            onBlur={onQuantityBlur}
             className="w-25"
             aria-label="Quantity"
           />
