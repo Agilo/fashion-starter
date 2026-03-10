@@ -5,8 +5,8 @@ import { getCustomer } from "@lib/data/customer"
 import { retrieveOrder } from "@lib/data/orders"
 import { ReturnCreationTemplate } from "@modules/returns/templates/ReturnCreationTemplate"
 import { listReturnReasons, listReturnShippingOptions } from "@lib/data/returns"
-import { HttpTypes } from "@medusajs/types/dist/bundles"
 import { hasReturnableItems } from "@lib/util/returns"
+import { HttpTypes } from "@medusajs/types"
 
 export const metadata: Metadata = {
   title: "Account - Return Items",
