@@ -69,13 +69,40 @@ export const createReturnRequest = async (
   return: HttpTypes.StoreReturn | null
 }> => {
   const orderId = formData.get("order_id") as string
-  const items = JSON.parse(formData.get("items") as string)
   const returnShippingOptionId = formData.get(
     "return_shipping_option_id"
   ) as string
   const locationId = formData.get("location_id") as string
 
-  if (!orderId || !items || !returnShippingOptionId) {
+  if (!orderId || !returnShippingOptionId) {
+    return {
+      success: false,
+      error: "Order ID, items, and return shipping option are required",
+      return: null,
+    }
+  }
+
+  const rawItems = formData.get("items")
+  if (!rawItems || typeof rawItems !== "string") {
+    return {
+      success: false,
+      error: "Order ID, items, and return shipping option are required",
+      return: null,
+    }
+  }
+
+  let items: unknown
+  try {
+    items = JSON.parse(rawItems)
+  } catch {
+    return {
+      success: false,
+      error: "Invalid items data. Please try again.",
+      return: null,
+    }
+  }
+
+  if (!Array.isArray(items) || items.length === 0) {
     return {
       success: false,
       error: "Order ID, items, and return shipping option are required",
