@@ -32,19 +32,6 @@ const Item = ({ item, currencyCode, className }: ItemProps) => {
   })
   const maxQuantity = item.variant ? getVariantItemsInStock(item.variant) : 0
 
-  const [quantity, setQuantity] = React.useState(item.quantity)
-
-  React.useEffect(() => {
-    const handler = setTimeout(() => {
-      if (quantity !== item.quantity) {
-        mutateAsync({ lineId: item.id, quantity })
-      }
-    }, 500)
-
-    return () => clearTimeout(handler)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [quantity, item])
-
   return (
     <div
       className={twMerge(
