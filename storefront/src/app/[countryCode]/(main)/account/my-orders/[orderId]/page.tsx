@@ -1,88 +1,26 @@
 import * as React from "react"
 import { Metadata } from "next"
-import Image from "next/image"
-import { HttpTypes } from "@medusajs/types"
 
-import { convertToLocale } from "@lib/util/money"
 import { retrieveOrder } from "@lib/data/orders"
 import { OrderTotals } from "@modules/order/components/OrderTotals"
-import { UiTag } from "@/components/ui/Tag"
-import { UiTagList, UiTagListDivider } from "@/components/ui/TagList"
+import { OrderItem } from "@modules/order/components/item/OrderItem"
 import { Icon } from "@/components/Icon"
-import { LocalizedLink } from "@/components/LocalizedLink"
 import { getCustomer } from "@lib/data/customer"
 import { redirect } from "next/navigation"
+import {
+  calcExpectedRefundAmount,
+  getOrderReturns,
+  hasReturnableItems,
+  type OrderWithReturns,
+} from "@lib/util/returns"
+import { convertToLocale } from "@lib/util/money"
+import { OrderStatus } from "@modules/order/components/OrderStatus"
+import { LocalizedButtonLink, LocalizedLink } from "@/components/LocalizedLink"
+import Image from "next/image"
 
 export const metadata: Metadata = {
-  title: "Account - Order",
+  title: "Account - Order Details",
   description: "Check your order history",
-}
-
-const OrderStatus: React.FC<{ order: HttpTypes.StoreOrder }> = ({ order }) => {
-  if (order.fulfillment_status === "canceled") {
-    return (
-      <UiTagList>
-        <UiTag iconName="close" isActive className="self-start mt-auto">
-          Canceled
-        </UiTag>
-      </UiTagList>
-    )
-  }
-
-  if (order.fulfillment_status === "delivered") {
-    return (
-      <UiTagList>
-        <UiTag isActive iconName="package" className="self-start mt-auto">
-          Packing
-        </UiTag>
-        <UiTagListDivider />
-        <UiTag isActive iconName="truck" className="self-start mt-auto">
-          Delivering
-        </UiTag>
-        <UiTagListDivider />
-        <UiTag isActive iconName="check" className="self-start mt-auto">
-          Delivered
-        </UiTag>
-      </UiTagList>
-    )
-  }
-
-  if (
-    order.fulfillment_status === "shipped" ||
-    order.fulfillment_status === "partially_delivered"
-  ) {
-    return (
-      <UiTagList>
-        <UiTag isActive iconName="package" className="self-start mt-auto">
-          Packing
-        </UiTag>
-        <UiTagListDivider />
-        <UiTag isActive iconName="truck" className="self-start mt-auto">
-          Delivering
-        </UiTag>
-        <UiTagListDivider />
-        <UiTag iconName="check" className="self-start mt-auto">
-          Delivered
-        </UiTag>
-      </UiTagList>
-    )
-  }
-
-  return (
-    <UiTagList>
-      <UiTag isActive iconName="package" className="self-start mt-auto">
-        Packing
-      </UiTag>
-      <UiTagListDivider />
-      <UiTag iconName="truck" className="self-start mt-auto">
-        Delivering
-      </UiTag>
-      <UiTagListDivider />
-      <UiTag iconName="check" className="self-start mt-auto">
-        Delivered
-      </UiTag>
-    </UiTagList>
-  )
 }
 
 export default async function AccountOrderPage({
@@ -97,12 +35,15 @@ export default async function AccountOrderPage({
   }
 
   const { orderId } = await params
-  const order = await retrieveOrder(orderId)
+  const order = (await retrieveOrder(orderId)) as OrderWithReturns
+
+  const hasReturnableItemsInOrder = hasReturnableItems(order)
+  const orderReturns = getOrderReturns(order)
 
   return (
     <>
-      <h1 className="text-md md:text-lg mb-8 md:mb-16">
-        Order: {order.display_id}
+      <h1 className="text-md md:text-lg mb-8 md:mb-13">
+        Order #{order.display_id}
       </h1>
       <div className="flex flex-col gap-6">
         <div className="rounded-xs border border-grayscale-200 flex flex-wrap justify-between p-4">
@@ -114,10 +55,8 @@ export default async function AccountOrderPage({
             <p>{new Date(order.created_at).toLocaleDateString()}</p>
           </div>
         </div>
-        <div className="rounded-xs border border-grayscale-200 p-4">
-          <div className="flex flex-wrap gap-x-10 gap-y-8 justify-between items-end w-full">
-            <OrderStatus order={order} />
-          </div>
+        <div className="rounded-xs border border-grayscale-200 p-4 flex flex-wrap gap-x-10 gap-y-8 justify-between items-end w-full">
+          <OrderStatus order={order} />
         </div>
         <div className="flex max-sm:flex-col gap-x-4 gap-y-6 md:flex-col lg:flex-row">
           <div className="flex-1 overflow-hidden rounded-xs border border-grayscale-200 p-4">
@@ -197,61 +136,20 @@ export default async function AccountOrderPage({
         </div>
         <div className="rounded-xs border border-grayscale-200 p-4 flex flex-col gap-6">
           {order.items?.map((item) => (
-            <div
+            <OrderItem
               key={item.id}
+              thumbnail={item.thumbnail || ""}
+              product_handle={item.product_handle || ""}
+              product_title={item.product_title || ""}
+              title={item.title || ""}
+              quantity={item.quantity || 0}
+              variant={item.variant}
+              //@ts-expect-error - to be removed when fulfilled_total is added to the type
+              fulfilled_total={item.fulfilled_total || 0}
+              unit_price={item.unit_price || 0}
+              currencyCode={order.currency_code}
               className="flex gap-x-4 sm:gap-x-8 gap-y-6 pb-6 border-b border-grayscale-100 last:border-0 last:pb-0"
-            >
-              {item.thumbnail && (
-                <LocalizedLink
-                  href={`/products/${item.product_handle}`}
-                  className="max-w-25 sm:max-w-37 aspect-[3/4] w-full relative overflow-hidden"
-                >
-                  <Image
-                    src={item.thumbnail}
-                    alt={item.title}
-                    fill
-                    className="object-cover"
-                  />
-                </LocalizedLink>
-              )}
-              <div className="flex flex-col flex-1">
-                <p className="mb-2 sm:text-md">
-                  <LocalizedLink href={`/products/${item.product_handle}`}>
-                    {item.product_title}
-                  </LocalizedLink>
-                </p>
-                <div className="text-xs flex flex-col flex-1">
-                  <div>
-                    {item.variant?.options?.map((option) => (
-                      <p className="mb-1" key={option.id}>
-                        <span className="text-grayscale-500 mr-2">
-                          {option.option?.title}:
-                        </span>
-                        {option.value}
-                      </p>
-                    ))}
-                  </div>
-                  <div className="mt-auto flex max-xs:flex-col gap-x-10 gap-y-6.5 xs:items-center justify-between relative">
-                    <div className="xs:self-end sm:mb-1">
-                      <p>
-                        <span className="text-grayscale-500 mr-2">
-                          Quantity:
-                        </span>
-                        {item.quantity}
-                      </p>
-                    </div>
-                    <div className="sm:text-md">
-                      <p>
-                        {convertToLocale({
-                          currency_code: order.currency_code,
-                          amount: item.total,
-                        })}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            />
           ))}
         </div>
         <div className="rounded-xs border border-grayscale-200 p-4 flex max-sm:flex-col gap-y-4 gap-x-10 md:flex-wrap justify-between">
@@ -262,6 +160,83 @@ export default async function AccountOrderPage({
             </div>
           </div>
           <OrderTotals order={order} />
+        </div>
+        <div className="rounded-xs border border-grayscale-200 p-4">
+          <div className="flex gap-4 items-center mb-6">
+            <Icon name="undo" />
+            <p className="text-grayscale-500">Returns</p>
+          </div>
+          {orderReturns && orderReturns.length > 0 && (
+            <div className="flex flex-col gap-6 mb-4">
+              {orderReturns.map((eachReturn, index) => (
+                <div
+                  key={eachReturn.id || `return-${index}`}
+                  className="flex flex-col gap-4 p-4 rounded-xs border border-grayscale-100"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      {eachReturn.display_id && (
+                        <p className="font-medium">
+                          Return #{eachReturn.display_id}
+                        </p>
+                      )}
+                      <p className="text-xs text-grayscale-500">
+                        {new Date(eachReturn.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <p className="text-right font-medium">
+                      {convertToLocale({
+                        currency_code: eachReturn.currency_code,
+                        amount: calcExpectedRefundAmount(eachReturn),
+                      })}
+                    </p>
+                  </div>
+                  <div className="flex overflow-x-auto gap-3">
+                    {eachReturn.items
+                      ?.filter((item) => item.item.thumbnail)
+                      .map((item) => (
+                        <LocalizedLink
+                          key={item.id}
+                          href={`/products/${item.item.product_handle}`}
+                          className="shrink-0 w-19 aspect-[3/4] rounded-2xs relative overflow-hidden"
+                        >
+                          <Image
+                            src={item.item.thumbnail!}
+                            alt={item.item.title}
+                            fill
+                            className="object-cover"
+                          />
+                        </LocalizedLink>
+                      ))}
+                  </div>
+                  {eachReturn.id && (
+                    <LocalizedButtonLink
+                      href={`/account/my-orders/${order.id}/return/${eachReturn.id}`}
+                      variant="outline"
+                      size="sm"
+                    >
+                      View Details
+                    </LocalizedButtonLink>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="flex justify-between items-center gap-8">
+            <p className="text-xs">
+              Returns are available for the first 14 days after receiving your
+              items.
+            </p>
+            {hasReturnableItemsInOrder && (
+              <LocalizedButtonLink
+                href={`/account/my-orders/${order.id}/return`}
+                variant="outline"
+                size="sm"
+              >
+                Start Return
+              </LocalizedButtonLink>
+            )}
+          </div>
         </div>
       </div>
     </>

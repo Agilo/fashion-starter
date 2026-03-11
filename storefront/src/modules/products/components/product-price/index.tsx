@@ -29,7 +29,7 @@ export default function ProductPrice({
         <p className="text-sm mb-1 text-grayscale-500 line-through">
           {selectedPrice.original_price}
         </p>
-        <p className="text-md mb-8 text-red-primary">
+        <p className="text-md mb-8 text-red-primary font-semibold">
           {selectedPrice.calculated_price}
         </p>
       </div>

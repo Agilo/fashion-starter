@@ -21,6 +21,7 @@ import { Minus } from "@/components/icons/Minus"
 import { Package } from "@/components/icons/Package"
 import { Plus } from "@/components/icons/Plus"
 import { Receipt } from "@/components/icons/Receipt"
+import { Refresh } from "@/components/icons/Refresh"
 import { Search } from "@/components/icons/Search"
 import { Sliders } from "@/components/icons/Sliders"
 import { Trash } from "@/components/icons/Trash"
@@ -50,6 +51,7 @@ export type IconNames =
   | "package"
   | "plus"
   | "receipt"
+  | "refresh"
   | "search"
   | "sliders"
   | "trash"
@@ -145,6 +147,9 @@ export const Icon: React.FC<IconProps> = ({
     )}
     {name === "receipt" && (
       <Receipt {...rest} className={twMerge(baseClasses, className)} />
+    )}
+    {name === "refresh" && (
+      <Refresh {...rest} className={twMerge(baseClasses, className)} />
     )}
     {name === "search" && (
       <Search {...rest} className={twMerge(baseClasses, className)} />
