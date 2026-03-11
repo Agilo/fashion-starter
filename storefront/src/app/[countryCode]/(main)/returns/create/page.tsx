@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description: "Start a return for your order without logging in",
 }
 
-export default async function GuestReturnsPage({
+export default async function GuestReturnsCreatePage({
   params,
 }: {
   params: Promise<{ countryCode: string }>
