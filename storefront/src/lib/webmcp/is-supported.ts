@@ -9,11 +9,11 @@ export const isWebMCPSupported = (): boolean => {
 
   const nav = navigator as Navigator & {
     modelContext?: {
-      provideContext?: (options?: { tools?: unknown[] }) => void
+      registerTool?: (tool: unknown) => void
     }
   }
 
   return (
-    !!nav.modelContext && typeof nav.modelContext.provideContext === "function"
+    !!nav.modelContext && typeof nav.modelContext.registerTool === "function"
   )
 }

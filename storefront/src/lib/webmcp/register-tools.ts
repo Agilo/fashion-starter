@@ -12,18 +12,6 @@ import { applyPromotionTool, removePromotionTool } from "./tools/promotion"
 
 interface Navigator extends globalThis.Navigator {
   modelContext: {
-    provideContext: (options?: {
-      tools?: Array<{
-        name: string
-        description: string
-        inputSchema: object
-        execute: (input: unknown, client: WebMCPClient) => Promise<unknown>
-        annotations?: {
-          readOnlyHint?: boolean
-        }
-      }>
-    }) => void
-    clearContext: () => void
     registerTool: (tool: {
       name: string
       description: string
@@ -72,8 +60,8 @@ export const registerWebMCPTools = (router?: AppRouterInstance) => {
       checkoutPrepareTool,
     ] as RegisterableWebMCPTool[]
 
-    modelContext.provideContext({
-      tools: tools.map((tool) => ({
+    tools.forEach((tool) => {
+      modelContext.registerTool({
         name: tool.name,
         description: tool.description,
         inputSchema: tool.inputSchema,
@@ -81,7 +69,7 @@ export const registerWebMCPTools = (router?: AppRouterInstance) => {
         execute: async (input, client) => {
           return await tool.handler(input, { router, client })
         },
-      })),
+      })
     })
   } catch (error) {
     console.error("WebMCP registration failed", error)
