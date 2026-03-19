@@ -44,10 +44,7 @@ interface ProductSearchData {
 export const productsSearch = async (
   params: ProductSearchInput
 ): Promise<WebMCPToolResult<ProductSearchData>> => {
-  const pathNameParts = window.location.href
-    .replace(getBaseURL(), "")
-    .replace(/^\//, "")
-    .split("/")
+  const pathNameParts = window.location.pathname.replace(/^\//, "").split("/")
   const countryCode = pathNameParts[0]
 
   if (!countryCode) {
