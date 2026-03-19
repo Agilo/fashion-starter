@@ -25,10 +25,7 @@ export const cartManage = async (
   context?: WebMCPToolContext
 ): Promise<WebMCPToolResult<CartSnapshot>> => {
   const { action, variant_id: variantId, quantity = 1, line_id: lineId } = input
-  const pathNameParts = window.location.href
-    .replace(getBaseURL(), "")
-    .replace(/^\//, "")
-    .split("/")
+  const pathNameParts = window.location.pathname.replace(/^\//, "").split("/")
   const countryCode = pathNameParts[0]
 
   if (!countryCode) {
