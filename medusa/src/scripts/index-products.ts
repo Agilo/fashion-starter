@@ -1,11 +1,11 @@
-import { ExecArgs, ISearchService } from '@medusajs/framework/types';
-import { Modules } from '@medusajs/framework/utils';
+import { ExecArgs, ISearchService } from "@medusajs/framework/types";
+import { Modules } from "@medusajs/framework/utils";
 
 export default async function indexProducts({ container }: ExecArgs) {
-  const logger = container.resolve('logger');
+  const logger = container.resolve("logger");
 
   const meilisearchService = container.resolve(
-    'meilisearchService',
+    "meilisearchService",
   ) as ISearchService;
 
   const productModuleService = container.resolve(Modules.PRODUCT);
@@ -14,19 +14,20 @@ export default async function indexProducts({ container }: ExecArgs) {
     undefined,
     {
       relations: [
-        'variants',
-        'options',
-        'tags',
-        'collection',
-        'type',
-        'images',
+        "variants",
+        "options",
+        "tags",
+        "collection",
+        "type",
+        "images",
+        "categories",
       ],
     },
   );
 
   logger.info(`Adding ${count} products to MeiliSearch...`);
 
-  await meilisearchService.addDocuments('products', products, 'products');
+  await meilisearchService.addDocuments("products", products, "products");
 
-  logger.info('Products added to MeiliSearch');
+  logger.info("Products added to MeiliSearch");
 }
