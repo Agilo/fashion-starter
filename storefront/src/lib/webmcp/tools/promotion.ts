@@ -103,7 +103,7 @@ export const cartRemovePromotion = async (
 export const applyPromotionTool: WebMCPTool<PromotionInput, CartSnapshot> = {
   name: "cart.applyPromotion",
   description:
-    "Apply a discount/promotion code to the shopping cart. Returns updated cart with applied discount, including new subtotal, total, and discount amount. Common error codes: INVALID_CODE (code doesn't exist), NOT_APPLICABLE (code not valid for current cart items), EXPIRED (code has expired).",
+    "Apply a discount/promotion code to the shopping cart. Returns updated cart with applied discount, including new subtotal, total, and discount amount. Common error codes: MISSING_CODE (promotion code is required), CART_MISSING (no active cart found), APPLY_FAILED (failed to apply promotion code).",
   annotations: {
     readOnlyHint: false,
   },
