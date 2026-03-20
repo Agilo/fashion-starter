@@ -60,68 +60,81 @@ export const cartManage = async (
     }
   }
 
-  switch (action) {
-    case "add":
-      if (!variantId) {
-        return {
-          ok: false,
-          error: {
-            code: "MISSING_VARIANT",
-            message: "variant_id is required for add action",
-          },
+  try {
+    switch (action) {
+      case "add":
+        if (!variantId) {
+          return {
+            ok: false,
+            error: {
+              code: "MISSING_VARIANT",
+              message: "variant_id is required for add action",
+            },
+          }
         }
-      }
 
-      await addToCart({ variantId, quantity, countryCode })
-      break
-    case "update":
-      if (!lineId) {
-        return {
-          ok: false,
-          error: {
-            code: "MISSING_LINE_ID",
-            message: "line_id is required for update action",
-          },
+        await addToCart({ variantId, quantity, countryCode })
+        break
+      case "update":
+        if (!lineId) {
+          return {
+            ok: false,
+            error: {
+              code: "MISSING_LINE_ID",
+              message: "line_id is required for update action",
+            },
+          }
         }
-      }
 
-      await updateLineItem({ lineId, quantity })
-      break
-    case "remove":
-      if (!lineId) {
-        return {
-          ok: false,
-          error: {
-            code: "MISSING_LINE_ID",
-            message: "line_id is required for remove action",
-          },
+        await updateLineItem({ lineId, quantity })
+        break
+      case "remove":
+        if (!lineId) {
+          return {
+            ok: false,
+            error: {
+              code: "MISSING_LINE_ID",
+              message: "line_id is required for remove action",
+            },
+          }
         }
+
+        await deleteLineItem(lineId)
+        break
+      case "view":
+        break
+    }
+
+    const cart = await retrieveCart()
+
+    if (!cart) {
+      return {
+        ok: false,
+        error: {
+          code: "CART_MISSING",
+          message: "Cart is missing",
+        },
       }
+    }
 
-      await deleteLineItem(lineId)
-      break
-    case "view":
-      break
-  }
+    return {
+      ok: true,
+      data: mapCartToResult(cart),
+      meta: {
+        tool: "cart.manage",
+      },
+    }
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "An unexpected cart error occurred."
 
-  const cart = await retrieveCart()
-
-  if (!cart) {
     return {
       ok: false,
       error: {
-        code: "CART_MISSING",
-        message: "Cart is missing",
+        code: "CART_OPERATION_FAILED",
+        message,
       },
     }
-  }
-
-  return {
-    ok: true,
-    data: mapCartToResult(cart),
-    meta: {
-      tool: "cart.manage",
-    },
   }
 }
 
