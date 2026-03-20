@@ -171,7 +171,7 @@ export const navigateToProductTool: WebMCPTool<
   description:
     "Navigate to product detail page, optionally preselect options. For products with Material and Color, Material must be set before Color.",
   annotations: {
-    readOnlyHint: true,
+    readOnlyHint: false,
   },
   inputSchema: {
     type: "object",
@@ -197,7 +197,7 @@ export const navigateToCartTool: WebMCPTool<
   name: "navigation.toCart",
   description: "Navigate to shopping cart page",
   annotations: {
-    readOnlyHint: true,
+    readOnlyHint: false,
   },
   inputSchema: {
     type: "object",
