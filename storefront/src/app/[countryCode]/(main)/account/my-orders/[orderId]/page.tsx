@@ -224,7 +224,7 @@ export default async function AccountOrderPage({
           )}
           <div className="flex justify-between items-center gap-8">
             <p className="text-xs">
-              Returns are available for the first 14 days after receiving your
+              Returns are available for the first 30 days after receiving your
               items.
             </p>
             {hasReturnableItemsInOrder && (

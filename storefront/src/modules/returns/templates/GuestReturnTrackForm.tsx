@@ -30,7 +30,7 @@ export const GuestReturnTrackForm: React.FC<{ countryCode: string }> = ({
       await trackGuestReturn(data.orderId, data.email, countryCode)
     } catch (err) {
       if (err instanceof Error && err.message.includes("NEXT_REDIRECT")) {
-        return
+        throw err
       }
 
       setError(
