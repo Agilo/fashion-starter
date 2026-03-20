@@ -4,7 +4,6 @@ import {
   retrieveCart,
   updateLineItem,
 } from "@lib/data/cart"
-import { getBaseURL } from "@lib/util/env"
 import {
   CartSnapshot,
   WebMCPTool,
@@ -24,7 +23,8 @@ export const cartManage = async (
   input: CartManageInput,
   context?: WebMCPToolContext
 ): Promise<WebMCPToolResult<CartSnapshot>> => {
-  const { action, variant_id: variantId, quantity = 1, line_id: lineId } = input
+  const { action, variant_id: variantId, quantity, line_id: lineId } = input
+  const addQuantity = action === "add" ? (quantity ?? 1) : quantity
   const pathNameParts = window.location.pathname.replace(/^\//, "").split("/")
   const countryCode = pathNameParts[0]
 
@@ -43,7 +43,7 @@ export const cartManage = async (
       Promise.resolve(
         window.confirm(
           `Confirm cart action: ${action}${
-            action === "add" ? ` ${quantity} item(s)` : ""
+            action === "add" ? ` ${addQuantity} item(s)` : ""
           }?`
         )
       )
@@ -82,6 +82,15 @@ export const cartManage = async (
             error: {
               code: "MISSING_LINE_ID",
               message: "line_id is required for update action",
+            },
+          }
+        }
+        if (quantity === undefined) {
+          return {
+            ok: false,
+            error: {
+              code: "MISSING_QUANTITY",
+              message: "quantity is required for update action",
             },
           }
         }
@@ -126,7 +135,7 @@ export const cartManage = async (
     }
   } catch (error: unknown) {
     const message =
-      error instanceof Error ? error.message : "An unexpected cart error occurred."
+      error instanceof Error ? error.message : "Failed to perform cart action"
 
     return {
       ok: false,
@@ -153,7 +162,10 @@ export const cartManageTool: WebMCPTool<CartManageInput, CartSnapshot> = {
         type: "string",
         description: "Variant ID (required for add)",
       },
-      quantity: { type: "number", description: "Quantity (default: 1)" },
+      quantity: {
+        type: "number",
+        description: "Quantity (required for update)",
+      },
       line_id: {
         type: "string",
         description: "Line item ID (required for remove/update)",

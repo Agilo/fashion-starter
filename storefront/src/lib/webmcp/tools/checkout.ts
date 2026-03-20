@@ -152,12 +152,15 @@ export const checkoutPrepare = async (
       data: { path },
       meta: { tool: "checkout.prepare" },
     }
-  } catch (error) {
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "Failed to prepare checkout"
+
     return {
       ok: false,
       error: {
         code: "CHECKOUT_PREPARE_FAILED",
-        message: "Failed to prepare checkout",
+        message,
       },
     }
   }

@@ -1,6 +1,5 @@
 import { getProductsListWithSort } from "@lib/data/products"
 import { MeiliSearchProductHit, searchClient } from "@lib/search-client"
-import { getBaseURL } from "@lib/util/env"
 import { getProductPrice } from "@lib/util/get-product-price"
 import { HttpTypes } from "@medusajs/types"
 import { WebMCPTool, WebMCPToolResult } from "../types"
@@ -143,12 +142,15 @@ export const productsSearch = async (
         tool: "products.search",
       },
     }
-  } catch (err) {
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "Failed to search products"
+
     return {
       ok: false,
       error: {
         code: "SEARCH_FAILED",
-        message: err instanceof Error ? err.message : "Unknown error",
+        message,
       },
     }
   }
