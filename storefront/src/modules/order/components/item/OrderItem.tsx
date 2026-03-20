@@ -30,8 +30,8 @@ export const OrderItem: React.FC<OrderItemProps> = ({
   currencyCode,
   className,
 }) => {
-  const discountedUnitPrice = fulfilled_total / quantity
-  const hasDiscount = discountedUnitPrice < unit_price
+  const discountedUnitPrice = quantity > 0 ? fulfilled_total / quantity : 0
+  const hasDiscount = quantity > 0 && discountedUnitPrice < unit_price
 
   return (
     <div className={className}>

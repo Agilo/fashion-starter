@@ -142,7 +142,7 @@ export default async function AccountOrderPage({
               product_handle={item.product_handle || ""}
               product_title={item.product_title || ""}
               title={item.title || ""}
-              quantity={item.quantity || 0}
+              quantity={item.quantity}
               variant={item.variant}
               //@ts-expect-error - to be removed when fulfilled_total is added to the type
               fulfilled_total={item.fulfilled_total || 0}
