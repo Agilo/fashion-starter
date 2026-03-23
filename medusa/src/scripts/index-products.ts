@@ -20,6 +20,7 @@ export default async function indexProducts({ container }: ExecArgs) {
         'collection',
         'type',
         'images',
+        'categories',
       ],
     },
   );

@@ -21,7 +21,7 @@ export default async function indexProductHandler({
   }
 
   const product = await productModuleService.retrieveProduct(productId, {
-    relations: ['variants', 'options', 'tags', 'collection', 'type', 'images'],
+    relations: ['variants', 'options', 'tags', 'collection', 'type', 'images', 'categories'],
   });
 
   if (name === 'product.updated') {
