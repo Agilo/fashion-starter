@@ -40,7 +40,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
   const images = product.images || []
   const hasImages = Boolean(
     product.images &&
-      product.images.filter((image) => Boolean(image.url)).length > 0
+    product.images.filter((image) => Boolean(image.url)).length > 0
   )
 
   const collectionDetails = collectionMetadataCustomFieldsSchema.safeParse(
@@ -63,11 +63,13 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
             )}
             <div className="sticky flex-1 top-0">
               <ProductInfo product={product} />
-              <ProductActions
-                product={product}
-                materials={materials}
-                region={region}
-              />
+              <Suspense>
+                <ProductActions
+                  product={product}
+                  materials={materials}
+                  region={region}
+                />
+              </Suspense>
             </div>
             {!hasImages && <div className="flex-1" />}
           </div>
