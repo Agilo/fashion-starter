@@ -73,7 +73,7 @@ export const cartManage = async (
           }
         }
 
-        await addToCart({ variantId, quantity, countryCode })
+        await addToCart({ variantId, quantity: addQuantity, countryCode })
         break
       case "update":
         if (!lineId) {
