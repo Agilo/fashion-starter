@@ -31,7 +31,7 @@ interface Navigator extends globalThis.Navigator {
 export const registerWebMCPTools = (router?: AppRouterInstance) => {
   if (!isWebMCPSupported()) {
     console.info("WebMCP is not supported, skipping registration")
-    return
+    return () => {}
   }
 
   const modelContext = (navigator as unknown as Navigator).modelContext
