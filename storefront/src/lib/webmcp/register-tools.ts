@@ -12,16 +12,19 @@ import { applyPromotionTool, removePromotionTool } from "./tools/promotion"
 
 interface Navigator extends globalThis.Navigator {
   modelContext: {
-    registerTool: (tool: {
-      name: string
-      description: string
-      inputSchema: object
-      execute: (input: unknown, client: WebMCPClient) => Promise<unknown>
-      annotations?: {
-        readOnlyHint?: boolean
-      }
-    }) => void
-    unregisterTool: (name: string) => void
+    registerTool: (
+      tool: {
+        name: string
+        description: string
+        inputSchema: object
+        execute: (input: unknown, client: WebMCPClient) => Promise<unknown>
+        annotations?: {
+          readOnlyHint?: boolean
+        }
+      },
+      options?: { signal?: AbortSignal }
+    ) => void
+    unregisterTool?: (name: string) => void
   }
 }
 
@@ -32,6 +35,7 @@ export const registerWebMCPTools = (router?: AppRouterInstance) => {
   }
 
   const modelContext = (navigator as unknown as Navigator).modelContext
+  const controller = new AbortController()
 
   try {
     type RegisterableWebMCPTool = {
@@ -61,17 +65,22 @@ export const registerWebMCPTools = (router?: AppRouterInstance) => {
     ] as RegisterableWebMCPTool[]
 
     tools.forEach((tool) => {
-      modelContext.registerTool({
-        name: tool.name,
-        description: tool.description,
-        inputSchema: tool.inputSchema,
-        annotations: tool.annotations,
-        execute: async (input, client) => {
-          return await tool.handler(input, { router, client })
+      modelContext.registerTool(
+        {
+          name: tool.name,
+          description: tool.description,
+          inputSchema: tool.inputSchema,
+          annotations: tool.annotations,
+          execute: async (input, client) => {
+            return await tool.handler(input, { router, client })
+          },
         },
-      })
+        { signal: controller.signal }
+      )
     })
   } catch (error) {
     console.error("WebMCP registration failed", error)
   }
+
+  return () => controller.abort()
 }
