@@ -73,7 +73,7 @@ export const cartManage = async (
           }
         }
 
-        await addToCart({ variantId, quantity, countryCode })
+        await addToCart({ variantId, quantity: addQuantity, countryCode })
         break
       case "update":
         if (!lineId) {
@@ -164,7 +164,8 @@ export const cartManageTool: WebMCPTool<CartManageInput, CartSnapshot> = {
       },
       quantity: {
         type: "number",
-        description: "Quantity (required for update)",
+        description:
+          "Quantity for the action. Optional for add (defaults to 1), required for update.",
       },
       line_id: {
         type: "string",
