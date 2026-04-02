@@ -29,7 +29,7 @@ export const useCustomer = () => {
 }
 
 export const loginFormSchema = z.object({
-  email: z.string().email(),
+  email: z.email(),
   password: z.string().min(6),
   redirect_url: z.string().optional().nullable(),
 })
@@ -159,7 +159,7 @@ export const useDeleteCustomerAddress = (
 }
 
 export const signupFormSchema = z.object({
-  email: z.string().email(),
+  email: z.email(),
   first_name: z.string().min(1),
   last_name: z.string().min(1),
   phone: z.string().optional().nullable(),

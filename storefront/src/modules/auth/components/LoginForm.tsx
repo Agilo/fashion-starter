@@ -12,7 +12,7 @@ import { useRouter } from "next/navigation"
 import { emailFormSchema } from "@modules/checkout/components/email"
 
 const loginFormSchema = z.object({
-  email: z.string().email(),
+  email: z.email(),
   password: z.string().min(6),
 })
 
@@ -62,7 +62,7 @@ export const LoginForm = withReactQueryProvider<{
         >
           Forgot password?
         </LocalizedLink>
-        {!data?.success && (
+        {data && !data?.success && (
           <p className="text-red-primary text-sm">{data?.message}</p>
         )}
         <SubmitButton isLoading={isPending}>Log in</SubmitButton>

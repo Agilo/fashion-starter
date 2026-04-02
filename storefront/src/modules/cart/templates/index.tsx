@@ -22,7 +22,10 @@ const CartTemplate = () => {
             end={{ base: 13, lg: 9, xl: 10 }}
             className="mb-8 lg:mb-0"
           >
-            <ItemsTemplate items={cart?.items} />
+            <ItemsTemplate
+              items={cart?.items}
+              currencyCode={cart.currency_code}
+            />
           </LayoutColumn>
           <LayoutColumn start={{ base: 1, lg: 9, xl: 10 }} end={13}>
             {cart && cart.region && <Summary cart={cart} />}
