@@ -20,6 +20,7 @@ interface Navigator extends globalThis.Navigator {
         execute: (input: unknown, client: WebMCPClient) => Promise<unknown>
         annotations?: {
           readOnlyHint?: boolean
+          untrustedContentHint?: boolean
         }
       },
       options?: { signal?: AbortSignal }
@@ -44,6 +45,7 @@ export const registerWebMCPTools = (router?: AppRouterInstance) => {
       inputSchema: object
       annotations?: {
         readOnlyHint?: boolean
+        untrustedContentHint?: boolean
       }
       handler: (
         input: unknown,

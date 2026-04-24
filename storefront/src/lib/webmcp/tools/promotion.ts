@@ -106,6 +106,7 @@ export const applyPromotionTool: WebMCPTool<PromotionInput, CartSnapshot> = {
     "Apply a discount/promotion code to the shopping cart. Returns updated cart with applied discount, including new subtotal, total, and discount amount. Common error codes: MISSING_CODE (promotion code is required), CART_MISSING (no active cart found), APPLY_FAILED (failed to apply promotion code).",
   annotations: {
     readOnlyHint: false,
+    untrustedContentHint: true,
   },
   inputSchema: {
     type: "object",
@@ -128,6 +129,7 @@ export const removePromotionTool: WebMCPTool<PromotionInput, CartSnapshot> = {
     "Remove a previously applied discount/promotion code from the shopping cart. Returns updated cart with recalculated totals after discount removal. Use this when the user wants to replace a code or remove an applied discount.",
   annotations: {
     readOnlyHint: false,
+    untrustedContentHint: true,
   },
   inputSchema: {
     type: "object",
