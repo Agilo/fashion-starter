@@ -7,7 +7,7 @@ import {
 } from "./tools/checkout"
 import { productsSearchTool } from "./tools/products-search"
 import { cartManageTool } from "./tools/cart"
-import { WebMCPClient } from "./types"
+import { WebMCPClient, WebMCPToolAnnotations } from "./types"
 import { applyPromotionTool, removePromotionTool } from "./tools/promotion"
 
 interface ModelContext {
@@ -17,10 +17,7 @@ interface ModelContext {
       description: string
       inputSchema: object
       execute: (input: unknown, client: WebMCPClient) => Promise<unknown>
-      annotations?: {
-        readOnlyHint?: boolean
-        untrustedContentHint?: boolean
-      }
+      annotations?: WebMCPToolAnnotations
     },
     options?: { signal?: AbortSignal }
   ) => void
@@ -57,10 +54,7 @@ export const registerWebMCPTools = (router?: AppRouterInstance) => {
       name: string
       description: string
       inputSchema: object
-      annotations?: {
-        readOnlyHint?: boolean
-        untrustedContentHint?: boolean
-      }
+      annotations?: WebMCPToolAnnotations
       handler: (
         input: unknown,
         context?: {

@@ -57,3 +57,5 @@ export interface CartSnapshot {
     discount_codes?: string[]
   }
 }
+
+export type WebMCPToolAnnotations = WebMCPTool<unknown, unknown>["annotations"]
