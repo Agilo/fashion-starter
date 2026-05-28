@@ -259,7 +259,7 @@ export async function requestPasswordReset() {
 }
 
 const resetPasswordStateSchema = z.object({
-  email: z.string().email(),
+  email: z.email(),
   token: z.string(),
 })
 
@@ -331,7 +331,7 @@ export async function resetPassword(
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const forgotPasswordFormSchema = z.object({
-  email: z.string().email(),
+  email: z.email(),
 })
 
 export async function forgotPassword(
