@@ -1,3 +1,7 @@
+interface ModelContext {
+  registerTool?: (tool: unknown) => void
+}
+
 export const isWebMCPSupported = (): boolean => {
   if (typeof window === "undefined") return false
 
@@ -7,13 +11,9 @@ export const isWebMCPSupported = (): boolean => {
 
   if (!window.isSecureContext) return false
 
-  const nav = navigator as Navigator & {
-    modelContext?: {
-      registerTool?: (tool: unknown) => void
-    }
-  }
+  const modelContext =
+    (document as Document & { modelContext?: ModelContext }).modelContext ||
+    (navigator as Navigator & { modelContext?: ModelContext }).modelContext
 
-  return (
-    !!nav.modelContext && typeof nav.modelContext.registerTool === "function"
-  )
+  return !!modelContext && typeof modelContext.registerTool === "function"
 }
