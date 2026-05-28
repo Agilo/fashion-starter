@@ -7,25 +7,29 @@ import {
 } from "./tools/checkout"
 import { productsSearchTool } from "./tools/products-search"
 import { cartManageTool } from "./tools/cart"
-import { WebMCPClient } from "./types"
+import { WebMCPClient, WebMCPToolAnnotations } from "./types"
 import { applyPromotionTool, removePromotionTool } from "./tools/promotion"
 
-interface Navigator extends globalThis.Navigator {
-  modelContext: {
-    registerTool: (
-      tool: {
-        name: string
-        description: string
-        inputSchema: object
-        execute: (input: unknown, client: WebMCPClient) => Promise<unknown>
-        annotations?: {
-          readOnlyHint?: boolean
-        }
-      },
-      options?: { signal?: AbortSignal }
-    ) => void
-    unregisterTool?: (name: string) => void
-  }
+interface ModelContext {
+  registerTool: (
+    tool: {
+      name: string
+      description: string
+      inputSchema: object
+      execute: (input: unknown, client: WebMCPClient) => Promise<unknown>
+      annotations?: WebMCPToolAnnotations
+    },
+    options?: { signal?: AbortSignal }
+  ) => void
+  unregisterTool?: (name: string) => void
+}
+
+interface DocumentWithModelContext extends globalThis.Document {
+  modelContext?: ModelContext
+}
+
+interface NavigatorWithModelContext extends globalThis.Navigator {
+  modelContext?: ModelContext
 }
 
 export const registerWebMCPTools = (router?: AppRouterInstance) => {
@@ -34,7 +38,15 @@ export const registerWebMCPTools = (router?: AppRouterInstance) => {
     return () => {}
   }
 
-  const modelContext = (navigator as unknown as Navigator).modelContext
+  const modelContext =
+    (document as DocumentWithModelContext).modelContext ||
+    (navigator as NavigatorWithModelContext).modelContext
+
+  if (!modelContext) {
+    console.info("modelContext unavailable, skipping registration")
+    return () => {}
+  }
+
   const controller = new AbortController()
 
   try {
@@ -42,9 +54,7 @@ export const registerWebMCPTools = (router?: AppRouterInstance) => {
       name: string
       description: string
       inputSchema: object
-      annotations?: {
-        readOnlyHint?: boolean
-      }
+      annotations?: WebMCPToolAnnotations
       handler: (
         input: unknown,
         context?: {

@@ -175,6 +175,7 @@ export const navigateToProductTool: WebMCPTool<
     "Navigate to product detail page, optionally preselect options. For products with Material and Color, Material must be set before Color.",
   annotations: {
     readOnlyHint: false,
+    untrustedContentHint: true,
   },
   inputSchema: {
     type: "object",
@@ -219,6 +220,7 @@ export const checkoutPrepareTool: WebMCPTool<
     "Validate that the shopping cart has items and navigate to the checkout page. Performs pre-checkout validation (checks cart exists and is not empty) before proceeding. Returns error if cart is missing or empty.",
   annotations: {
     readOnlyHint: false,
+    untrustedContentHint: true,
   },
   inputSchema: {
     type: "object",

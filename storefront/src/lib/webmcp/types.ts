@@ -31,6 +31,7 @@ export interface WebMCPTool<TInput, TData> {
   inputSchema: Record<string, unknown>
   annotations?: {
     readOnlyHint?: boolean
+    untrustedContentHint?: boolean
   }
   handler: (
     input: TInput,
@@ -56,3 +57,5 @@ export interface CartSnapshot {
     discount_codes?: string[]
   }
 }
+
+export type WebMCPToolAnnotations = WebMCPTool<unknown, unknown>["annotations"]

@@ -150,6 +150,10 @@ export const cartManage = async (
 export const cartManageTool: WebMCPTool<CartManageInput, CartSnapshot> = {
   name: "cart.manage",
   description: "Manage shopping cart (add, remove, update, view)",
+  annotations: {
+    readOnlyHint: false,
+    untrustedContentHint: true,
+  },
   inputSchema: {
     type: "object",
     properties: {

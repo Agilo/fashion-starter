@@ -165,6 +165,7 @@ export const productsSearchTool: WebMCPTool<
     "Search and retrieve product information (price, variants, options, categories, tags) with optional filters and sorting.",
   annotations: {
     readOnlyHint: true,
+    untrustedContentHint: true,
   },
   inputSchema: {
     type: "object",
