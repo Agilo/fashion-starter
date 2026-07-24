@@ -28,19 +28,13 @@ interface DocumentWithModelContext extends globalThis.Document {
   modelContext?: ModelContext
 }
 
-interface NavigatorWithModelContext extends globalThis.Navigator {
-  modelContext?: ModelContext
-}
-
 export const registerWebMCPTools = async (router?: AppRouterInstance) => {
   if (!isWebMCPSupported()) {
     console.info("WebMCP is not supported, skipping registration")
     return () => {}
   }
 
-  const modelContext =
-    (document as DocumentWithModelContext).modelContext ||
-    (navigator as NavigatorWithModelContext).modelContext
+  const modelContext = (document as DocumentWithModelContext).modelContext
 
   if (!modelContext) {
     console.info("modelContext unavailable, skipping registration")

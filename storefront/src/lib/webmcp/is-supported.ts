@@ -11,9 +11,8 @@ export const isWebMCPSupported = (): boolean => {
 
   if (!window.isSecureContext) return false
 
-  const modelContext =
-    (document as Document & { modelContext?: ModelContext }).modelContext ||
-    (navigator as Navigator & { modelContext?: ModelContext }).modelContext
+  const modelContext = (document as Document & { modelContext?: ModelContext })
+    .modelContext
 
   return !!modelContext && typeof modelContext.registerTool === "function"
 }
