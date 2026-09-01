@@ -7,7 +7,7 @@ import {
 } from "./tools/checkout"
 import { productsSearchTool } from "./tools/products-search"
 import { cartManageTool } from "./tools/cart"
-import { WebMCPClient, WebMCPToolAnnotations } from "./types"
+import { WebMCPExecutionOptions, WebMCPToolAnnotations } from "./types"
 import { applyPromotionTool, removePromotionTool } from "./tools/promotion"
 
 interface ModelContext {
@@ -16,7 +16,10 @@ interface ModelContext {
       name: string
       description: string
       inputSchema: object
-      execute: (input: unknown, client: WebMCPClient) => Promise<unknown>
+      execute: (
+        input: unknown,
+        options: WebMCPExecutionOptions
+      ) => Promise<unknown>
       annotations?: WebMCPToolAnnotations
     },
     options?: { signal?: AbortSignal }
@@ -51,9 +54,8 @@ export const registerWebMCPTools = async (router?: AppRouterInstance) => {
       annotations?: WebMCPToolAnnotations
       handler: (
         input: unknown,
-        context?: {
+        context?: WebMCPExecutionOptions & {
           router?: AppRouterInstance
-          client?: WebMCPClient
         }
       ) => Promise<unknown>
     }
@@ -76,8 +78,13 @@ export const registerWebMCPTools = async (router?: AppRouterInstance) => {
             description: tool.description,
             inputSchema: tool.inputSchema,
             annotations: tool.annotations,
-            execute: async (input, client) => {
-              return await tool.handler(input, { router, client })
+            execute: async (input, options) => {
+              options?.signal?.throwIfAborted()
+
+              return await tool.handler(input, {
+                router,
+                signal: options?.signal,
+              })
             },
           },
           { signal: controller.signal }
