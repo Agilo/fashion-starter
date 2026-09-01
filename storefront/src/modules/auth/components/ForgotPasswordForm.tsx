@@ -8,7 +8,7 @@ import { LocalizedButtonLink } from "@/components/LocalizedLink"
 import { z } from "zod"
 
 const forgotPasswordFormSchema = z.object({
-  email: z.string().min(3).email(),
+  email: z.email(),
 })
 
 export const ForgotPasswordForm: React.FC = () => {

@@ -4,9 +4,10 @@ import Item from "@modules/cart/components/item"
 
 type ItemsTemplateProps = {
   items?: HttpTypes.StoreCartLineItem[]
+  currencyCode: string
 }
 
-const ItemsTemplate = ({ items }: ItemsTemplateProps) => {
+const ItemsTemplate = ({ items, currencyCode }: ItemsTemplateProps) => {
   return (
     <div>
       <div className="pb-8 md:pb-12 border-b border-b-grayscale-100">
@@ -19,7 +20,9 @@ const ItemsTemplate = ({ items }: ItemsTemplateProps) => {
                 return (a.created_at ?? "") > (b.created_at ?? "") ? -1 : 1
               })
               .map((item) => {
-                return <Item key={item.id} item={item} />
+                return (
+                  <Item key={item.id} item={item} currencyCode={currencyCode} />
+                )
               })
           : null}
       </div>
