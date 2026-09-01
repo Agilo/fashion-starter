@@ -8,8 +8,11 @@ export const WebMCPProvider = () => {
   const router = useRouter()
 
   React.useEffect(() => {
-    const cleanup = registerWebMCPTools(router)
-    return cleanup
+    let cleanup: (() => void) | undefined
+    registerWebMCPTools(router).then((fn) => {
+      cleanup = fn
+    })
+    return () => cleanup?.()
   }, [router])
 
   return null

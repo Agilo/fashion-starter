@@ -20,7 +20,7 @@ interface ModelContext {
       annotations?: WebMCPToolAnnotations
     },
     options?: { signal?: AbortSignal }
-  ) => void
+  ) => Promise<void>
   unregisterTool?: (name: string) => void
 }
 
@@ -28,19 +28,13 @@ interface DocumentWithModelContext extends globalThis.Document {
   modelContext?: ModelContext
 }
 
-interface NavigatorWithModelContext extends globalThis.Navigator {
-  modelContext?: ModelContext
-}
-
-export const registerWebMCPTools = (router?: AppRouterInstance) => {
+export const registerWebMCPTools = async (router?: AppRouterInstance) => {
   if (!isWebMCPSupported()) {
     console.info("WebMCP is not supported, skipping registration")
     return () => {}
   }
 
-  const modelContext =
-    (document as DocumentWithModelContext).modelContext ||
-    (navigator as NavigatorWithModelContext).modelContext
+  const modelContext = (document as DocumentWithModelContext).modelContext
 
   if (!modelContext) {
     console.info("modelContext unavailable, skipping registration")
@@ -74,20 +68,22 @@ export const registerWebMCPTools = (router?: AppRouterInstance) => {
       checkoutPrepareTool,
     ] as RegisterableWebMCPTool[]
 
-    tools.forEach((tool) => {
-      modelContext.registerTool(
-        {
-          name: tool.name,
-          description: tool.description,
-          inputSchema: tool.inputSchema,
-          annotations: tool.annotations,
-          execute: async (input, client) => {
-            return await tool.handler(input, { router, client })
+    await Promise.all(
+      tools.map((tool) =>
+        modelContext.registerTool(
+          {
+            name: tool.name,
+            description: tool.description,
+            inputSchema: tool.inputSchema,
+            annotations: tool.annotations,
+            execute: async (input, client) => {
+              return await tool.handler(input, { router, client })
+            },
           },
-        },
-        { signal: controller.signal }
+          { signal: controller.signal }
+        )
       )
-    })
+    )
   } catch (error) {
     console.error("WebMCP registration failed", error)
   }
