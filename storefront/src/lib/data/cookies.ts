@@ -1,5 +1,6 @@
 import "server-only"
 import { cookies } from "next/headers"
+import medusaError from "@lib/util/medusa-error"
 
 export const getAuthHeaders = async (): Promise<
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
@@ -12,6 +13,38 @@ export const getAuthHeaders = async (): Promise<
   }
 
   return {}
+}
+
+export const getCacheTag = async (tag: string): Promise<string> => {
+  try {
+    const nextCookies = await cookies()
+    const cacheId = nextCookies.get("_medusa_cache_id")?.value
+
+    if (!cacheId) {
+      return ""
+    }
+
+    return `${tag}-${cacheId}`
+  } catch (error) {
+    medusaError(error)
+  }
+}
+
+export const getCacheOptions = async (
+  tag: string
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+): Promise<{ tags: string[] } | {}> => {
+  if (typeof window !== "undefined") {
+    return {}
+  }
+
+  const cacheTag = await getCacheTag(tag)
+
+  if (!cacheTag) {
+    return {}
+  }
+
+  return { tags: [`${cacheTag}`] }
 }
 
 export const setAuthToken = async (token: string) => {

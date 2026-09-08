@@ -18,7 +18,7 @@ import { useSetEmail } from "hooks/cart"
 import { StoreCart } from "@medusajs/types"
 
 export const emailFormSchema = z.object({
-  email: z.string().min(3).email("Enter a valid email address."),
+  email: z.email("Enter a valid email address."),
 })
 
 const Email = ({

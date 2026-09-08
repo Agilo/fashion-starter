@@ -6,10 +6,11 @@ import { twMerge } from "tailwind-merge"
 
 type ItemProps = {
   item: HttpTypes.StoreOrderLineItem
+  currencyCode: string
   className?: string
 }
 
-const Item = ({ item, className }: ItemProps) => {
+const Item = ({ item, currencyCode, className }: ItemProps) => {
   return (
     <div
       className={twMerge(
@@ -51,6 +52,7 @@ const Item = ({ item, className }: ItemProps) => {
             </div>
             <LineItemUnitPrice
               item={item}
+              currencyCode={currencyCode}
               regularPriceClassName="text-base sm:text-md font-normal"
             />
           </div>

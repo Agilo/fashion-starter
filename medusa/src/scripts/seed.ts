@@ -38,7 +38,7 @@ async function getImageUrlContent(url: string) {
 
   const arrayBuffer = await response.arrayBuffer();
 
-  return Buffer.from(arrayBuffer).toString('binary');
+  return Buffer.from(arrayBuffer).toString('base64');
 }
 
 export default async function seedDemoData({ container }: ExecArgs) {
