@@ -158,7 +158,7 @@ This starter kit is an ideal solution for developers who need to set up a profes
 
 ## Prerequisites
 
-- Node >= 20
+- Node >= 24
 - Yarn >= 3.5 for Medusa, Yarn v1 for Storefront
 - Docker and Docker Compose
 - Stripe account (for payments)

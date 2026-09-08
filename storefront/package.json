@@ -52,7 +52,7 @@
     "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4",
     "@types/lodash": "^4.17.16",
-    "@types/node": "^20",
+    "@types/node": "^24",
     "@types/pg": "^8.11.11",
     "@types/react": "^19",
     "@types/react-dom": "^19",
@@ -67,5 +67,8 @@
     "typescript": "^5",
     "webpack": "^5"
   },
-  "packageManager": "yarn@1.22.19"
+  "packageManager": "yarn@1.22.19",
+  "engines": {
+    "node": ">=24"
+  }
 }

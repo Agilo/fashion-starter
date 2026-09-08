@@ -5,12 +5,13 @@ __metadata:
   version: 8
   cacheKey: 10c0
 
-"@agilo/medusa-analytics-plugin@npm:^1.3.5":
-  version: 1.3.5
-  resolution: "@agilo/medusa-analytics-plugin@npm:1.3.5"
+"@agilo/medusa-analytics-plugin@npm:^1.4.0":
+  version: 1.4.0
+  resolution: "@agilo/medusa-analytics-plugin@npm:1.4.0"
   dependencies:
     "@radix-ui/react-popover": "npm:^1.1.14"
     "@radix-ui/react-slot": "npm:^1.2.3"
+    "@tanstack/react-query": "npm:5.64.2"
     class-variance-authority: "npm:^0.7.1"
     clsx: "npm:^2.1.1"
     date-fns: "npm:^4.1.0"
@@ -28,7 +29,7 @@ __metadata:
     "@medusajs/icons": ">=2.11.0 <3.0.0"
     "@medusajs/medusa": ">=2.11.0 <3.0.0"
     "@medusajs/ui": ">=4.0.0 <5.0.0"
-  checksum: 10c0/1070e68e81071c30a9fb8176a4218dd52007d6dd7d969963e390c4068bd970bdf0d8371ee5840543a41304aa558386ec9d60395c340b9e0ee99508da1c27d270
+  checksum: 10c0/15f3556bfda4c5c5d99f9671e8ba6d39b17b20df3e1f940d9dedaf0970dfa10d3e476ce963ce18b0f3a66f58230da731a2bd2081634dcbbc696552c62bf5de2d
   languageName: node
   linkType: hard
 
@@ -9776,13 +9777,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tanstack/query-core@npm:5.90.20":
-  version: 5.90.20
-  resolution: "@tanstack/query-core@npm:5.90.20"
-  checksum: 10c0/70637dfcecd5ed9d810629aa27f1632af8a4bcd083e75cf29408d058c32f8234704a3231ec280e2c4016ea0485b16124fdf70ab97793b5a7b670f43f7659e9fe
-  languageName: node
-  linkType: hard
-
 "@tanstack/react-query@npm:5.64.2":
   version: 5.64.2
   resolution: "@tanstack/react-query@npm:5.64.2"
@@ -9791,17 +9785,6 @@ __metadata:
   peerDependencies:
     react: ^18 || ^19
   checksum: 10c0/4e81c8e922ced8ef5f2e5975d7784409b532ce007b1771fe8569e380d08666b5323a90fa91de6ef10f9f2f8882d3fdf1be109eeb99a54bd84b1fa2075de9e75b
-  languageName: node
-  linkType: hard
-
-"@tanstack/react-query@npm:5.90.21":
-  version: 5.90.21
-  resolution: "@tanstack/react-query@npm:5.90.21"
-  dependencies:
-    "@tanstack/query-core": "npm:5.90.20"
-  peerDependencies:
-    react: ^18 || ^19
-  checksum: 10c0/e8994c57f6ceb2c886a4d6486a8c6a3f89bc6b1220de3e732448d7fcbeb386e9358f03c73804de72004c6ac2668d0bf1b44cedbb273d3e4b33afcbaee7b7d24d
   languageName: node
   linkType: hard
 
@@ -12853,7 +12836,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "fashion-starter-medusa@workspace:."
   dependencies:
-    "@agilo/medusa-analytics-plugin": "npm:^1.3.5"
+    "@agilo/medusa-analytics-plugin": "npm:^1.4.0"
     "@medusajs/admin-sdk": "npm:2.13.1"
     "@medusajs/cli": "npm:2.13.1"
     "@medusajs/framework": "npm:2.13.1"
@@ -12866,7 +12849,7 @@ __metadata:
     "@react-email/preview-server": "npm:^5.2.8"
     "@swc/core": "npm:^1.15.11"
     "@swc/jest": "npm:^0.2.39"
-    "@tanstack/react-query": "npm:5.90.21"
+    "@tanstack/react-query": "npm:5.64.2"
     "@types/jest": "npm:^29.5.14"
     "@types/node": "npm:^22.19.11"
     "@types/react": "npm:^18.3.28"

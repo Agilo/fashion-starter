@@ -7,7 +7,7 @@ on:
   pull_request_target:
     types: [assigned, opened, synchronize, reopened]
     branches: [master]
-    paths: ['storefront/**']
+    paths: ["storefront/**"]
 
 jobs:
   lint-storefront:
@@ -16,7 +16,7 @@ jobs:
     strategy:
       matrix:
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
-        node-version: [20.x, 22.x]
+        node-version: [22.x, 24.x]
 
     steps:
       - uses: actions/checkout@v4
@@ -24,8 +24,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'yarn'
-          cache-dependency-path: 'storefront/yarn.lock'
+          cache: "yarn"
+          cache-dependency-path: "storefront/yarn.lock"
       - run: yarn install --frozen-lockfile
         working-directory: storefront
       - run: yarn lint
