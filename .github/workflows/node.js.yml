@@ -16,7 +16,7 @@ jobs:
     strategy:
       matrix:
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
-        node-version: [22.x, 24.x]
+        node-version: [24.x]
 
     steps:
       - uses: actions/checkout@v4
