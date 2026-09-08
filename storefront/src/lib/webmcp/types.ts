@@ -1,12 +1,11 @@
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime"
 
-export interface WebMCPClient {
-  requestUserInteraction: <T>(callback: () => Promise<T> | T) => Promise<T>
+export interface WebMCPExecutionOptions {
+  signal?: AbortSignal
 }
 
-export interface WebMCPToolContext {
+export interface WebMCPToolContext extends WebMCPExecutionOptions {
   router?: AppRouterInstance
-  client?: WebMCPClient
 }
 
 export type WebMCPToolResult<TData> =
