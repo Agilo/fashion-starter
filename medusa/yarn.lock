@@ -12261,7 +12261,6 @@ __metadata:
     "@types/react": "npm:^18.3.28"
     "@types/react-dom": "npm:^18.3.7"
     jest: "npm:^29.7.0"
-    meilisearch: "npm:0.55.0"
     posthog-node: "npm:^5.24.15"
     react: "npm:^18.3.1"
     react-dom: "npm:^18.3.1"
@@ -14593,13 +14592,6 @@ __metadata:
   version: 0.3.0
   resolution: "media-typer@npm:0.3.0"
   checksum: 10c0/d160f31246907e79fed398470285f21bafb45a62869dc469b1c8877f3f064f5eabc4bcc122f9479b8b605bc5c76187d7871cf84c4ee3ecd3e487da1993279928
-  languageName: node
-  linkType: hard
-
-"meilisearch@npm:0.55.0":
-  version: 0.55.0
-  resolution: "meilisearch@npm:0.55.0"
-  checksum: 10c0/6d4534a65e180ce965855ef4f7604fa88c26ab579449e2a379790e1510cb1cce3006de4f94cc6dbb17948c9ea9bec34d5a6c6193b867f7ed3a1f3b7bac7dd9ea
   languageName: node
   linkType: hard
 

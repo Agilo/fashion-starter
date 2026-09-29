@@ -5,44 +5,17 @@ import {
   WorkflowResponse,
 } from '@medusajs/framework/workflows-sdk';
 import { Modules } from '@medusajs/framework/utils';
-import { ProductDTO } from '@medusajs/framework/types';
-import { MeiliSearchService } from '../modules/meilisearch/service';
+import type { SearchTypes } from '@medusajs/framework/types';
 
-const retrieveProductsStep = createStep(
+const reindexProductsStep = createStep(
   {
-    name: 'retrieveProductsStep',
+    name: 'reindexProductsStep',
   },
-  async (input: undefined, context) => {
-    const productModuleService = context.container.resolve(Modules.PRODUCT);
-
-    const products = await productModuleService.listProducts(undefined, {
-      relations: [
-        'variants',
-        'options',
-        'tags',
-        'collection',
-        'type',
-        'images',
-      ],
-    });
-
-    return new StepResponse(products);
-  },
-);
-
-const indexProductsStep = createStep(
-  {
-    name: 'indexProductsStep',
-  },
-  async (input: ProductDTO[], context) => {
-    const meilisearchService = context.container.resolve(
-      'meilisearchService',
-    ) as MeiliSearchService;
-    const result = await meilisearchService.addDocuments(
-      'products',
-      input,
-      'products',
-    );
+  async (_input: undefined, context) => {
+    const searchModule = context.container.resolve(
+      Modules.SEARCH,
+    ) as SearchTypes.ISearchModuleService;
+    const result = await searchModule.reindex({ index: 'product' });
     return new StepResponse(result);
   },
 );
@@ -55,8 +28,7 @@ export const indexProductsWorkflow = createWorkflow(
     store: true,
   },
   () => {
-    const products = retrieveProductsStep();
-    const result = indexProductsStep(products);
+    const result = reindexProductsStep();
 
     return new WorkflowResponse(result);
   },

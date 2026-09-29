@@ -33,7 +33,6 @@
     "@medusajs/ui": "4.2.6",
     "@react-email/components": "^1.0.7",
     "@tanstack/react-query": "5.64.2",
-    "meilisearch": "0.55.0",
     "posthog-node": "^5.24.15",
     "react-dropzone": "^15.0.0",
     "resend": "^6.9.2"

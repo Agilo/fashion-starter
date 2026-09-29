@@ -46,16 +46,6 @@ services:
       exit 0;
       "
 
-  meilisearch:
-    image: getmeili/meilisearch:v1.12
-    ports:
-      - 7700:7700
-    volumes:
-      - meili-data:/meili_data
-    environment:
-      MEILI_MASTER_KEY: ${MEILISEARCH_MASTER_KEY}
-
 volumes:
   medusa-postgres-data:
   medusa-minio-data:
-  meili-data:
