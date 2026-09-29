@@ -1,6 +1,6 @@
 import type { SubscriberArgs, SubscriberConfig } from '@medusajs/medusa';
 import { Modules } from '@medusajs/framework/utils';
-import { ISearchService } from '@medusajs/framework/types';
+import { MeiliSearchService } from '../modules/meilisearch/service';
 
 export default async function indexProductHandler({
   event: { data, name },
@@ -12,7 +12,7 @@ export default async function indexProductHandler({
   const productModuleService = container.resolve(Modules.PRODUCT);
   const meilisearchService = container.resolve(
     'meilisearchService',
-  ) as ISearchService;
+  ) as MeiliSearchService;
 
   if (name === 'product.deleted') {
     await meilisearchService.deleteDocument('products', productId);

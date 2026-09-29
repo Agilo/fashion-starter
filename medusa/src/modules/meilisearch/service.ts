@@ -1,19 +1,18 @@
-import { SearchTypes } from '@medusajs/types';
-import { SearchUtils } from '@medusajs/utils';
 // @ts-ignore
 import { MeiliSearch, MeiliSearchApiError, Settings } from 'meilisearch';
 import { MeiliSearchPluginOptions } from './types';
 import { logger } from '@medusajs/framework';
 
-export class MeiliSearchService extends SearchUtils.AbstractSearchService {
+export class MeiliSearchService {
   static identifier = 'meilisearch';
 
   isDefault = false;
 
   protected readonly client: MeiliSearch;
+  protected readonly options: MeiliSearchPluginOptions;
 
   constructor(container: any, options: MeiliSearchPluginOptions) {
-    super(container, options);
+    this.options = options;
 
     if (process.env.NODE_ENV !== 'development') {
       if (!options.config?.apiKey) {
@@ -83,7 +82,7 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
 
   async updateSettings(
     indexName: string,
-    settings: SearchTypes.IndexSettings & { indexSettings: Settings },
+    settings: { indexSettings: Settings; primaryKey?: string },
   ) {
     const indexSettings = settings.indexSettings ?? {};
 

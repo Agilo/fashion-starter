@@ -1,12 +1,13 @@
-import { ExecArgs, ISearchService } from '@medusajs/framework/types';
+import { ExecArgs } from '@medusajs/framework/types';
 import { Modules } from '@medusajs/framework/utils';
+import { MeiliSearchService } from '../modules/meilisearch/service';
 
 export default async function indexProducts({ container }: ExecArgs) {
   const logger = container.resolve('logger');
 
   const meilisearchService = container.resolve(
     'meilisearchService',
-  ) as ISearchService;
+  ) as MeiliSearchService;
 
   const productModuleService = container.resolve(Modules.PRODUCT);
 

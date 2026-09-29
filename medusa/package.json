@@ -24,13 +24,13 @@
   },
   "dependencies": {
     "@agilo/medusa-analytics-plugin": "^1.4.0",
-    "@medusajs/admin-sdk": "2.13.1",
-    "@medusajs/cli": "2.13.1",
-    "@medusajs/framework": "2.13.1",
-    "@medusajs/icons": "2.13.1",
-    "@medusajs/medusa": "2.13.1",
-    "@medusajs/types": "2.13.1",
-    "@medusajs/ui": "4.1.1",
+    "@medusajs/admin-sdk": "2.21.2",
+    "@medusajs/cli": "2.21.2",
+    "@medusajs/framework": "2.21.2",
+    "@medusajs/icons": "2.21.2",
+    "@medusajs/medusa": "2.21.2",
+    "@medusajs/types": "2.21.2",
+    "@medusajs/ui": "4.2.6",
     "@react-email/components": "^1.0.7",
     "@tanstack/react-query": "5.64.2",
     "meilisearch": "0.55.0",
@@ -39,7 +39,7 @@
     "resend": "^6.9.2"
   },
   "devDependencies": {
-    "@medusajs/test-utils": "2.13.1",
+    "@medusajs/test-utils": "2.21.2",
     "@react-email/preview-server": "^5.2.8",
     "@swc/core": "^1.15.11",
     "@swc/jest": "^0.2.39",
@@ -55,7 +55,7 @@
     "typescript": "^5.9.3"
   },
   "engines": {
-    "node": ">=20"
+    "node": "^20.19.0 || >=22.12.0"
   },
   "packageManager": "yarn@4.7.0"
 }

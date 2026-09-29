@@ -1,4 +1,3 @@
-import { SearchTypes } from '@medusajs/types';
 // @ts-ignore
 import type { Config, Settings } from 'meilisearch';
 
@@ -13,6 +12,10 @@ export interface MeiliSearchPluginOptions {
    */
   settings?: Record<
     string,
-    SearchTypes.IndexSettings & { indexSettings: Settings }
+    {
+      indexSettings: Settings;
+      primaryKey?: string;
+      transformer?: (document: Record<string, unknown>) => Record<string, unknown>;
+    }
   >;
 }

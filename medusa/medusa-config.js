@@ -22,6 +22,24 @@ module.exports = defineConfig({
   },
   modules: [
     {
+      resolve: '@medusajs/medusa/search',
+      options: {
+        default_provider: 'search-meilisearch',
+        providers: [
+          {
+            resolve: './src/modules/search-meilisearch',
+            id: 'search-meilisearch',
+            options: {
+              host:
+                process.env.MEILISEARCH_HOST ??
+                'https://fashion-starter-search.agilo.agency',
+              apiKey: process.env.MEILISEARCH_API_KEY,
+            },
+          },
+        ],
+      },
+    },
+    {
       resolve: '@medusajs/medusa/payment',
       options: {
         providers: [
