@@ -4,7 +4,7 @@ import { Suspense } from "react"
 import SkeletonProductGrid from "@modules/skeletons/templates/skeleton-product-grid"
 import PaginatedProducts from "@modules/store/templates/paginated-products"
 import { CollectionsSlider } from "@modules/store/components/collections-slider"
-import { MeiliSearchProductHit, searchClient } from "@lib/search-client"
+import { searchProducts } from "@lib/data/search"
 import { getRegion } from "@lib/data/regions"
 
 type Props = {
@@ -23,9 +23,7 @@ export default async function SearchPage({ params, searchParams }: Props) {
 
   const pageNumber = page ? parseInt(page, 10) : 1
 
-  const results = await searchClient
-    .index("products")
-    .search<MeiliSearchProductHit>(query)
+  const results = await searchProducts(query, 100)
   const region = await getRegion(countryCode)
 
   return (
@@ -45,7 +43,7 @@ export default async function SearchPage({ params, searchParams }: Props) {
             countryCode={countryCode}
             collectionId={undefined}
             categoryId={undefined}
-            productsIds={results.hits.map((h) => h.id)}
+            productsIds={results.hits.map((hit) => hit.id)}
             typeId={undefined}
           />
         )}

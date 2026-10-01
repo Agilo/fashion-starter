@@ -4,10 +4,9 @@ import * as React from "react"
 import * as ReactAria from "react-aria-components"
 import { twJoin } from "tailwind-merge"
 import { useAsyncList } from "react-stately"
-import { Hit } from "meilisearch"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useCountryCode } from "hooks/country-code"
-import { MeiliSearchProductHit, searchClient } from "@lib/search-client"
+import { searchProducts } from "@lib/data/search"
 import { getProductPrice } from "@lib/util/get-product-price"
 import { getProductsById } from "@lib/data/products"
 import Thumbnail from "@modules/products/components/thumbnail"
@@ -15,7 +14,12 @@ import { Button } from "@/components/Button"
 import { Input } from "@/components/Forms"
 import { Icon } from "@/components/Icon"
 
-interface ListItem extends Hit<MeiliSearchProductHit> {
+interface ListItem {
+  id: string
+  handle: string
+  title: string
+  thumbnail: string
+  variants: string[]
   price: {
     calculated_price_number: number
     calculated_price: string
@@ -47,23 +51,25 @@ export const SearchField: React.FC<{
       return item.handle
     },
     load: async ({ filterText, signal }) => {
-      const results = await searchClient
-        .index("products")
-        .search<MeiliSearchProductHit>(filterText, undefined, {
-          signal,
-        })
+      const results = await searchProducts(filterText ?? "", 10, signal)
+      if (signal.aborted) return { items: [], filterText }
       const medusaProducts = await getProductsById({
-        ids: results.hits.map((h) => h.id),
+        ids: results.hits.map((hit) => hit.id),
         regionId: region!,
       })
 
       return {
-        items: results.hits.map((hit) => {
-          const product = medusaProducts.find((p) => p.id === hit.id)
+        items: results.hits.flatMap((hit) => {
+          const product = medusaProducts.find((candidate) => candidate.id === hit.id)
+          if (!product) return []
           return {
-            ...hit,
+            id: hit.id,
+            handle: product.handle,
+            title: product.title,
+            thumbnail: product.thumbnail ?? "",
+            variants: product.variants?.map((variant) => variant.title ?? "") ?? [],
             price: getProductPrice({
-              product: product!,
+              product,
             }).cheapestPrice,
           }
         }),

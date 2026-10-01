@@ -85,10 +85,17 @@ export async function signup(formData: z.infer<typeof signupFormSchema>) {
       password: formData.password,
     })
 
-    if (typeof loginToken === "object") {
-      redirect(loginToken.location)
+    if (typeof loginToken !== "string") {
+      if ("location" in loginToken) {
+        redirect(loginToken.location)
+      }
 
-      return { success: true, customer: createdCustomer }
+      throw new Error(
+        "mfa_required" in loginToken
+          ? "Multi-factor authentication is required, but this storefront does not support that sign-in step yet."
+          : "Email verification is required, but this storefront does not support that sign-in step yet."
+      )
+
     }
 
     await setAuthToken(loginToken)
@@ -124,8 +131,18 @@ export async function login(formData: z.infer<typeof loginFormSchema>) {
       password: formData.password,
     })
 
-    if (typeof token === "object") {
-      return { success: true, redirectUrl: token.location }
+    if (typeof token !== "string") {
+      if ("location" in token) {
+        return { success: true, redirectUrl: token.location }
+      }
+
+      return {
+        success: false,
+        message:
+          "mfa_required" in token
+            ? "Multi-factor authentication is required, but this storefront does not support that sign-in step yet."
+            : "Email verification is required, but this storefront does not support that sign-in step yet.",
+      }
     }
 
     await setAuthToken(token)

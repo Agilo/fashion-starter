@@ -52,7 +52,7 @@ Features include:
 - Full ecommerce support:
   - Product Detail Page
   - Product Overview Page
-  - Search with Algolia / MeiliSearch
+  - Search with Medusa's Store Search API
   - Product Collections
   - Cart
   - Checkout with PayPal and Stripe
@@ -116,62 +116,9 @@ You will also need to setup the integrations in your Medusa server. See the [Med
 
 # Search integration
 
-This starter is configured to support using the `medusa-search-meilisearch` plugin out of the box. To enable search you will need to enable the feature flag in `./store.config.json`, which you do by changing the config to this:
+The storefront searches through Medusa's `POST /store/search` route using the configured Medusa JS SDK. It sends the existing publishable API key and backend URL; no separate search host or browser search key is required.
 
-```javascript
-{
-  "features": {
-    // other features...
-    "search": true
-  }
-}
-```
-
-Before you can search you will need to install the plugin in your Medusa server, for a written guide on how to do this – [see our documentation](https://docs.medusajs.com/add-plugins/meilisearch).
-
-The search components in this starter are developed with Algolia's `react-instant-search-hooks-web` library which should make it possible for you to seemlesly change your search provider to Algolia instead of MeiliSearch.
-
-To do this you will need to add `algoliasearch` to the project, by running
-
-```shell
-yarn add algoliasearch
-```
-
-After this you will need to switch the current MeiliSearch `SearchClient` out with a Alogolia client. To do this update `@lib/search-client`.
-
-```ts
-import algoliasearch from "algoliasearch/lite"
-
-const appId = process.env.NEXT_PUBLIC_SEARCH_APP_ID || "test_app_id" // You should add this to your environment variables
-
-const apiKey = process.env.NEXT_PUBLIC_SEARCH_API_KEY || "test_key"
-
-export const searchClient = algoliasearch(appId, apiKey)
-
-export const SEARCH_INDEX_NAME =
-  process.env.NEXT_PUBLIC_INDEX_NAME || "products"
-```
-
-Then, in `src/app/(main)/search/actions.ts`, remove the MeiliSearch code (line 10-16) and uncomment the Algolia code.
-
-```ts
-"use server"
-
-import { searchClient, SEARCH_INDEX_NAME } from "@lib/search-client"
-
-/**
- * Uses MeiliSearch or Algolia to search for a query
- * @param {string} query - search query
- */
-export async function search(query: string) {
-  const index = searchClient.initIndex(SEARCH_INDEX_NAME)
-  const { hits } = await index.search(query)
-
-  return hits
-}
-```
-
-After this you will need to set up Algolia with your Medusa server, and then you should be good to go. For a more thorough walkthrough of using Algolia with Medusa – [see our documentation](https://docs.medusajs.com/add-plugins/algolia), and the [documentation for using `react-instantsearch-hooks-web`](https://www.algolia.com/doc/guides/building-search-ui/getting-started/react-hooks/).
+The backend declares the `product` index in `medusa/src/search/product.ts` and allows it on the Store Search route. Medusa seeds the index and keeps it current from product events. Medusa Cloud uses its managed Medusa Search provider, while local development uses the PostgreSQL provider by default. See the [Medusa Search guide](https://docs.medusajs.com/cloud/search) for Cloud setup and deployment details.
 
 ## App structure
 
