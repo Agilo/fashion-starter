@@ -111,7 +111,13 @@ export default async function OrderCompletedTemplate({
           </div>
         </div>
         <div className="rounded-xs border border-grayscale-200 p-4 mb-5">
-          {order.items?.map((item) => <Item key={item.id} item={item} />)}
+          {order.items?.map((item) => (
+            <Item
+              key={item.id}
+              item={item}
+              currencyCode={order.currency_code}
+            />
+          ))}
         </div>
         <div className="rounded-xs border border-grayscale-200 p-4 flex max-sm:flex-col gap-y-8 gap-x-10 md:flex-wrap justify-between">
           <div className="flex items-center self-baseline gap-4">

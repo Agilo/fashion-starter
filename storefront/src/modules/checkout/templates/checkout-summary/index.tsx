@@ -22,7 +22,7 @@ const ItemPrice: React.FC<{
     <div>
       {hasReducedPrice ? (
         <>
-          <p className="text-red-primary">{calculated_price}</p>
+          <p className="text-red-primary font-semibold">{calculated_price}</p>
           <p className="text-grayscale-500 line-through">{original_price}</p>
         </>
       ) : (
