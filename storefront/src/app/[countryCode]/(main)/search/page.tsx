@@ -6,6 +6,7 @@ import PaginatedProducts from "@modules/store/templates/paginated-products"
 import { CollectionsSlider } from "@modules/store/components/collections-slider"
 import { searchProducts } from "@lib/data/search"
 import { getRegion } from "@lib/data/regions"
+import { NoResults } from "@modules/store/components/no-results.tsx"
 
 type Props = {
   params: Promise<{ countryCode: string }>
@@ -36,7 +37,11 @@ export default async function SearchPage({ params, searchParams }: Props) {
         </LayoutColumn>
       </Layout>
       <Suspense fallback={<SkeletonProductGrid />}>
-        {region && (
+        {!results.hits.length ? (
+          <Layout className="mb-16">
+            <NoResults />
+          </Layout>
+        ) : region && (
           <PaginatedProducts
             sortBy="created_at"
             page={pageNumber}
