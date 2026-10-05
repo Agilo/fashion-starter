@@ -1,4 +1,4 @@
-const { loadEnv, defineConfig } = require('@medusajs/framework/utils');
+const { loadEnv, defineConfig } = require("@medusajs/framework/utils");
 
 loadEnv(process.env.NODE_ENV, process.cwd());
 
@@ -7,7 +7,7 @@ const isMedusaCloud = Boolean(process.env.MEDUSA_CLOUD_ENVIRONMENT_HANDLE);
 module.exports = defineConfig({
   admin: {
     backendUrl:
-      process.env.BACKEND_URL ?? 'https://sofa-society-starter.medusajs.app',
+      process.env.BACKEND_URL ?? "https://sofa-society-starter.medusajs.app",
     storefrontUrl: process.env.STOREFRONT_URL,
   },
   projectConfig: {
@@ -16,19 +16,19 @@ module.exports = defineConfig({
       storeCors: process.env.STORE_CORS,
       adminCors: process.env.ADMIN_CORS,
       authCors: process.env.AUTH_CORS,
-      jwtSecret: process.env.JWT_SECRET || 'supersecret',
-      cookieSecret: process.env.COOKIE_SECRET || 'supersecret',
-      jwtExpiresIn: process.env.JWT_EXPIRES_IN || '24h',
+      jwtSecret: process.env.JWT_SECRET || "supersecret",
+      cookieSecret: process.env.COOKIE_SECRET || "supersecret",
+      jwtExpiresIn: process.env.JWT_EXPIRES_IN || "24h",
     },
   },
   modules: [
     {
-      resolve: '@medusajs/medusa/payment',
+      resolve: "@medusajs/medusa/payment",
       options: {
         providers: [
           {
-            id: 'stripe',
-            resolve: '@medusajs/medusa/payment-stripe',
+            id: "stripe",
+            resolve: "@medusajs/medusa/payment-stripe",
             options: {
               apiKey: process.env.STRIPE_API_KEY,
               webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
@@ -38,18 +38,31 @@ module.exports = defineConfig({
       },
     },
     {
-      resolve: './src/modules/fashion',
+      resolve: "./src/modules/fashion",
     },
+    ...(!isMedusaCloud && process.env.MEDUSA_SEARCH_ENDPOINT
+      ? [
+          {
+            resolve: "@medusajs/medusa/search",
+            options: {
+              default_provider: "search-medusa",
+              cloud: {
+                endpoint: process.env.MEDUSA_SEARCH_ENDPOINT,
+              },
+            },
+          },
+        ]
+      : []),
     ...(isMedusaCloud
       ? []
       : [
           {
-            resolve: '@medusajs/medusa/file',
+            resolve: "@medusajs/medusa/file",
             options: {
               providers: [
                 {
-                  resolve: '@medusajs/medusa/file-s3',
-                  id: 's3',
+                  resolve: "@medusajs/medusa/file-s3",
+                  id: "s3",
                   options: {
                     file_url: process.env.S3_FILE_URL,
                     access_key_id: process.env.S3_ACCESS_KEY_ID,
@@ -59,7 +72,7 @@ module.exports = defineConfig({
                     endpoint: process.env.S3_ENDPOINT,
                     additional_client_config: {
                       forcePathStyle:
-                        process.env.S3_FORCE_PATH_STYLE === 'true'
+                        process.env.S3_FORCE_PATH_STYLE === "true"
                           ? true
                           : undefined,
                     },
@@ -70,30 +83,30 @@ module.exports = defineConfig({
           },
         ]),
     {
-      resolve: '@medusajs/medusa/notification',
+      resolve: "@medusajs/medusa/notification",
       options: {
         providers: [
           {
-            resolve: './src/modules/resend',
-            id: 'resend',
+            resolve: "./src/modules/resend",
+            id: "resend",
             options: {
-              channels: ['email'],
+              channels: ["email"],
               api_key: process.env.RESEND_API_KEY,
               from: process.env.RESEND_FROM,
-              siteTitle: 'SofaSocietyCo.',
-              companyName: 'Sofa Society',
+              siteTitle: "SofaSocietyCo.",
+              companyName: "Sofa Society",
               footerLinks: [
                 {
-                  url: 'https://agilo.com',
-                  label: 'Agilo',
+                  url: "https://agilo.com",
+                  label: "Agilo",
                 },
                 {
-                  url: 'https://www.instagram.com/agiloltd/',
-                  label: 'Instagram',
+                  url: "https://www.instagram.com/agiloltd/",
+                  label: "Instagram",
                 },
                 {
-                  url: 'https://www.linkedin.com/company/agilo/',
-                  label: 'LinkedIn',
+                  url: "https://www.linkedin.com/company/agilo/",
+                  label: "LinkedIn",
                 },
               ],
             },
@@ -105,18 +118,18 @@ module.exports = defineConfig({
       ? []
       : [
           {
-            resolve: '@medusajs/medusa/event-bus-redis',
+            resolve: "@medusajs/medusa/event-bus-redis",
             options: {
               redisUrl: process.env.REDIS_URL,
             },
           },
           {
-            resolve: '@medusajs/medusa/caching',
+            resolve: "@medusajs/medusa/caching",
             options: {
               providers: [
                 {
-                  resolve: '@medusajs/caching-redis',
-                  id: 'caching-redis',
+                  resolve: "@medusajs/caching-redis",
+                  id: "caching-redis",
                   is_default: true,
                   options: {
                     redisUrl: process.env.REDIS_URL,
@@ -126,7 +139,7 @@ module.exports = defineConfig({
             },
           },
           {
-            resolve: '@medusajs/medusa/workflow-engine-redis',
+            resolve: "@medusajs/medusa/workflow-engine-redis",
             options: {
               redis: {
                 redisUrl: process.env.REDIS_URL,
@@ -134,12 +147,12 @@ module.exports = defineConfig({
             },
           },
           {
-            resolve: '@medusajs/medusa/locking',
+            resolve: "@medusajs/medusa/locking",
             options: {
               providers: [
                 {
-                  resolve: '@medusajs/medusa/locking-redis',
-                  id: 'locking-redis',
+                  resolve: "@medusajs/medusa/locking-redis",
+                  id: "locking-redis",
                   is_default: true,
                   options: {
                     redisUrl: process.env.REDIS_URL,
@@ -152,7 +165,7 @@ module.exports = defineConfig({
   ],
   plugins: [
     {
-      resolve: '@agilo/medusa-analytics-plugin',
+      resolve: "@agilo/medusa-analytics-plugin",
       options: {},
     },
   ],
