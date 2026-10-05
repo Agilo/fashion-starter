@@ -52,7 +52,9 @@ export const SearchField: React.FC<{
     },
     load: async ({ filterText, signal }) => {
       const results = await searchProducts(filterText ?? "", 10, signal)
-      if (signal.aborted) return { items: [], filterText }
+      if (signal.aborted || !results.hits.length) {
+        return { items: [], filterText }
+      }
       const medusaProducts = await getProductsById({
         ids: results.hits.map((hit) => hit.id),
         regionId: region!,

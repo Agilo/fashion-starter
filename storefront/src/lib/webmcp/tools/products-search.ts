@@ -61,6 +61,16 @@ export const productsSearch = async (
       ? await searchProducts(params.query, Math.min(36, params.limit || 12))
       : null
 
+    if (results && !results.hits.length) {
+      return {
+        ok: true,
+        data: { products: [] },
+        meta: {
+          tool: "products.search",
+        },
+      }
+    }
+
     const queryParams: HttpTypes.StoreProductListParams = {
       limit: Math.min(36, params.limit || 12),
     }
