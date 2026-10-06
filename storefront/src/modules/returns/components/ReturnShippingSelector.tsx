@@ -10,7 +10,7 @@ import {
   UiRadioBox,
   UiRadioLabel,
 } from "@/components/ui/Radio"
-import Loader from "@medusajs/icons/dist/components/loader"
+import { Loader } from "@medusajs/icons"
 
 type ReturnShippingSelectorProps = {
   shippingOptions: HttpTypes.StoreCartShippingOption[]
