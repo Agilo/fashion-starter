@@ -21,9 +21,9 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
-    "@medusajs/icons": "^2.13.1",
-    "@medusajs/js-sdk": "2.13.1",
-    "@medusajs/types": "2.13.1",
+    "@medusajs/icons": "2.21.2",
+    "@medusajs/js-sdk": "2.21.2",
+    "@medusajs/types": "2.21.2",
     "@paypal/paypal-js": "^8.4.2",
     "@paypal/react-paypal-js": "^8.9.2",
     "@stripe/react-stripe-js": "^5.6.0",
@@ -33,8 +33,7 @@
     "axios": "^1.13.5",
     "embla-carousel-react": "^8.6.0",
     "lodash": "^4.17.23",
-    "meilisearch": "^0.55.0",
-    "next": "15.5.10",
+    "next": "15.5.21",
     "pg": "^8.13.3",
     "qs": "^6.14.2",
     "react": "^19.0.0",
@@ -52,7 +51,7 @@
     "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4",
     "@types/lodash": "^4.17.16",
-    "@types/node": "^20",
+    "@types/node": "^24",
     "@types/pg": "^8.11.11",
     "@types/react": "^19",
     "@types/react-dom": "^19",
@@ -67,5 +66,8 @@
     "typescript": "^5",
     "webpack": "^5"
   },
-  "packageManager": "yarn@1.22.19"
+  "packageManager": "yarn@1.22.19",
+  "engines": {
+    "node": ">=24"
+  }
 }

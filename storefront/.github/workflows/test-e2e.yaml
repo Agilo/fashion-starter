@@ -29,15 +29,9 @@ env:
   DATABASE_TYPE: "postgres"
   REDIS_URL: redis://localhost:6379
   DATABASE_URL: postgres://test_medusa_user:password@localhost/test_medusa_db
-  MEILISEARCH_HOST: http://localhost:7700
-  MEILISEARCH_API_KEY: meili_api_key
-
   NEXT_PUBLIC_BASE_URL: http://localhost:8000
   NEXT_PUBLIC_DEFAULT_REGION: us
   NEXT_PUBLIC_MEDUSA_BACKEND_URL: http://localhost:9000
-  NEXT_PUBLIC_INDEX_NAME: products
-  NEXT_PUBLIC_SEARCH_ENDPOINT: http://127.0.0.1:7700
-  NEXT_PUBLIC_SEARCH_API_KEY: meili_api_key
   REVALIDATE_SECRET: supersecret
 
 jobs:
@@ -45,6 +39,9 @@ jobs:
     timeout-minutes: 20
     runs-on:
       - ubuntu-latest
+    defaults:
+      run:
+        working-directory: storefront
     services:
       postgres:
         image: postgres:latest
@@ -56,19 +53,6 @@ jobs:
           - 5432:5432
         options: >-
           --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-      meilisearch:
-        image: getmeili/meilisearch:v1.7
-        env:
-          MEILI_MASTER_KEY: meili_api_key
-          MEILI_ENV: development
-        ports:
-          - 7700:7700
-        options: >-
-          --health-cmd "curl --fail http://localhost:7700/health"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -88,7 +72,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: "20"
+          node-version: "24"
 
       - name: Initialize PostgreSQL
         run: |
@@ -97,7 +81,7 @@ jobs:
           psql -h localhost -U postgres -d test -c "CREATE DATABASE ${{ env.TEST_POSTGRES_DATABASE }} OWNER ${{ env.TEST_POSTGRES_USER }};"
 
       - name: Install Medusa CLI
-        run: npm install @medusajs/medusa-cli@preview -g
+        run: npm install @medusajs/cli@2.21.2 -g
       - name: Setup medusa backend server
         working-directory: ../
         # https://docs.medusajs.com/cli/reference#options
@@ -115,12 +99,14 @@ jobs:
           --db-host ${{ env.TEST_POSTGRES_HOST }} \
           --db-port ${{ env.TEST_POSTGREST_PORT }}
 
-      - name: Setup search in the backend
-        working-directory: ../backend
-        run: yarn add medusa-plugin-meilisearch
-
       - name: Move custom medusa config to the backend
         run: cp .github/scripts/medusa-config.js ../backend/medusa-config.js
+
+      - name: Add the product search index and Store Search middleware
+        run: |
+          mkdir -p ../backend/src/search ../backend/src/api
+          cp ../medusa/src/search/product.ts ../backend/src/search/product.ts
+          cp .github/scripts/middlewares.ts ../backend/src/api/middlewares.ts
 
       - name: Seed data from default seed file
         working-directory: ../backend

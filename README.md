@@ -21,7 +21,7 @@ This starter kit is an ideal solution for developers who need to set up a profes
 - [Quickstart](#quickstart)
   - [Medusa](#medusa)
   - [Storefront](#storefront)
-  - [Meilisearch](#meilisearch)
+  - [Search](#search)
 
 ## Features
 
@@ -38,7 +38,7 @@ This starter kit is an ideal solution for developers who need to set up a profes
 
 ## Roadmap
 - [x] **Figma Design Template**: This will enable you to easily customize the design of the storefront to match your brand. [View template](https://www.figma.com/community/file/1494273775050024009).
-- [x] **Search**: Integration with Meilisearch for a powerful search experience.
+- [x] **Search**: Product search through Medusa's Search Module and Store Search API.
 - [x] **404 Page**: Custom 404 page for a better user experience.
 - [x] **Account Management**: Allow customers to create accounts, view order history, and manage their personal information.
 - [x] **Cart Drawer**: Cart drawer that slides in from the side where customers can view and edit their cart items.
@@ -158,7 +158,7 @@ This starter kit is an ideal solution for developers who need to set up a profes
 
 ## Prerequisites
 
-- Node >= 20
+- Node >= 24
 - Yarn >= 3.5 for Medusa, Yarn v1 for Storefront
 - Docker and Docker Compose
 - Stripe account (for payments)
@@ -187,8 +187,8 @@ docker-compose up -d
 # Build the project
 yarn build
 
-# Run the migrations
-yarn medusa db:migrate
+# Run the migrations and initialize search indexes
+yarn medusa db:migrate --execute-all-links
 
 # Seed the database
 yarn seed
@@ -219,14 +219,9 @@ yarn dev
 
 You should now be able to access the storefront at http://localhost:8000.
 
-### Meilisearch
+### Search
 
-```bash
-# Get search api key
-http --auth "yoursecretmasterkey" --auth-type bearer GET http://localhost:7700/keys
-```
-
-You should go to `storefront/.env.local` file and paste obtained key into the `NEXT_PUBLIC_SEARCH_API_KEY` env variable. Also, go to the `backend/.env` file and paste admin key into `MEILISEARCH_API_KEY`
+The storefront searches through Medusa's `POST /store/search` route and uses the product index in `medusa/src/search/product.ts`. Medusa keeps that index up to date when products change. On Medusa Cloud, the managed Medusa Search provider backs the index; local development uses the PostgreSQL provider by default. Search uses the storefront's existing Medusa backend URL and publishable API key, so it does not need a separate search host or browser key.
 
 <a href="https://agilo.com" target="_blank">
   <picture>

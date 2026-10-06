@@ -38,27 +38,7 @@ export const cartManage = async (
     }
   }
 
-  if (action !== "view" && context?.client) {
-    const actionConfirmed = await context.client.requestUserInteraction(() =>
-      Promise.resolve(
-        window.confirm(
-          `Confirm cart action: ${action}${
-            action === "add" ? ` ${addQuantity} item(s)` : ""
-          }?`
-        )
-      )
-    )
-
-    if (!actionConfirmed) {
-      return {
-        ok: false,
-        error: {
-          code: "USER_CANCELLED",
-          message: "User cancelled cart action confirmation.",
-        },
-      }
-    }
-  }
+  context?.signal?.throwIfAborted()
 
   try {
     switch (action) {
@@ -196,8 +176,9 @@ export const cartManageTool: WebMCPTool<CartManageInput, CartSnapshot> = {
         properties: {
           action: { const: "update" },
           line_id: { type: "string" },
+          quantity: { type: "number", minimum: 0 },
         },
-        required: ["action", "line_id"],
+        required: ["action", "line_id", "quantity"],
       },
       {
         properties: {
