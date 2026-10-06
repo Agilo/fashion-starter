@@ -11,7 +11,7 @@ import { ReturnReasonSelect } from "./ReturnReasonSelect"
 export type ReturnItemSelection = {
   id: string
   quantity: number
-  return_reason_id?: string
+  reason_id?: string
   note?: string
 }
 
@@ -48,24 +48,24 @@ const ReturnItemSelector: React.FC<ReturnItemSelectorProps> = ({
     onItemSelectionChange({
       id: item_id,
       quantity: newQuantity,
-      return_reason_id: selected_item?.return_reason_id || "",
+      reason_id: selected_item?.reason_id || "",
       note: selected_item?.note || "",
     })
   }
 
   const handleReturnReasonChange = ({
     item_id,
-    return_reason_id,
+    reason_id,
     selected_item,
   }: {
     item_id: string
-    return_reason_id: string
+    reason_id: string
     selected_item?: ReturnItemSelection
   }) => {
     onItemSelectionChange({
       id: item_id,
       quantity: selected_item?.quantity || 0,
-      return_reason_id,
+      reason_id,
       note: selected_item?.note || "",
     })
   }
@@ -82,7 +82,7 @@ const ReturnItemSelector: React.FC<ReturnItemSelectorProps> = ({
     onItemSelectionChange({
       id: item_id,
       quantity: selected_item?.quantity || 0,
-      return_reason_id: selected_item?.return_reason_id || "",
+      reason_id: selected_item?.reason_id || "",
       note,
     })
   }
@@ -199,15 +199,14 @@ const ReturnItemSelector: React.FC<ReturnItemSelectorProps> = ({
                   <>
                     <div className="flex flex-col gap-2">
                       <label className="text-grayscale-600">
-                        Reason for return:{" "}
-                        <span className="text-red-600">*</span>
+                        Reason for return (optional):
                       </label>
                       <ReturnReasonSelect
-                        value={selectedItem?.return_reason_id}
-                        onChange={(return_reason_id) =>
+                        value={selectedItem?.reason_id}
+                        onChange={(reason_id) =>
                           handleReturnReasonChange({
                             item_id: item.id,
-                            return_reason_id,
+                            reason_id,
                             selected_item: selectedItem,
                           })
                         }

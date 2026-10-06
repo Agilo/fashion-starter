@@ -85,7 +85,7 @@ export const ReturnCreationTemplate: React.FC<ReturnCreationTemplateProps> = ({
   const handleItemSelection = ({
     id,
     quantity,
-    return_reason_id,
+    reason_id,
     note,
   }: ReturnItemSelection) => {
     setSelectedItems((prev) => {
@@ -96,11 +96,11 @@ export const ReturnCreationTemplate: React.FC<ReturnCreationTemplateProps> = ({
         }
         return prev.map((item) => {
           return item.id === id
-            ? { ...item, quantity, return_reason_id, note }
+            ? { ...item, quantity, reason_id, note }
             : item
         })
       } else if (quantity > 0) {
-        return [...prev, { id, quantity, return_reason_id, note }]
+        return [...prev, { id, quantity, reason_id, note }]
       }
       return prev
     })
@@ -108,7 +108,16 @@ export const ReturnCreationTemplate: React.FC<ReturnCreationTemplateProps> = ({
 
   const handleSubmit = (formData: FormData) => {
     formData.append("order_id", order.id)
-    formData.append("items", JSON.stringify(selectedItems))
+    formData.append(
+      "items",
+      JSON.stringify(
+        selectedItems.map(({ reason_id, note, ...item }) => ({
+          ...item,
+          ...(reason_id ? { reason_id } : {}),
+          ...(note ? { note } : {}),
+        }))
+      )
+    )
     formData.append("return_shipping_option_id", selectedShippingOption)
     const locationId = shippingOptions.find(
       (opt) => opt.id === selectedShippingOption
