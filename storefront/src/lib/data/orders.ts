@@ -16,7 +16,7 @@ export const retrieveOrder = cache(async (id: unknown) => {
     .fetch<HttpTypes.StoreOrderResponse>(`/store/orders/${id}`, {
       query: {
         fields:
-          "*payment_collections.payments,*items,*items.metadata,*items.variant,*items.product,*items.adjustments,+cart.id,+items.refundable_total_per_unit,+items.discount_total,*returns,*returns.*,+summary",
+          "*payment_collections.payments,*items,*items.metadata,*items.variant,*items.product,*items.adjustments,+cart.id,+items.refundable_total_per_unit,+items.discount_total,*returns,*returns.items,+summary",
       },
       next: { tags: ["orders"] },
       headers: { ...(await getAuthHeaders()) },
@@ -52,7 +52,7 @@ export const listOrders = async function (
         limit,
         offset,
         order: "-created_at",
-        fields: "*returns,*returns.*",
+        fields: "*returns,*returns.items",
       },
       next: { tags: ["orders"] },
       headers: { ...(await getAuthHeaders()) },
