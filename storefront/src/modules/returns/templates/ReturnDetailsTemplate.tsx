@@ -7,6 +7,7 @@ import { OrderItem } from "@modules/order/components/item/OrderItem"
 import { twJoin } from "tailwind-merge"
 import { ReturnStatus } from "@modules/returns/components/ReturnStatus"
 import {
+  calcExpectedRefundAmount,
   getDiscountPerUnit,
   OrderWithReturns,
   ReturnWithOrderItems,
@@ -114,9 +115,7 @@ export const ReturnDetailsTemplate: React.FC<ReturnDetailsTemplateProps> = ({
               <p>
                 {convertToLocale({
                   currency_code: returnEntity.currency_code,
-                  amount:
-                    returnEntity.refund_amount ??
-                    Math.abs(order.summary.pending_difference ?? 0),
+                  amount: calcExpectedRefundAmount(returnEntity),
                 })}
               </p>
             </div>
