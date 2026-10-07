@@ -159,15 +159,24 @@ export const fetchAndVerifyOrder = async (
   return order
 }
 
+const findGuestOrder = (orderId: string, email: string) =>
+  fetchAndVerifyOrder(orderId, email).catch(() => null)
+
 export const verifyGuestOrderAccess = async (
   orderId: string,
   email: string,
   countryCode: string
-) => {
-  const order = await fetchAndVerifyOrder(orderId, email)
+): Promise<{ error: string }> => {
+  const order = await findGuestOrder(orderId, email)
+
+  if (!order) {
+    return {
+      error: "Order not found. Please check your details and try again.",
+    }
+  }
 
   if (!hasReturnableItems(order)) {
-    throw new Error("This order has no items available for return.")
+    return { error: "This order has no items available for return." }
   }
 
   const params = new URLSearchParams({ email })
@@ -179,13 +188,20 @@ export const trackGuestReturn = async (
   orderId: string,
   email: string,
   countryCode: string
-) => {
-  const order = await fetchAndVerifyOrder(orderId, email)
+): Promise<{ error: string }> => {
+  const order = await findGuestOrder(orderId, email)
+
+  if (!order) {
+    return {
+      error: "Order not found. Please check your details and try again.",
+    }
+  }
 
   if (!order.returns || order.returns.length === 0) {
-    throw new Error(
-      "No returns found for this order. Please check your details and try again."
-    )
+    return {
+      error:
+        "No returns found for this order. Please check your details and try again.",
+    }
   }
 
   const params = new URLSearchParams({ email })

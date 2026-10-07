@@ -27,16 +27,23 @@ export const GuestReturnTrackForm: React.FC<{ countryCode: string }> = ({
     setIsLoading(true)
 
     try {
-      await trackGuestReturn(data.orderId, data.email, countryCode)
+      const result = await trackGuestReturn(
+        data.orderId,
+        data.email,
+        countryCode
+      )
+
+      if (result?.error) {
+        setError(result.error)
+        setIsLoading(false)
+      }
     } catch (err) {
       if (err instanceof Error && err.message.includes("NEXT_REDIRECT")) {
         throw err
       }
 
       setError(
-        err instanceof Error
-          ? err.message
-          : "Unable to find return. Please check your details and try again."
+        "Unable to find return. Please check your details and try again."
       )
       setIsLoading(false)
     }

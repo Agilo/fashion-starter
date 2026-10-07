@@ -27,17 +27,22 @@ export const GuestReturnCreateForm: React.FC<{ countryCode: string }> = ({
     setIsLoading(true)
 
     try {
-      await verifyGuestOrderAccess(data.orderId, data.email, countryCode)
+      const result = await verifyGuestOrderAccess(
+        data.orderId,
+        data.email,
+        countryCode
+      )
+
+      if (result?.error) {
+        setError(result.error)
+        setIsLoading(false)
+      }
     } catch (err) {
       if (err instanceof Error && err.message.includes("NEXT_REDIRECT")) {
         throw err
       }
 
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Unable to find order. Please check your details and try again."
-      )
+      setError("Unable to find order. Please check your details and try again.")
       setIsLoading(false)
     }
   }
