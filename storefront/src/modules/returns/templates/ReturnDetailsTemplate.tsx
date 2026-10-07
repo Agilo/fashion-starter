@@ -76,6 +76,29 @@ export const ReturnDetailsTemplate: React.FC<ReturnDetailsTemplateProps> = ({
         <div className="rounded-xs border border-grayscale-200 p-4 flex flex-col gap-6">
           {returnEntity.items?.map((returnItem) => {
             const item = returnItem.item
+            // Medusa zeroes an item's discount_total once its return is
+            // received, so take the line's discount from its adjustments and
+            // scale it to the returned quantity.
+            const taxRate =
+              (item?.tax_lines ?? []).reduce((sum, line) => sum + line.rate, 0) /
+              100
+            // is_tax_inclusive is on Medusa's adjustment model but missing
+            // from its HTTP types.
+            const adjustments = (item?.adjustments ?? []) as Array<{
+              amount: number
+              is_tax_inclusive?: boolean
+            }>
+            const lineDiscount = adjustments.reduce(
+              (sum, adjustment) =>
+                sum +
+                (adjustment.is_tax_inclusive
+                  ? adjustment.amount / (1 + taxRate)
+                  : adjustment.amount),
+              0
+            )
+            const returnedDiscount = item?.quantity
+              ? (lineDiscount / item.quantity) * returnItem.quantity
+              : 0
             return (
               <OrderItem
                 key={returnItem.id || ""}
@@ -85,7 +108,7 @@ export const ReturnDetailsTemplate: React.FC<ReturnDetailsTemplateProps> = ({
                 title={item?.title || ""}
                 quantity={returnItem.quantity}
                 variant={item?.variant || undefined}
-                discount_total={item.discount_total ?? 0}
+                discount_total={returnedDiscount}
                 unit_price={item?.unit_price || 0}
                 currencyCode={returnEntity.currency_code}
                 className="flex gap-x-4 sm:gap-x-8 gap-y-6 pb-6 border-b border-grayscale-100 last:border-0 last:pb-0"
