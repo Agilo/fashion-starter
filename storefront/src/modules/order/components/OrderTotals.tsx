@@ -100,11 +100,6 @@ export const OrderTotals: React.FC<{
         amount={shipping_subtotal ?? 0}
         currencyCode={currency_code}
       />
-      <TotalsRow
-        label="Tax"
-        amount={tax_total ?? 0}
-        currencyCode={currency_code}
-      />
       {!!gift_card_total && (
         <TotalsRow
           label="Gift card"
@@ -118,6 +113,10 @@ export const OrderTotals: React.FC<{
         amount={total ?? 0}
         currencyCode={currency_code}
       />
+      <p className="text-xs text-grayscale-500">
+        Including {convertToLocale({ amount: tax_total ?? 0, currency_code })}{" "}
+        tax
+      </p>
     </div>
   )
 }
