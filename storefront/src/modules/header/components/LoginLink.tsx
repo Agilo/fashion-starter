@@ -1,5 +1,6 @@
 "use client"
 
+import * as React from "react"
 import { Icon } from "@/components/Icon"
 import { LocalizedButtonLink } from "@/components/LocalizedLink"
 import { withReactQueryProvider } from "@lib/util/react-query"
@@ -7,9 +8,13 @@ import { useCustomer } from "hooks/customer"
 
 const LoginLink = ({ className }: { className: string }) => {
   const { data: customer } = useCustomer()
+  const [isMounted, setIsMounted] = React.useState(false)
+
+  React.useEffect(() => setIsMounted(true), [])
+
   return (
     <LocalizedButtonLink
-      href={customer ? "/account" : "/auth/login"}
+      href={isMounted && customer ? "/account" : "/auth/login"}
       prefetch={false}
       variant="ghost"
       className={className}
