@@ -122,18 +122,48 @@ export const getOrderReturns = (
   )
 }
 
+const getTaxRate = (item: HttpTypes.StoreOrderLineItem): number =>
+  (item.tax_lines ?? []).reduce((sum, line) => sum + line.rate, 0) / 100
+
+export const getDiscountPerUnit = (
+  item: HttpTypes.StoreOrderLineItem
+): number => {
+  const taxRate = getTaxRate(item)
+  // is_tax_inclusive is on Medusa's adjustment model but missing from its
+  // HTTP types.
+  const adjustments = (item.adjustments ?? []) as Array<{
+    amount: number
+    is_tax_inclusive?: boolean
+  }>
+  const discount = adjustments.reduce(
+    (sum, adjustment) =>
+      sum +
+      (adjustment.is_tax_inclusive
+        ? adjustment.amount / (1 + taxRate)
+        : adjustment.amount),
+    0
+  )
+
+  return item.quantity ? discount / item.quantity : 0
+}
+
+export const getUnitPriceWithTax = (
+  item: HttpTypes.StoreOrderLineItem
+): number =>
+  item.is_tax_inclusive
+    ? item.unit_price
+    : item.unit_price * (1 + getTaxRate(item))
+
+export const getRefundPerUnit = (item: HttpTypes.StoreOrderLineItem): number =>
+  getUnitPriceWithTax(item) - getDiscountPerUnit(item) * (1 + getTaxRate(item))
+
 export const calcReturnItemAmount = (
   returnItem: ReturnWithOrderItems["items"][number]
-): number => {
-  const item = returnItem.item
-  if (!item) return 0
-  const totalAdjustments =
-    item.adjustments?.reduce((s, a) => s + a.amount, 0) ?? 0
-  const discountedUnitPrice = item.unit_price - totalAdjustments / item.quantity
-  return discountedUnitPrice * returnItem.quantity
-}
+): number =>
+  returnItem.item ? getRefundPerUnit(returnItem.item) * returnItem.quantity : 0
 
 export const calcExpectedRefundAmount = (
   returnEntity: ReturnWithOrderItems
 ): number =>
+  returnEntity.refund_amount ??
   returnEntity.items.reduce((sum, ri) => sum + calcReturnItemAmount(ri), 0)

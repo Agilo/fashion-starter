@@ -7,6 +7,7 @@ import { OrderItem } from "@modules/order/components/item/OrderItem"
 import { twJoin } from "tailwind-merge"
 import { ReturnStatus } from "@modules/returns/components/ReturnStatus"
 import {
+  getDiscountPerUnit,
   OrderWithReturns,
   ReturnWithOrderItems,
 } from "@lib/util/returns"
@@ -77,27 +78,9 @@ export const ReturnDetailsTemplate: React.FC<ReturnDetailsTemplateProps> = ({
           {returnEntity.items?.map((returnItem) => {
             const item = returnItem.item
             // Medusa zeroes an item's discount_total once its return is
-            // received, so take the line's discount from its adjustments and
-            // scale it to the returned quantity.
-            const taxRate =
-              (item?.tax_lines ?? []).reduce((sum, line) => sum + line.rate, 0) /
-              100
-            // is_tax_inclusive is on Medusa's adjustment model but missing
-            // from its HTTP types.
-            const adjustments = (item?.adjustments ?? []) as Array<{
-              amount: number
-              is_tax_inclusive?: boolean
-            }>
-            const lineDiscount = adjustments.reduce(
-              (sum, adjustment) =>
-                sum +
-                (adjustment.is_tax_inclusive
-                  ? adjustment.amount / (1 + taxRate)
-                  : adjustment.amount),
-              0
-            )
-            const returnedDiscount = item?.quantity
-              ? (lineDiscount / item.quantity) * returnItem.quantity
+            // received, so take the discount from its adjustments.
+            const returnedDiscount = item
+              ? getDiscountPerUnit(item) * returnItem.quantity
               : 0
             return (
               <OrderItem

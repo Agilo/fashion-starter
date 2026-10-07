@@ -4,7 +4,12 @@ import * as React from "react"
 import Image from "next/image"
 import { HttpTypes } from "@medusajs/types"
 import { convertToLocale } from "@lib/util/money"
-import { ItemWithDeliveryStatus } from "@lib/util/returns"
+import {
+  getDiscountPerUnit,
+  getRefundPerUnit,
+  getUnitPriceWithTax,
+  ItemWithDeliveryStatus,
+} from "@lib/util/returns"
 import { NumberField } from "@/components/NumberField"
 import { ReturnReasonSelect } from "./ReturnReasonSelect"
 
@@ -92,6 +97,8 @@ const ReturnItemSelector: React.FC<ReturnItemSelectorProps> = ({
       {items.map((item) => {
         const selectedItem = selectedItems.find((si) => si.id === item.id)
         const isSelected = selectedItem && selectedItem.quantity > 0
+        const refundPerUnit = getRefundPerUnit(item)
+        const hasDiscount = getDiscountPerUnit(item) > 0
 
         return (
           <div
@@ -152,20 +159,18 @@ const ReturnItemSelector: React.FC<ReturnItemSelectorProps> = ({
                     )}
                   </div>
                   <div className="text-right">
-                    {!!item.discount_total && (
+                    {hasDiscount && (
                       <p className="text-xs text-grayscale-500 line-through">
                         {convertToLocale({
                           currency_code: currencyCode,
-                          amount: item.unit_price,
+                          amount: getUnitPriceWithTax(item),
                         })}
                       </p>
                     )}
                     <p className="font-medium">
                       {convertToLocale({
                         currency_code: currencyCode,
-                        amount: item.discount_total
-                          ? item.refundable_total_per_unit
-                          : item.unit_price,
+                        amount: refundPerUnit,
                       })}
                     </p>
                   </div>
@@ -238,9 +243,7 @@ const ReturnItemSelector: React.FC<ReturnItemSelectorProps> = ({
                       <span className="font-medium">
                         {convertToLocale({
                           currency_code: currencyCode,
-                          amount:
-                            item.refundable_total_per_unit *
-                            (selectedItem?.quantity || 0),
+                          amount: refundPerUnit * (selectedItem?.quantity || 0),
                         })}
                       </span>
                     </div>

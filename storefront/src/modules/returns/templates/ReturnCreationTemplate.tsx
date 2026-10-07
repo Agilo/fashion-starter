@@ -16,7 +16,10 @@ import { ReturnReason } from "@modules/returns/components/ReturnReasonSelect"
 import ReturnItemSelector, {
   ReturnItemSelection,
 } from "@modules/returns/components/ReturnItemSelector"
-import { enhanceItemsWithReturnStatus } from "@lib/util/returns"
+import {
+  enhanceItemsWithReturnStatus,
+  getRefundPerUnit,
+} from "@lib/util/returns"
 import ReturnShippingSelector from "@modules/returns/components/ReturnShippingSelector"
 import { ReturnSummary } from "@modules/returns/components/ReturnSummary"
 import { twJoin } from "tailwind-merge"
@@ -234,7 +237,7 @@ export const ReturnCreationTemplate: React.FC<ReturnCreationTemplateProps> = ({
                 (itm) => itm.id === selected.id
               )
               if (!item) return total
-              return total + item.refundable_total_per_unit * selected.quantity
+              return total + getRefundPerUnit(item) * selected.quantity
             }, 0)}
             currencyCode={order.currency_code}
           />
