@@ -119,16 +119,6 @@ export const ReturnCreationTemplate: React.FC<ReturnCreationTemplateProps> = ({
       )
     )
     formData.append("return_shipping_option_id", selectedShippingOption)
-    const locationId = shippingOptions.find(
-      (opt) => opt.id === selectedShippingOption
-      //@ts-expect-error - type mismatch in Medusa's types
-    )?.service_zone?.fulfillment_set?.location.id
-
-    if (!locationId) {
-      console.error("Could not find location ID for selected shipping option")
-    }
-
-    formData.append("location_id", locationId)
     formAction(formData)
   }
 

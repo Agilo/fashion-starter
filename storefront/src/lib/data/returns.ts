@@ -72,7 +72,6 @@ export const createReturnRequest = async (
   const returnShippingOptionId = formData.get(
     "return_shipping_option_id"
   ) as string
-  const locationId = formData.get("location_id") as string
 
   if (!orderId || !returnShippingOptionId) {
     return {
@@ -121,7 +120,6 @@ export const createReturnRequest = async (
         return_shipping: {
           option_id: returnShippingOptionId,
         },
-        location_id: locationId,
       },
       headers,
     })
