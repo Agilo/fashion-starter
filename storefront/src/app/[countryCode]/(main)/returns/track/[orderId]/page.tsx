@@ -27,10 +27,9 @@ export default async function ReturnDetailsPage({
     notFound()
   }
 
-  const order = (await fetchAndVerifyOrder(
-      orderId,
-      email
-    )) as OrderWithReturns & { cart: { id: string } }
+  const order = (await fetchAndVerifyOrder(orderId, email)) as
+    | (OrderWithReturns & { cart: { id: string } })
+    | null
 
   if (!order) {
     notFound()

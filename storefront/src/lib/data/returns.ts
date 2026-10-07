@@ -140,7 +140,7 @@ export const createReturnRequest = async (
 export const fetchAndVerifyOrder = async (
   orderId: string,
   email: string
-): Promise<OrderWithReturns> => {
+): Promise<OrderWithReturns | null> => {
   const order = await sdk.client
     .fetch<{ order: OrderWithReturns }>(`/store/orders/${orderId}`, {
       method: "GET",
@@ -151,23 +151,21 @@ export const fetchAndVerifyOrder = async (
       cache: "no-store",
     })
     .then(({ order }) => order)
+    .catch(() => null)
 
-  if (order.email?.toLowerCase() !== email.toLowerCase()) {
-    throw new Error("Order not found. Please check your details and try again.")
+  if (!order || order.email?.toLowerCase() !== email.toLowerCase()) {
+    return null
   }
 
   return order
 }
-
-const findGuestOrder = (orderId: string, email: string) =>
-  fetchAndVerifyOrder(orderId, email).catch(() => null)
 
 export const verifyGuestOrderAccess = async (
   orderId: string,
   email: string,
   countryCode: string
 ): Promise<{ error: string }> => {
-  const order = await findGuestOrder(orderId, email)
+  const order = await fetchAndVerifyOrder(orderId, email)
 
   if (!order) {
     return {
@@ -189,7 +187,7 @@ export const trackGuestReturn = async (
   email: string,
   countryCode: string
 ): Promise<{ error: string }> => {
-  const order = await findGuestOrder(orderId, email)
+  const order = await fetchAndVerifyOrder(orderId, email)
 
   if (!order) {
     return {
