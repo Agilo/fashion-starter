@@ -19,20 +19,14 @@ export const codeFormSchema = z.object({
   code: z.string().min(1),
 })
 
-const DiscountCode: React.FC<DiscountCodeProps> = ({ cart, className }) => {
+const DiscountCode: React.FC<DiscountCodeProps> = ({ className }) => {
   const applyPromotions = useApplyPromotions()
 
-  const { promotions = [] } = cart
   const addPromotionCode = async (values: { code: string }) => {
     if (!values.code) {
       return
     }
-    const codes = promotions
-      .filter((p) => p.code === undefined)
-      .map((p) => p.code!)
-    codes.push(values.code)
-
-    await applyPromotions.mutateAsync(codes)
+    await applyPromotions.mutateAsync([values.code])
   }
 
   return (

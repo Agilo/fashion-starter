@@ -289,7 +289,22 @@ export async function applyPromotions(codes: string[]) {
     throw new Error("No existing cart found")
   }
 
-  await updateCart({ promo_codes: codes })
+  if (!Array.isArray(codes) || !codes.length) {
+    throw new Error("No promotion codes provided")
+  }
+
+  if (codes.some((code) => typeof code !== "string" || !code.trim())) {
+    throw new Error("Invalid promotion codes")
+  }
+
+  // Adds the codes to the ones already on the cart. Updating the cart with
+  // promo_codes would replace them instead.
+  await sdk.client
+    .fetch<HttpTypes.StoreCartResponse>(`/store/carts/${cartId}/promotions`, {
+      method: "POST",
+      body: { promo_codes: codes },
+      headers: { ...(await getAuthHeaders()) },
+    })
     .then(() => {
       revalidateTag("cart")
     })
