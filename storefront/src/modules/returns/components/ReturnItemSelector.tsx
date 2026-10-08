@@ -173,6 +173,7 @@ const ReturnItemSelector: React.FC<ReturnItemSelectorProps> = ({
                         amount: refundPerUnit,
                       })}
                     </p>
+                    <p className="text-xs text-grayscale-500">incl. tax</p>
                   </div>
                 </div>
               </div>
@@ -239,7 +240,9 @@ const ReturnItemSelector: React.FC<ReturnItemSelectorProps> = ({
                     </div>
 
                     <div className="flex justify-between items-center pt-2 border-t border-grayscale-100">
-                      <span className="text-grayscale-600">Refund amount:</span>
+                      <span className="text-grayscale-600">
+                        Refund amount (incl. tax):
+                      </span>
                       <span className="font-medium">
                         {convertToLocale({
                           currency_code: currencyCode,

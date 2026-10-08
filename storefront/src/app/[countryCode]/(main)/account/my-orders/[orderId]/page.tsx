@@ -184,12 +184,15 @@ export default async function AccountOrderPage({
                         {new Date(eachReturn.created_at).toLocaleDateString()}
                       </p>
                     </div>
-                    <p className="text-right font-medium">
-                      {convertToLocale({
-                        currency_code: eachReturn.currency_code,
-                        amount: calcExpectedRefundAmount(eachReturn),
-                      })}
-                    </p>
+                    <div className="text-right">
+                      <p className="font-medium">
+                        {convertToLocale({
+                          currency_code: eachReturn.currency_code,
+                          amount: calcExpectedRefundAmount(eachReturn),
+                        })}
+                      </p>
+                      <p className="text-xs text-grayscale-500">incl. tax</p>
+                    </div>
                   </div>
                   <div className="flex overflow-x-auto gap-3">
                     {eachReturn.items

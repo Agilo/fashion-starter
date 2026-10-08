@@ -54,7 +54,7 @@ export const ReturnSummary: React.FC<ReturnSummaryProps> = ({
 
       <div className="border-t border-grayscale-200 pt-4">
         <div className="flex justify-between items-center">
-          <span className="font-semibold">Total Refund</span>
+          <span className="font-semibold">Total Refund (incl. tax)</span>
           <span className="text-lg font-semibold">
             {convertToLocale({
               currency_code: currencyCode,

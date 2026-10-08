@@ -111,7 +111,7 @@ export const ReturnDetailsTemplate: React.FC<ReturnDetailsTemplateProps> = ({
               <p>Original Payment Method</p>
             </div>
             <div className="flex justify-between items-center text-md pt-4 border-t border-grayscale-200 mt-2">
-              <p>Est. Refund</p>
+              <p>Est. Refund (incl. tax)</p>
               <p>
                 {convertToLocale({
                   currency_code: returnEntity.currency_code,
