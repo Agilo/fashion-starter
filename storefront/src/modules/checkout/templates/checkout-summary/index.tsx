@@ -1,36 +1,10 @@
 import { HttpTypes } from "@medusajs/types"
 
-import { getPricesForVariant } from "@lib/util/get-product-price"
 import DiscountCode from "@modules/checkout/components/discount-code"
 import CartTotals from "@modules/common/components/cart-totals"
+import LineItemUnitPrice from "@modules/common/components/line-item-unit-price"
 import Thumbnail from "@modules/products/components/thumbnail"
 import { LocalizedButtonLink, LocalizedLink } from "@/components/LocalizedLink"
-
-const ItemPrice: React.FC<{
-  item: HttpTypes.StoreCartLineItem | HttpTypes.StoreOrderLineItem
-}> = ({ item }) => {
-  const {
-    original_price,
-    calculated_price,
-    original_price_number,
-    calculated_price_number,
-  } = item.variant ? (getPricesForVariant(item.variant) ?? {}) : {}
-  const hasReducedPrice =
-    (calculated_price_number ?? 0) < (original_price_number ?? 0)
-
-  return (
-    <div>
-      {hasReducedPrice ? (
-        <>
-          <p className="text-red-primary font-semibold">{calculated_price}</p>
-          <p className="text-grayscale-500 line-through">{original_price}</p>
-        </>
-      ) : (
-        <p>{calculated_price}</p>
-      )}
-    </div>
-  )
-}
 
 const CheckoutSummary = ({ cart }: { cart: HttpTypes.StoreCart }) => {
   const items = cart.items ?? []
@@ -75,7 +49,11 @@ const CheckoutSummary = ({ cart }: { cart: HttpTypes.StoreCart }) => {
                       {item.product_title}
                     </LocalizedLink>
                   </div>
-                  <ItemPrice item={item} />
+                  <LineItemUnitPrice
+                    item={item}
+                    currencyCode={cart.currency_code}
+                    regularPriceClassName="text-base sm:text-base font-normal"
+                  />
                 </div>
                 <div className="flex flex-col gap-1.5 max-lg:text-xs">
                   {item.variant?.title && (
