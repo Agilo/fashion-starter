@@ -4,21 +4,16 @@ import React from "react"
 import { HttpTypes } from "@medusajs/types"
 
 import { convertToLocale } from "@lib/util/money"
+import { getTotalsBreakdown } from "@lib/util/totals"
 
 type CartTotalsProps = {
   cart: HttpTypes.StoreCart
 }
 
 const CartTotals: React.FC<CartTotalsProps> = ({ cart }) => {
-  const {
-    currency_code,
-    total,
-    item_subtotal,
-    tax_total,
-    discount_total,
-    shipping_total,
-    gift_card_total,
-  } = cart
+  const { currency_code, total, tax_total, gift_card_total } = cart
+  const { isTaxInclusive, subtotal, discount, shipping } =
+    getTotalsBreakdown(cart)
 
   return (
     <div>
@@ -28,24 +23,16 @@ const CartTotals: React.FC<CartTotalsProps> = ({ cart }) => {
             <p>Subtotal</p>
           </div>
           <div className="self-end">
-            <p>
-              {convertToLocale({ amount: item_subtotal ?? 0, currency_code })}
-            </p>
+            <p>{convertToLocale({ amount: subtotal, currency_code })}</p>
           </div>
         </div>
-        {!!discount_total && (
+        {!!discount && (
           <div className="flex justify-between max-lg:text-xs">
             <div>
               <p>Discount</p>
             </div>
             <div className="self-end">
-              <p>
-                -{" "}
-                {convertToLocale({
-                  amount: discount_total ?? 0,
-                  currency_code,
-                })}
-              </p>
+              <p>- {convertToLocale({ amount: discount, currency_code })}</p>
             </div>
           </div>
         )}
@@ -54,19 +41,21 @@ const CartTotals: React.FC<CartTotalsProps> = ({ cart }) => {
             <p>Shipping</p>
           </div>
           <div className="self-end">
-            <p>
-              {convertToLocale({ amount: shipping_total ?? 0, currency_code })}
-            </p>
+            <p>{convertToLocale({ amount: shipping, currency_code })}</p>
           </div>
         </div>
-        <div className="flex justify-between max-lg:text-xs">
-          <div>
-            <p>Taxes</p>
+        {!isTaxInclusive && (
+          <div className="flex justify-between max-lg:text-xs">
+            <div>
+              <p>Taxes</p>
+            </div>
+            <div className="self-end">
+              <p>
+                {convertToLocale({ amount: tax_total ?? 0, currency_code })}
+              </p>
+            </div>
           </div>
-          <div className="self-end">
-            <p>{convertToLocale({ amount: tax_total ?? 0, currency_code })}</p>
-          </div>
-        </div>
+        )}
         {!!gift_card_total && (
           <div className="flex justify-between max-lg:text-xs">
             <div>
@@ -92,6 +81,12 @@ const CartTotals: React.FC<CartTotalsProps> = ({ cart }) => {
           <p>{convertToLocale({ amount: total ?? 0, currency_code })}</p>
         </div>
       </div>
+      {isTaxInclusive && (
+        <p className="text-xs text-grayscale-500 text-right mt-1">
+          Including {convertToLocale({ amount: tax_total ?? 0, currency_code })}{" "}
+          tax
+        </p>
+      )}
       <div className="absolute h-full w-auto top-0 right-0 bg-black" />
     </div>
   )

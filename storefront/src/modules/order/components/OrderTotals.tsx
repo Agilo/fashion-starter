@@ -1,4 +1,5 @@
 import { convertToLocale } from "@lib/util/money"
+import { getTotalsBreakdown } from "@lib/util/totals"
 import { HttpTypes } from "@medusajs/types"
 
 const TotalsRow: React.FC<{
@@ -84,29 +85,15 @@ export const OrderTotals: React.FC<{
     )
   }
 
-  const {
-    item_subtotal,
-    original_item_total,
-    discount_total,
-    discount_tax_total,
-    shipping_subtotal,
-    original_shipping_total,
-    gift_card_total,
-    tax_total,
-    total,
-  } = order
-  // Show the rows in the same tax mode as the item prices.
-  const isTaxInclusive =
-    !!order.items?.length && order.items.every((item) => item.is_tax_inclusive)
-  const discount = isTaxInclusive
-    ? (discount_total ?? 0)
-    : (discount_total ?? 0) - (discount_tax_total ?? 0)
+  const { gift_card_total, tax_total, total } = order
+  const { isTaxInclusive, subtotal, discount, shipping } =
+    getTotalsBreakdown(order)
 
   return (
     <div className="sm:max-w-65 w-full flex-1">
       <TotalsRow
         label="Subtotal"
-        amount={(isTaxInclusive ? original_item_total : item_subtotal) ?? 0}
+        amount={subtotal}
         currencyCode={currency_code}
       />
       {!!discount && (
@@ -119,9 +106,7 @@ export const OrderTotals: React.FC<{
       )}
       <TotalsRow
         label="Shipping"
-        amount={
-          (isTaxInclusive ? original_shipping_total : shipping_subtotal) ?? 0
-        }
+        amount={shipping}
         currencyCode={currency_code}
       />
       {!!gift_card_total && (
