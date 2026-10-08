@@ -2,7 +2,7 @@ import { HttpTypes } from "@medusajs/types"
 import { getRefundPerUnit } from "@lib/util/line-item-price"
 
 export type OrderWithReturns = HttpTypes.StoreOrder & {
-  returns?: Omit<ReturnWithOrderItems, "currency_code">[]
+  returns?: Omit<ReturnWithOrderItems, "currency_code" | "shipping_total">[]
 }
 
 export const getReturnCoverage = (
@@ -102,6 +102,7 @@ export type ReturnItemWithLineItem = HttpTypes.StoreReturnItem & {
 export type ReturnWithOrderItems = Omit<HttpTypes.StoreReturn, "items"> & {
   items: ReturnItemWithLineItem[]
   currency_code: string
+  shipping_total: number
 }
 
 export const getOrderReturns = (
@@ -111,10 +112,18 @@ export const getOrderReturns = (
     (order.items || []).map((item) => [item.id, item])
   )
 
+  // Medusa adds a return's shipping method to the order's shipping methods,
+  // linked through detail.return_id, and charges it against the refund.
+  const getReturnShippingTotal = (returnId: string) =>
+    (order.shipping_methods ?? [])
+      .filter((method) => method.detail?.return_id === returnId)
+      .reduce((sum, method) => sum + (method.total ?? 0), 0)
+
   return (
     order.returns?.map((ret) => ({
       ...(ret as ReturnWithOrderItems),
       currency_code: order.currency_code,
+      shipping_total: getReturnShippingTotal(ret.id),
       items: ((ret as ReturnWithOrderItems).items || []).map((retItem) => ({
         ...retItem,
         item: orderItemsById.get(retItem.item_id) ?? retItem.item,
@@ -132,4 +141,8 @@ export const calcExpectedRefundAmount = (
   returnEntity: ReturnWithOrderItems
 ): number =>
   returnEntity.refund_amount ??
-  returnEntity.items.reduce((sum, ri) => sum + calcReturnItemAmount(ri), 0)
+  Math.max(
+    0,
+    returnEntity.items.reduce((sum, ri) => sum + calcReturnItemAmount(ri), 0) -
+      returnEntity.shipping_total
+  )

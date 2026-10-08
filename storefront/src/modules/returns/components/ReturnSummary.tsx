@@ -5,6 +5,7 @@ import { convertToLocale } from "@lib/util/money"
 type ReturnSummaryProps = {
   itemsCount: number
   totalReturnValue: number
+  shippingCost?: number
   currencyCode: string
   className?: string
 }
@@ -12,6 +13,7 @@ type ReturnSummaryProps = {
 export const ReturnSummary: React.FC<ReturnSummaryProps> = ({
   itemsCount,
   totalReturnValue,
+  shippingCost = 0,
   currencyCode,
   className,
 }) => {
@@ -36,6 +38,18 @@ export const ReturnSummary: React.FC<ReturnSummaryProps> = ({
             })}
           </span>
         </div>
+        {shippingCost > 0 && (
+          <div className="flex justify-between">
+            <span className="text-grayscale-500">Return shipping</span>
+            <span>
+              -{" "}
+              {convertToLocale({
+                currency_code: currencyCode,
+                amount: shippingCost,
+              })}
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="border-t border-grayscale-200 pt-4">
@@ -44,7 +58,7 @@ export const ReturnSummary: React.FC<ReturnSummaryProps> = ({
           <span className="text-lg font-semibold">
             {convertToLocale({
               currency_code: currencyCode,
-              amount: totalReturnValue,
+              amount: Math.max(0, totalReturnValue - shippingCost),
             })}
           </span>
         </div>

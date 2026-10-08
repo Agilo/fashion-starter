@@ -148,7 +148,7 @@ export const fetchAndVerifyOrder = async (
       method: "GET",
       query: {
         fields:
-          "*payment_collections.payments,*items,*items.metadata,*items.variant,*items.product,*items.adjustments,+cart.id,+items.refundable_total_per_unit,+items.discount_total,*returns,*returns.items,+summary",
+          "*payment_collections.payments,*items,*items.metadata,*items.variant,*items.product,*items.adjustments,+cart.id,+items.refundable_total_per_unit,+items.discount_total,*returns,*returns.items,*shipping_methods.detail,+summary",
       },
       cache: "no-store",
     })

@@ -82,6 +82,11 @@ export const ReturnCreationTemplate: React.FC<ReturnCreationTemplateProps> = ({
   const itemsWithDeliveryStatus = enhanceItemsWithReturnStatus(
     order.items || []
   )
+  // Calculated prices are only known inside ReturnShippingSelector, so only
+  // flat return shipping prices are taken off the refund here.
+  const selectedOption = shippingOptions.find(
+    (option) => option.id === selectedShippingOption
+  )
 
   const handleItemSelection = ({
     id,
@@ -237,6 +242,11 @@ export const ReturnCreationTemplate: React.FC<ReturnCreationTemplateProps> = ({
               if (!item) return total
               return total + getRefundPerUnit(item) * selected.quantity
             }, 0)}
+            shippingCost={
+              selectedOption?.price_type === "flat"
+                ? (selectedOption.amount ?? 0)
+                : 0
+            }
             currencyCode={order.currency_code}
           />
           <SubmitButton
