@@ -29,15 +29,17 @@ export default async function ReturnPage({
   }
 
   const order = (await fetchAndVerifyOrder(orderId, customer.email)) as
-    | (OrderWithReturns & { cart: { id: string } })
+    | (OrderWithReturns & { cart?: { id: string } | null })
     | null
 
   if (!order || !hasReturnableItems(order)) {
     notFound()
   }
 
+  const cartId = order.cart?.id
+
   const [shippingOptions, returnReasons] = await Promise.all([
-    listReturnShippingOptions(order.cart.id),
+    cartId ? listReturnShippingOptions(cartId) : [],
     listReturnReasons(),
   ])
 
@@ -46,7 +48,7 @@ export default async function ReturnPage({
       order={order}
       returnReasons={returnReasons}
       shippingOptions={shippingOptions}
-      cartId={order?.cart?.id || ""}
+      cartId={cartId ?? ""}
     />
   )
 }

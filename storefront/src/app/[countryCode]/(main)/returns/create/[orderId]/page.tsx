@@ -33,15 +33,17 @@ export default async function GuestReturnCreatePage({
   }
 
   const order = (await fetchAndVerifyOrder(orderId, email)) as
-    | (OrderWithReturns & { cart: { id: string } })
+    | (OrderWithReturns & { cart?: { id: string } | null })
     | null
 
   if (!order || !hasReturnableItems(order)) {
     notFound()
   }
 
+  const cartId = order.cart?.id
+
   const [shippingOptions, returnReasons] = await Promise.all([
-    listReturnShippingOptions(order.cart.id),
+    cartId ? listReturnShippingOptions(cartId) : [],
     listReturnReasons(),
   ])
 
@@ -51,7 +53,7 @@ export default async function GuestReturnCreatePage({
         order={order}
         returnReasons={returnReasons}
         shippingOptions={shippingOptions}
-        cartId={order.cart.id}
+        cartId={cartId ?? ""}
         isGuest
       />
     </Layout>
