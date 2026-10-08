@@ -8,10 +8,10 @@ import { twJoin } from "tailwind-merge"
 import { ReturnStatus } from "@modules/returns/components/ReturnStatus"
 import {
   calcExpectedRefundAmount,
-  getDiscountPerUnit,
   OrderWithReturns,
   ReturnWithOrderItems,
 } from "@lib/util/returns"
+import { getDisplayDiscountPerUnit } from "@lib/util/line-item-price"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/Tabs"
 
 type ReturnDetailsTemplateProps = {
@@ -81,7 +81,7 @@ export const ReturnDetailsTemplate: React.FC<ReturnDetailsTemplateProps> = ({
             // Medusa zeroes an item's discount_total once its return is
             // received, so take the discount from its adjustments.
             const returnedDiscount = item
-              ? getDiscountPerUnit(item) * returnItem.quantity
+              ? getDisplayDiscountPerUnit(item) * returnItem.quantity
               : 0
             return (
               <OrderItem

@@ -4,12 +4,12 @@ import * as React from "react"
 import Image from "next/image"
 import { HttpTypes } from "@medusajs/types"
 import { convertToLocale } from "@lib/util/money"
+import { ItemWithDeliveryStatus } from "@lib/util/returns"
 import {
   getDiscountPerUnit,
   getRefundPerUnit,
   getUnitPriceWithTax,
-  ItemWithDeliveryStatus,
-} from "@lib/util/returns"
+} from "@lib/util/line-item-price"
 import { NumberField } from "@/components/NumberField"
 import { ReturnReasonSelect } from "./ReturnReasonSelect"
 

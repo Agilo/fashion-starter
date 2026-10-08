@@ -13,6 +13,7 @@ import {
   hasReturnableItems,
   type OrderWithReturns,
 } from "@lib/util/returns"
+import { getDisplayDiscountPerUnit } from "@lib/util/line-item-price"
 import { convertToLocale } from "@lib/util/money"
 import { OrderStatus } from "@modules/order/components/OrderStatus"
 import { LocalizedButtonLink, LocalizedLink } from "@/components/LocalizedLink"
@@ -144,7 +145,7 @@ export default async function AccountOrderPage({
               title={item.title || ""}
               quantity={item.quantity}
               variant={item.variant}
-              discount_total={item.discount_total ?? 0}
+              discount_total={getDisplayDiscountPerUnit(item) * item.quantity}
               unit_price={item.unit_price || 0}
               currencyCode={order.currency_code}
               className="flex gap-x-4 sm:gap-x-8 gap-y-6 pb-6 border-b border-grayscale-100 last:border-0 last:pb-0"

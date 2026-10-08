@@ -16,10 +16,8 @@ import { ReturnReason } from "@modules/returns/components/ReturnReasonSelect"
 import ReturnItemSelector, {
   ReturnItemSelection,
 } from "@modules/returns/components/ReturnItemSelector"
-import {
-  enhanceItemsWithReturnStatus,
-  getRefundPerUnit,
-} from "@lib/util/returns"
+import { enhanceItemsWithReturnStatus } from "@lib/util/returns"
+import { getRefundPerUnit } from "@lib/util/line-item-price"
 import ReturnShippingSelector from "@modules/returns/components/ReturnShippingSelector"
 import { ReturnSummary } from "@modules/returns/components/ReturnSummary"
 import { twJoin } from "tailwind-merge"

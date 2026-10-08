@@ -71,33 +71,42 @@ export const OrderTotals: React.FC<{
 
   const {
     item_subtotal,
+    original_item_total,
     discount_total,
     discount_tax_total,
     shipping_subtotal,
+    original_shipping_total,
     gift_card_total,
     tax_total,
     total,
   } = order
-  const discount_subtotal = (discount_total ?? 0) - (discount_tax_total ?? 0)
+  // Show the rows in the same tax mode as the item prices.
+  const isTaxInclusive =
+    !!order.items?.length && order.items.every((item) => item.is_tax_inclusive)
+  const discount = isTaxInclusive
+    ? (discount_total ?? 0)
+    : (discount_total ?? 0) - (discount_tax_total ?? 0)
 
   return (
     <div className="sm:max-w-65 w-full flex-1">
       <TotalsRow
         label="Subtotal"
-        amount={item_subtotal ?? 0}
+        amount={(isTaxInclusive ? original_item_total : item_subtotal) ?? 0}
         currencyCode={currency_code}
       />
-      {!!discount_subtotal && (
+      {!!discount && (
         <TotalsRow
           label="Discount"
-          amount={discount_subtotal}
+          amount={discount}
           currencyCode={currency_code}
           negative
         />
       )}
       <TotalsRow
         label="Shipping"
-        amount={shipping_subtotal ?? 0}
+        amount={
+          (isTaxInclusive ? original_shipping_total : shipping_subtotal) ?? 0
+        }
         currencyCode={currency_code}
       />
       {!!gift_card_total && (
@@ -108,15 +117,24 @@ export const OrderTotals: React.FC<{
           negative
         />
       )}
+      {!isTaxInclusive && (
+        <TotalsRow
+          label="Tax"
+          amount={tax_total ?? 0}
+          currencyCode={currency_code}
+        />
+      )}
       <TotalRow
         label="Total"
         amount={total ?? 0}
         currencyCode={currency_code}
       />
-      <p className="text-xs text-grayscale-500">
-        Including {convertToLocale({ amount: tax_total ?? 0, currency_code })}{" "}
-        tax
-      </p>
+      {isTaxInclusive && (
+        <p className="text-xs text-grayscale-500">
+          Including {convertToLocale({ amount: tax_total ?? 0, currency_code })}{" "}
+          tax
+        </p>
+      )}
     </div>
   )
 }
