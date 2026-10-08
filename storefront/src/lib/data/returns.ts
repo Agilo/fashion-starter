@@ -1,5 +1,6 @@
 "use server"
 
+import { revalidateTag } from "next/cache"
 import { redirect } from "next/navigation"
 import { sdk } from "@lib/config"
 import { getAuthHeaders, getCacheOptions } from "@lib/data/cookies"
@@ -123,11 +124,14 @@ export const createReturnRequest = async (
       },
       headers,
     })
-    .then(({ return: returnData }) => ({
-      success: true,
-      error: null,
-      return: returnData,
-    }))
+    .then(({ return: returnData }) => {
+      revalidateTag("orders")
+      return {
+        success: true,
+        error: null,
+        return: returnData,
+      }
+    })
     .catch((err) => ({
       success: false,
       error: err.message,
