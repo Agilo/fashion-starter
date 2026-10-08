@@ -46,23 +46,38 @@ export const OrderTotals: React.FC<{
 }> = ({ order }) => {
   const { currency_code, summary } = order
 
-  if (summary && hasReturnedItems(order)) {
+  // Until a payment is captured nothing has been paid or refunded, so the
+  // regular totals (which already reflect returned items) are shown instead.
+  if (summary && (summary.paid_total ?? 0) > 0 && hasReturnedItems(order)) {
+    const paidTotal = summary.paid_total ?? 0
+    const refundedTotal = summary.refunded_total ?? 0
+    // A negative pending difference is money Medusa still owes the customer.
+    const pendingRefund = Math.max(0, -(summary.pending_difference ?? 0))
+
     return (
       <div className="sm:max-w-65 w-full flex-1">
         <TotalsRow
           label="Total paid"
-          amount={summary.paid_total ?? 0}
+          amount={paidTotal}
           currencyCode={currency_code}
         />
         <TotalsRow
           label="Refunded"
-          amount={summary.refunded_total ?? 0}
+          amount={refundedTotal}
           currencyCode={currency_code}
           negative
         />
+        {pendingRefund > 0 && (
+          <TotalsRow
+            label="Refund pending"
+            amount={pendingRefund}
+            currencyCode={currency_code}
+            negative
+          />
+        )}
         <TotalRow
           label="Net paid"
-          amount={summary.current_order_total ?? 0}
+          amount={paidTotal - refundedTotal}
           currencyCode={currency_code}
         />
       </div>
