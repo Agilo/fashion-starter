@@ -164,6 +164,30 @@ export const ReturnCreationTemplate: React.FC<ReturnCreationTemplateProps> = ({
     )
   }
 
+  if (!itemsWithDeliveryStatus.some((item) => item.isReturnable)) {
+    return (
+      <div
+        className={twJoin(
+          "max-w-xl mx-auto text-center py-16",
+          isGuest &&
+            "min-h-screen flex flex-col justify-center items-center col-span-full"
+        )}
+      >
+        <h1 className="text-lg font-semibold mb-4">Nothing to Return</h1>
+        <p className="text-grayscale-500 mb-8">
+          Order #{order.display_id} has no items available for return.
+        </p>
+        <LocalizedLink
+          href={isGuest ? "/returns/track" : `/account/my-orders/${order.id}`}
+          className="inline-flex items-center gap-2 text-sm font-medium border-b border-current"
+        >
+          <Icon name="arrow-left" className="w-4 h-4" />
+          {isGuest ? "Track Your Return" : "Back to Order"}
+        </LocalizedLink>
+      </div>
+    )
+  }
+
   return (
     <div
       className={twJoin(

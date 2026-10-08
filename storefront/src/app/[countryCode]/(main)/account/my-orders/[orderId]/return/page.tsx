@@ -8,7 +8,7 @@ import {
   listReturnReasons,
   listReturnShippingOptions,
 } from "@lib/data/returns"
-import { hasReturnableItems, OrderWithReturns } from "@lib/util/returns"
+import { OrderWithReturns } from "@lib/util/returns"
 
 export const metadata: Metadata = {
   title: "Account - Return Items",
@@ -32,7 +32,7 @@ export default async function ReturnPage({
     | (OrderWithReturns & { cart?: { id: string } | null })
     | null
 
-  if (!order || !hasReturnableItems(order)) {
+  if (!order) {
     notFound()
   }
 
