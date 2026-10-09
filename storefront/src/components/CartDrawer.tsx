@@ -71,6 +71,7 @@ export const CartDrawer = withReactQueryProvider(() => {
                         <Item
                           key={item.id}
                           item={item}
+                          currencyCode={cart.currency_code}
                           className="py-8 last:pb-0 last:border-b-0"
                         />
                       )

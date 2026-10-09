@@ -1,35 +1,41 @@
-import { getPricesForVariant } from "@lib/util/get-product-price"
+import { getDisplayDiscountPerUnit } from "@lib/util/line-item-price"
+import { convertToLocale } from "@lib/util/money"
 import { HttpTypes } from "@medusajs/types"
 import { twMerge } from "tailwind-merge"
 
 type LineItemUnitPriceProps = {
   item: HttpTypes.StoreCartLineItem | HttpTypes.StoreOrderLineItem
+  currencyCode: string
   className?: string
   regularPriceClassName?: string
 }
 
 const LineItemUnitPrice = ({
   item,
+  currencyCode,
   className,
   regularPriceClassName,
 }: LineItemUnitPriceProps) => {
-  const {
-    original_price,
-    calculated_price,
-    original_price_number,
-    calculated_price_number,
-  } = item.variant ? (getPricesForVariant(item.variant) ?? {}) : {}
-  const hasReducedPrice =
-    (calculated_price_number ?? 0) < (original_price_number ?? 0)
+  const discountPerUnit = getDisplayDiscountPerUnit(item)
+  const hasDiscount = discountPerUnit > 0
+  const effectiveUnitPrice = item.unit_price - discountPerUnit
 
   return (
     <div className={className}>
-      {hasReducedPrice ? (
+      {hasDiscount ? (
         <>
           <p className="text-base sm:text-sm font-semibold text-red-primary">
-            {calculated_price}
+            {convertToLocale({
+              amount: effectiveUnitPrice,
+              currency_code: currencyCode,
+            })}
           </p>
-          <p className="text-grayscale-500 line-through">{original_price}</p>
+          <p className="text-grayscale-500 line-through">
+            {convertToLocale({
+              amount: item.unit_price,
+              currency_code: currencyCode,
+            })}
+          </p>
         </>
       ) : (
         <p
@@ -38,7 +44,10 @@ const LineItemUnitPrice = ({
             regularPriceClassName
           )}
         >
-          {calculated_price}
+          {convertToLocale({
+            amount: item.unit_price,
+            currency_code: currencyCode,
+          })}
         </p>
       )}
     </div>

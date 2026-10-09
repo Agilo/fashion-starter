@@ -283,17 +283,56 @@ export async function initiatePaymentSession(provider_id: unknown) {
     .catch(medusaError)
 }
 
-export async function applyPromotions(codes: string[]) {
+export async function applyPromotions(
+  codes: string[]
+): Promise<{ error: string | null }> {
   const cartId = await getCartId()
   if (!cartId) {
-    throw new Error("No existing cart found")
+    return { error: "No existing cart found" }
   }
 
-  await updateCart({ promo_codes: codes })
-    .then(() => {
-      revalidateTag("cart")
+  if (!Array.isArray(codes) || !codes.length) {
+    return { error: "No promotion codes provided" }
+  }
+
+  if (codes.some((code) => typeof code !== "string" || !code.trim())) {
+    return { error: "Invalid promotion codes" }
+  }
+
+  // Adds the codes to the ones already on the cart. Updating the cart with
+  // promo_codes would replace them instead.
+  const cart = await sdk.client
+    .fetch<HttpTypes.StoreCartResponse>(`/store/carts/${cartId}/promotions`, {
+      method: "POST",
+      body: { promo_codes: codes },
+      headers: { ...(await getAuthHeaders()) },
     })
-    .catch(medusaError)
+    .then(({ cart }) => cart)
+    .catch((err: Error) => err)
+
+  if (cart instanceof Error) {
+    return { error: cart.message }
+  }
+
+  revalidateTag("cart")
+
+  const appliedCodes = new Set(
+    (cart.promotions ?? []).map((promotion) => promotion.code?.toUpperCase())
+  )
+  const notApplied = codes.filter(
+    (code) => !appliedCodes.has(code.trim().toUpperCase())
+  )
+
+  if (notApplied.length) {
+    const code = notApplied.join(", ")
+    return {
+      error: cart.shipping_methods?.length
+        ? `${code} doesn't apply to the items or shipping in your cart.`
+        : `${code} doesn't apply to your cart yet. If it's a shipping discount, choose a shipping method at checkout first.`,
+    }
+  }
+
+  return { error: null }
 }
 
 export async function removePromotions(codes: string[]) {
