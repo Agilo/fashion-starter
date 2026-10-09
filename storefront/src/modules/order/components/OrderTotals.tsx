@@ -1,5 +1,5 @@
 import { convertToLocale } from "@lib/util/money"
-import { getTotalsBreakdown } from "@lib/util/totals"
+import { getDiscountsByCode, getTotalsBreakdown } from "@lib/util/totals"
 import { HttpTypes } from "@medusajs/types"
 
 const TotalsRow: React.FC<{
@@ -7,13 +7,14 @@ const TotalsRow: React.FC<{
   amount: number
   currencyCode: string
   negative?: boolean
-}> = ({ label, amount, currencyCode, negative }) => (
+  amountClassName?: string
+}> = ({ label, amount, currencyCode, negative, amountClassName }) => (
   <div className="flex justify-between gap-4 mb-2">
     <div className="text-grayscale-500">
       <p>{label}</p>
     </div>
     <div className="self-end">
-      <p>
+      <p className={amountClassName}>
         {negative && "- "}
         {convertToLocale({ amount, currency_code: currencyCode })}
       </p>
@@ -88,6 +89,7 @@ export const OrderTotals: React.FC<{
   const { gift_card_total, tax_total, total } = order
   const { isTaxInclusive, subtotal, discount, shipping } =
     getTotalsBreakdown(order)
+  const discountsByCode = getDiscountsByCode(order, isTaxInclusive)
 
   return (
     <div className="sm:max-w-65 w-full flex-1">
@@ -97,12 +99,24 @@ export const OrderTotals: React.FC<{
         currencyCode={currency_code}
       />
       {!!discount && (
-        <TotalsRow
-          label="Discount"
-          amount={discount}
-          currencyCode={currency_code}
-          negative
-        />
+        <>
+          <TotalsRow
+            label="Discount"
+            amount={discount}
+            currencyCode={currency_code}
+            negative
+            amountClassName="text-red-900"
+          />
+          {Object.entries(discountsByCode).map(([code, amount]) => (
+            <div
+              key={code}
+              className="flex justify-between gap-4 -mt-1 mb-2 pl-3 text-xs text-grayscale-500"
+            >
+              <p>{code}</p>
+              <p>- {convertToLocale({ amount, currency_code })}</p>
+            </div>
+          ))}
+        </>
       )}
       <TotalsRow
         label="Shipping"

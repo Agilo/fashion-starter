@@ -4,7 +4,7 @@ import { HttpTypes } from "@medusajs/types"
 import React from "react"
 
 import { convertToLocale } from "@lib/util/money"
-import { getTotalsBreakdown } from "@lib/util/totals"
+import { getDiscountsByCode, getTotalsBreakdown } from "@lib/util/totals"
 import { twJoin, twMerge } from "tailwind-merge"
 
 type CartTotalsProps = {
@@ -21,6 +21,7 @@ const CartTotals: React.FC<CartTotalsProps> = ({
   const { currency_code, total, tax_total, gift_card_total } = cart
   const { isTaxInclusive, subtotal, discount, shipping } =
     getTotalsBreakdown(cart)
+  const discountsByCode = getDiscountsByCode(cart, isTaxInclusive)
 
   return (
     <div className={className}>
@@ -41,15 +42,26 @@ const CartTotals: React.FC<CartTotalsProps> = ({
           </p>
         </div>
         {!!discount && (
-          <div className="flex justify-between">
-            <p className="text-grayscale-500">Discount:</p>
-            <p
-              className="self-end"
-              data-testid="cart-discount"
-              data-value={discount}
-            >
-              - {convertToLocale({ amount: discount, currency_code })}
-            </p>
+          <div className="flex flex-col gap-1.5">
+            <div className="flex justify-between">
+              <p className="text-grayscale-500">Discount:</p>
+              <p
+                className="self-end text-red-900"
+                data-testid="cart-discount"
+                data-value={discount}
+              >
+                - {convertToLocale({ amount: discount, currency_code })}
+              </p>
+            </div>
+            {Object.entries(discountsByCode).map(([code, amount]) => (
+              <div
+                key={code}
+                className="flex justify-between pl-3 text-xs text-grayscale-500"
+              >
+                <p>{code}</p>
+                <p>- {convertToLocale({ amount, currency_code })}</p>
+              </div>
+            ))}
           </div>
         )}
         <div className="flex justify-between">

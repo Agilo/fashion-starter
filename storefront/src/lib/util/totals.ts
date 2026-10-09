@@ -26,3 +26,43 @@ export const getTotalsBreakdown = (source: TotalsSource) => {
         : source.shipping_subtotal) ?? 0,
   }
 }
+
+type AdjustedLine = {
+  tax_lines?: { rate: number }[] | null
+  adjustments?:
+    | { code?: string | null; amount: number; is_tax_inclusive?: boolean }[]
+    | null
+}
+
+export const getDiscountsByCode = (
+  source: {
+    items?: AdjustedLine[] | null
+    shipping_methods?: AdjustedLine[] | null
+  },
+  isTaxInclusive: boolean
+): Record<string, number> => {
+  const discounts: Record<string, number> = {}
+
+  for (const line of [
+    ...(source.items ?? []),
+    ...(source.shipping_methods ?? []),
+  ]) {
+    const taxRate =
+      (line.tax_lines ?? []).reduce((sum, taxLine) => sum + taxLine.rate, 0) /
+      100
+
+    for (const adjustment of line.adjustments ?? []) {
+      if (!adjustment.code) continue
+
+      const subtotal = adjustment.is_tax_inclusive
+        ? adjustment.amount / (1 + taxRate)
+        : adjustment.amount
+
+      discounts[adjustment.code] =
+        (discounts[adjustment.code] ?? 0) +
+        (isTaxInclusive ? subtotal * (1 + taxRate) : subtotal)
+    }
+  }
+
+  return discounts
+}

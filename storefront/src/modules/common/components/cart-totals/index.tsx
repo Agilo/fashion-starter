@@ -4,7 +4,7 @@ import React from "react"
 import { HttpTypes } from "@medusajs/types"
 
 import { convertToLocale } from "@lib/util/money"
-import { getTotalsBreakdown } from "@lib/util/totals"
+import { getDiscountsByCode, getTotalsBreakdown } from "@lib/util/totals"
 
 type CartTotalsProps = {
   cart: HttpTypes.StoreCart
@@ -14,6 +14,7 @@ const CartTotals: React.FC<CartTotalsProps> = ({ cart }) => {
   const { currency_code, total, tax_total, gift_card_total } = cart
   const { isTaxInclusive, subtotal, discount, shipping } =
     getTotalsBreakdown(cart)
+  const discountsByCode = getDiscountsByCode(cart, isTaxInclusive)
 
   return (
     <div>
@@ -27,14 +28,27 @@ const CartTotals: React.FC<CartTotalsProps> = ({ cart }) => {
           </div>
         </div>
         {!!discount && (
-          <div className="flex justify-between max-lg:text-xs">
-            <div>
-              <p>Discount</p>
+          <>
+            <div className="flex justify-between max-lg:text-xs">
+              <div>
+                <p>Discount</p>
+              </div>
+              <div className="self-end">
+                <p className="text-red-900">
+                  - {convertToLocale({ amount: discount, currency_code })}
+                </p>
+              </div>
             </div>
-            <div className="self-end">
-              <p>- {convertToLocale({ amount: discount, currency_code })}</p>
-            </div>
-          </div>
+            {Object.entries(discountsByCode).map(([code, amount]) => (
+              <div
+                key={code}
+                className="flex justify-between pl-3 text-xs text-grayscale-500"
+              >
+                <p>{code}</p>
+                <p>- {convertToLocale({ amount, currency_code })}</p>
+              </div>
+            ))}
+          </>
         )}
         <div className="flex justify-between max-lg:text-xs">
           <div>
