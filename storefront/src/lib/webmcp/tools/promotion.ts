@@ -20,7 +20,17 @@ export const cartApplyPromotion = async (
   }
 
   try {
-    await applyPromotions([input.code])
+    const result = await applyPromotions([input.code])
+
+    if (result.error) {
+      return {
+        ok: false,
+        error: {
+          code: "APPLY_FAILED",
+          message: result.error,
+        },
+      }
+    }
 
     const cart = await retrieveCart()
 
