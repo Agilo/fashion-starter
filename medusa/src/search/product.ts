@@ -3,63 +3,71 @@ import {
   graphConsume,
   graphSeed,
   search,
-} from '@medusajs/framework/utils';
+} from "@medusajs/framework/utils";
 
 const source = {
   fields: [
-    'id',
-    'title',
-    'sales_channels.id',
-    'handle',
-    'subtitle',
-    'description',
-    'is_giftcard',
-    'status',
-    'images.url',
-    'collection.title',
-    'collection.handle',
-    'categories.name',
-    'categories.handle',
-    'type.value',
-    'tags.value',
-    'variants.title',
-    'variants.sku',
+    "id",
+    "title",
+    "sales_channels.id",
+    "handle",
+    "subtitle",
+    "description",
+    "is_giftcard",
+    "status",
+    "images.url",
+    "collection.title",
+    "collection.handle",
+    "categories.name",
+    "categories.handle",
+    "type.value",
+    "tags.value",
+    "variants.title",
+    "variants.sku",
   ],
-  transform: (products: any[]) => products.map((product) => ({
-    id: product.id,
-    title: product.title,
-    sales_channel_ids: product.sales_channels?.map((channel: any) => channel.id) ?? [],
-    handle: product.handle,
-    subtitle: product.subtitle,
-    description: product.description,
-    is_giftcard: product.is_giftcard,
-    status: product.status,
-    thumbnail: product.images?.[0]?.url ?? null,
-    collection: product.collection?.title ?? null,
-    collection_handle: product.collection?.handle ?? null,
-    categories: product.categories?.map((category: any) => category.name) ?? [],
-    categories_handle: product.categories?.map((category: any) => category.handle) ?? [],
-    type: product.type?.value ?? null,
-    tags: product.tags?.map((tag: any) => tag.value) ?? [],
-    variants: product.variants?.map((variant: any) => variant.title) ?? [],
-    sku: product.variants
-      ?.map((variant: any) => variant.sku)
-      .filter((sku: unknown): sku is string => typeof sku === 'string' && sku.length > 0) ?? [],
-  })),
+  transform: (products: any[]) =>
+    products.map((product) => ({
+      id: product.id,
+      title: product.title,
+      sales_channel_ids:
+        product.sales_channels?.map((channel: any) => channel.id) ?? [],
+      handle: product.handle,
+      subtitle: product.subtitle,
+      description: product.description,
+      is_giftcard: product.is_giftcard,
+      status: product.status,
+      thumbnail: product.images?.[0]?.url ?? null,
+      collection: product.collection?.title ?? null,
+      collection_handle: product.collection?.handle ?? null,
+      categories:
+        product.categories?.map((category: any) => category.name) ?? [],
+      categories_handle:
+        product.categories?.map((category: any) => category.handle) ?? [],
+      type: product.type?.value ?? null,
+      tags: product.tags?.map((tag: any) => tag.value) ?? [],
+      variants: product.variants?.map((variant: any) => variant.title) ?? [],
+      sku:
+        product.variants
+          ?.map((variant: any) => variant.sku)
+          .filter(
+            (sku: unknown): sku is string =>
+              typeof sku === "string" && sku.length > 0,
+          ) ?? [],
+    })),
 };
 
 export default defineSearchIndex({
-  name: 'product',
-  entity: 'product',
+  name: "product",
+  entity: "product",
   fields: search.define({
     id: search.keyword().filterable(),
-    title: search.text().searchable({ weight: 9 }),
+    title: search.text().searchable({ weight: 7 }),
     sales_channel_ids: search.keyword().filterable().array().retrievable(false),
     handle: search.keyword(),
-    subtitle: search.text().searchable({ weight: 8 }),
-    description: search.text().searchable({ weight: 7 }),
+    subtitle: search.text(),
+    description: search.text().searchable({ weight: 6 }),
     is_giftcard: search.boolean(),
-    collection: search.text().searchable({ weight: 6 }),
+    collection: search.text(),
     collection_handle: search.keyword(),
     categories: search.text().searchable({ weight: 5 }).array(),
     categories_handle: search.keyword().array(),
@@ -70,7 +78,7 @@ export default defineSearchIndex({
     thumbnail: search.keyword(),
     status: search.keyword().filterable().retrievable(false),
   }),
-  events: ['product.created', 'product.updated', 'product.deleted'],
+  events: ["product.created", "product.updated", "product.deleted"],
   consume: graphConsume(source),
   seed: graphSeed(source),
 });

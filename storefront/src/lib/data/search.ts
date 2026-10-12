@@ -16,15 +16,7 @@ export async function searchProducts(
       filters: { q: query },
       pagination: { take },
       search_options: {
-        attributes_to_search_on: [
-          'title',
-          'description',
-          'categories',
-          'type',
-          'tags',
-          'variants',
-          'sku',
-        ],
+        match_strategy: 'last',
         typo_tolerance: true,
       },
     },
