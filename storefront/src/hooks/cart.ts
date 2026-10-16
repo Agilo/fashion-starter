@@ -6,6 +6,7 @@ import {
   getPaymentMethod,
   initiatePaymentSession,
   placeOrder,
+  removePromotions,
   retrieveCart,
   setAddresses,
   setEmail,
@@ -622,13 +623,41 @@ export const usePlaceOrder = (
 }
 
 export const useApplyPromotions = (
-  options?: UseMutationOptions<void, Error, string[], unknown>
+  options?: UseMutationOptions<
+    { error: string | null },
+    Error,
+    string[],
+    unknown
+  >
 ) => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationKey: ["apply-promotion"],
     mutationFn: async (payload) => {
       const response = await applyPromotions(payload)
+
+      return response
+    },
+    ...options,
+    async onSuccess(...args) {
+      await queryClient.invalidateQueries({
+        exact: false,
+        queryKey: ["cart"],
+      })
+
+      await options?.onSuccess?.(...args)
+    },
+  })
+}
+
+export const useRemovePromotions = (
+  options?: UseMutationOptions<void, Error, string[], unknown>
+) => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationKey: ["remove-promotion"],
+    mutationFn: async (payload) => {
+      const response = await removePromotions(payload)
 
       return response
     },

@@ -4,6 +4,7 @@ import { HttpTypes } from "@medusajs/types"
 import React from "react"
 
 import { convertToLocale } from "@lib/util/money"
+import { getDiscountsByCode, getTotalsBreakdown } from "@lib/util/totals"
 import { twJoin, twMerge } from "tailwind-merge"
 
 type CartTotalsProps = {
@@ -17,15 +18,10 @@ const CartTotals: React.FC<CartTotalsProps> = ({
   isPartOfCartDrawer,
   className,
 }) => {
-  const {
-    currency_code,
-    total,
-    subtotal,
-    tax_total,
-    shipping_total,
-    discount_total,
-    gift_card_total,
-  } = cart
+  const { currency_code, total, tax_total, gift_card_total } = cart
+  const { isTaxInclusive, subtotal, discount, shipping } =
+    getTotalsBreakdown(cart)
+  const discountsByCode = getDiscountsByCode(cart, isTaxInclusive)
 
   return (
     <div className={className}>
@@ -40,22 +36,32 @@ const CartTotals: React.FC<CartTotalsProps> = ({
           <p
             className="self-end"
             data-testid="cart-subtotal"
-            data-value={subtotal || 0}
+            data-value={subtotal}
           >
-            {convertToLocale({ amount: subtotal ?? 0, currency_code })}
+            {convertToLocale({ amount: subtotal, currency_code })}
           </p>
         </div>
-        {!!discount_total && (
-          <div className="flex justify-between">
-            <p className="text-grayscale-500">Discount:</p>
-            <p
-              className="self-end"
-              data-testid="cart-discount"
-              data-value={discount_total || 0}
-            >
-              -{" "}
-              {convertToLocale({ amount: discount_total ?? 0, currency_code })}
-            </p>
+        {!!discount && (
+          <div className="flex flex-col gap-1.5">
+            <div className="flex justify-between">
+              <p className="text-grayscale-500">Discount:</p>
+              <p
+                className="self-end text-red-900"
+                data-testid="cart-discount"
+                data-value={discount}
+              >
+                - {convertToLocale({ amount: discount, currency_code })}
+              </p>
+            </div>
+            {Object.entries(discountsByCode).map(([code, amount]) => (
+              <div
+                key={code}
+                className="flex justify-between pl-3 text-xs text-grayscale-500"
+              >
+                <p>{code}</p>
+                <p>- {convertToLocale({ amount, currency_code })}</p>
+              </div>
+            ))}
           </div>
         )}
         <div className="flex justify-between">
@@ -63,21 +69,23 @@ const CartTotals: React.FC<CartTotalsProps> = ({
           <p
             className="self-end"
             data-testid="cart-shipping"
-            data-value={shipping_total || 0}
+            data-value={shipping}
           >
-            {convertToLocale({ amount: shipping_total ?? 0, currency_code })}
+            {convertToLocale({ amount: shipping, currency_code })}
           </p>
         </div>
-        <div className="flex justify-between">
-          <p className="text-grayscale-500">Taxes:</p>
-          <p
-            className="self-end"
-            data-testid="cart-taxes"
-            data-value={tax_total || 0}
-          >
-            {convertToLocale({ amount: tax_total ?? 0, currency_code })}
-          </p>
-        </div>
+        {!isTaxInclusive && (
+          <div className="flex justify-between">
+            <p className="text-grayscale-500">Taxes:</p>
+            <p
+              className="self-end"
+              data-testid="cart-taxes"
+              data-value={tax_total || 0}
+            >
+              {convertToLocale({ amount: tax_total ?? 0, currency_code })}
+            </p>
+          </div>
+        )}
         {!!gift_card_total && (
           <div className="flex justify-between">
             <p className="text-grayscale-500">Gift card:</p>
@@ -104,6 +112,12 @@ const CartTotals: React.FC<CartTotalsProps> = ({
           {convertToLocale({ amount: total ?? 0, currency_code })}
         </p>
       </div>
+      {isTaxInclusive && (
+        <p className="text-xs text-grayscale-500 text-right mt-1">
+          Including {convertToLocale({ amount: tax_total ?? 0, currency_code })}{" "}
+          tax
+        </p>
+      )}
     </div>
   )
 }
